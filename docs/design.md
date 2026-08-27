@@ -32,12 +32,13 @@ identity can be retuned in one file.
 | --- | --- |
 | Page background (`--background`) | ink |
 | Primary foreground (`--foreground`) | frost |
-| Elevated surface (`--card`, `--popover`) | abyss |
-| Subtle surface (`--muted`) | abyss 62% over ink |
+| Elevated surface (`--card`) | abyss 34% over ink (blue-tinted near-black) |
+| Popover surface (`--popover`) | abyss 42% over ink |
+| Subtle surface (`--muted`) | abyss 26% over ink |
 | Strong surface (`--secondary`, `--accent`, `--surface-strong`) | steel |
 | Muted foreground (`--muted-foreground`) | chrome |
-| Border (`--border`) | slate @ 45% alpha |
-| Input (`--input`) | abyss @ 60% alpha |
+| Border (`--border`) | slate @ 52% alpha |
+| Input (`--input`) | abyss @ 45% alpha |
 | Focus ring (`--ring`) | chrome |
 | Primary action (`--primary` / fg) | frost / ink |
 | Secondary action (`--secondary` / fg) | steel / frost |
@@ -47,12 +48,14 @@ identity can be retuned in one file.
 
 ### Weight strategy
 
-No runtime percentage math. The balance is approximated structurally: the
-editorial homepage and hero carry most of the near-black + grid-line drama;
-functional pages (directory sidebar, cards, requests, messages, forms) put
-blue-gray surfaces (`card`/`secondary`) over the ink foundation with soft-white
-text; chrome appears only as accents — focus rings, hover borders, metallic
-rules, gradient text, and the metal-border wrapper.
+No runtime percentage math. The balance is approximated structurally, and it
+follows the reference's core rule: **blue-gray is atmosphere, not surface**.
+Panels are near-black with a blue-gray tint; solid steel/slate appears as
+atmospheric washes (hero field), small accents (secondary buttons, badges),
+and decorative geometry. Contrast comes from oversized soft-white type,
+near-black masses, one bold light band (the selected-network panel, frost on
+ink-text), and scarce chrome — focus rings, hover borders, metallic rules,
+gradient text.
 
 ### Destructive/error without red
 

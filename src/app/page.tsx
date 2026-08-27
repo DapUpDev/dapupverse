@@ -35,7 +35,7 @@ export default function HomePage() {
       <section className="grid-lines grain relative overflow-hidden border-b border-border">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-[-10%] hidden w-1/2 border-l border-border bg-gradient-to-bl from-secondary/30 to-transparent lg:block"
+          className="pointer-events-none absolute inset-y-0 right-[-10%] hidden w-3/5 border-l border-border bg-gradient-to-bl from-fog/40 via-secondary/35 to-transparent lg:block"
           style={{ clipPath: "polygon(18% 0, 100% 0, 100% 100%, 0 100%)" }}
         />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-20 sm:py-28">
@@ -159,22 +159,27 @@ export default function HomePage() {
       {/* Selected-network explainer */}
       <section aria-labelledby="network-heading" className="border-b border-border">
         <div className="mx-auto w-full max-w-6xl px-4 py-16">
-          <div className="metal-border flex flex-col gap-4 rounded-lg p-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-lg bg-primary p-8 text-primary-foreground sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2">
-              <TechLabel aria-hidden="true">SELECTED NETWORK</TechLabel>
+              <TechLabel aria-hidden="true" className="text-fog">
+                SELECTED NETWORK
+              </TechLabel>
               <h2
                 id="network-heading"
                 className="font-display text-xl font-bold tracking-tight"
               >
                 A small, approved group — not a marketplace.
               </h2>
-              <p className="max-w-xl text-sm text-muted-foreground">
+              <p className="max-w-xl text-sm text-primary-foreground/75">
                 Every DapUp mentor is reviewed and approved before they appear
                 in the directory, so the advice you get comes from students
                 who have genuinely done it.
               </p>
             </div>
-            <ButtonLink href="/mentors" className="shrink-0">
+            <ButtonLink
+              href="/mentors"
+              className="shrink-0 bg-background text-foreground hover:bg-background/85"
+            >
               Meet the mentors
             </ButtonLink>
           </div>

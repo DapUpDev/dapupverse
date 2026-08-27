@@ -77,23 +77,26 @@
 
   --background: var(--dap-ink);
   --foreground: var(--dap-frost);
-  --card: var(--dap-abyss);
+  /* Surfaces are near-black with a blue-gray TINT (not solid blue-gray):
+     blue-gray is atmosphere, contrast comes from white type, black masses,
+     and chrome — per the Whiplash-era reference rules. */
+  --card: color-mix(in srgb, var(--dap-abyss) 34%, var(--dap-ink));
   --card-foreground: var(--dap-frost);
-  --popover: var(--dap-abyss);
+  --popover: color-mix(in srgb, var(--dap-abyss) 42%, var(--dap-ink));
   --popover-foreground: var(--dap-frost);
   --primary: var(--dap-frost);
   --primary-foreground: var(--dap-ink);
   --secondary: var(--dap-steel);
   --secondary-foreground: var(--dap-frost);
-  --muted: color-mix(in srgb, var(--dap-abyss) 62%, var(--dap-ink));
+  --muted: color-mix(in srgb, var(--dap-abyss) 26%, var(--dap-ink));
   --muted-foreground: var(--dap-chrome);
   --accent: var(--dap-steel);
   --accent-foreground: var(--dap-frost);
   /* No red exists in the palette: destructive reads as high-contrast
      soft-white and is made unmistakable by shape, borders, and labels. */
   --destructive: var(--dap-frost);
-  --border: color-mix(in srgb, var(--dap-slate) 45%, transparent);
-  --input: color-mix(in srgb, var(--dap-abyss) 60%, transparent);
+  --border: color-mix(in srgb, var(--dap-slate) 52%, transparent);
+  --input: color-mix(in srgb, var(--dap-abyss) 45%, transparent);
   --ring: var(--dap-chrome);
   --chart-1: var(--dap-frost);
   --chart-2: var(--dap-chrome);
@@ -101,13 +104,13 @@
   --chart-4: var(--dap-slate);
   --chart-5: var(--dap-steel);
   --radius: 0.4rem;
-  --sidebar: var(--dap-abyss);
+  --sidebar: color-mix(in srgb, var(--dap-abyss) 34%, var(--dap-ink));
   --sidebar-foreground: var(--dap-frost);
   --sidebar-primary: var(--dap-frost);
   --sidebar-primary-foreground: var(--dap-ink);
   --sidebar-accent: var(--dap-steel);
   --sidebar-accent-foreground: var(--dap-frost);
-  --sidebar-border: color-mix(in srgb, var(--dap-slate) 45%, transparent);
+  --sidebar-border: color-mix(in srgb, var(--dap-slate) 52%, transparent);
   --sidebar-ring: var(--dap-chrome);
   --overlay: color-mix(in srgb, var(--dap-ink) 72%, transparent);
   --surface-strong: var(--dap-steel);
