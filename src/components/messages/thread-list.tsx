@@ -130,7 +130,7 @@ export function ThreadList({
                   </span>
                 ) : null}
                 {item.lastMessageAt ? (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {formatDate(item.lastMessageAt)}
                   </span>
                 ) : null}

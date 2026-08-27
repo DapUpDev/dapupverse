@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Ban, CircleOff, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,7 +100,9 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge>Connected</Badge>
+                      <Badge>
+                        <Link2 aria-hidden="true" /> Connected
+                      </Badge>
                       <ButtonLink
                         size="sm"
                         variant="outline"
@@ -148,7 +151,15 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
                       {studentName(student)}
                     </p>
                     <Badge variant="outline">
-                      {request.state === "blocked" ? "Blocked" : "Disconnected"}
+                      {request.state === "blocked" ? (
+                        <>
+                          <Ban aria-hidden="true" /> Blocked
+                        </>
+                      ) : (
+                        <>
+                          <CircleOff aria-hidden="true" /> Disconnected
+                        </>
+                      )}
                     </Badge>
                   </CardContent>
                 </Card>

@@ -15,7 +15,12 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
       <article className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
+        <p aria-hidden="true" className="tech-label">
+          LEGAL / 02
+        </p>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Privacy Policy
+        </h1>
         <Alert>
           <AlertTitle>Privacy Policy coming soon</AlertTitle>
           <AlertDescription>

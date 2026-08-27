@@ -7,8 +7,13 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-chrome: var(--dap-chrome);
+  --color-fog: var(--dap-fog);
+  --color-surface-strong: var(--surface-strong);
+  --color-overlay: var(--overlay);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -48,73 +53,79 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * DapUp seven-color base palette (milestone 3). These are the ONLY base UI
+ * colors; every token below derives from them (alpha variants allowed).
+ * See docs/design.md for the mapping and visual-weight strategy.
+ *
+ *   --dap-ink      #0D0C0E  near-black foundation
+ *   --dap-abyss    #343851  dark blue-gray
+ *   --dap-steel    #4F536F  main blue-gray
+ *   --dap-slate    #666C8A  mid blue-gray
+ *   --dap-fog      #878D9F  light steel blue-gray
+ *   --dap-chrome   #B8BAC3  chrome silver
+ *   --dap-frost    #E8E8E7  soft white
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --dap-ink: #0d0c0e;
+  --dap-abyss: #343851;
+  --dap-steel: #4f536f;
+  --dap-slate: #666c8a;
+  --dap-fog: #878d9f;
+  --dap-chrome: #b8bac3;
+  --dap-frost: #e8e8e7;
+
+  --background: var(--dap-ink);
+  --foreground: var(--dap-frost);
+  --card: var(--dap-abyss);
+  --card-foreground: var(--dap-frost);
+  --popover: var(--dap-abyss);
+  --popover-foreground: var(--dap-frost);
+  --primary: var(--dap-frost);
+  --primary-foreground: var(--dap-ink);
+  --secondary: var(--dap-steel);
+  --secondary-foreground: var(--dap-frost);
+  --muted: color-mix(in srgb, var(--dap-abyss) 62%, var(--dap-ink));
+  --muted-foreground: var(--dap-chrome);
+  --accent: var(--dap-steel);
+  --accent-foreground: var(--dap-frost);
+  /* No red exists in the palette: destructive reads as high-contrast
+     soft-white and is made unmistakable by shape, borders, and labels. */
+  --destructive: var(--dap-frost);
+  --border: color-mix(in srgb, var(--dap-slate) 45%, transparent);
+  --input: color-mix(in srgb, var(--dap-abyss) 60%, transparent);
+  --ring: var(--dap-chrome);
+  --chart-1: var(--dap-frost);
+  --chart-2: var(--dap-chrome);
+  --chart-3: var(--dap-fog);
+  --chart-4: var(--dap-slate);
+  --chart-5: var(--dap-steel);
+  --radius: 0.4rem;
+  --sidebar: var(--dap-abyss);
+  --sidebar-foreground: var(--dap-frost);
+  --sidebar-primary: var(--dap-frost);
+  --sidebar-primary-foreground: var(--dap-ink);
+  --sidebar-accent: var(--dap-steel);
+  --sidebar-accent-foreground: var(--dap-frost);
+  --sidebar-border: color-mix(in srgb, var(--dap-slate) 45%, transparent);
+  --sidebar-ring: var(--dap-chrome);
+  --overlay: color-mix(in srgb, var(--dap-ink) 72%, transparent);
+  --surface-strong: var(--dap-steel);
+  --gradient-chrome: linear-gradient(
+    105deg,
+    var(--dap-frost) 0%,
+    var(--dap-chrome) 28%,
+    var(--dap-fog) 50%,
+    var(--dap-chrome) 72%,
+    var(--dap-frost) 100%
+  );
 }
 
+/* The DapUp identity is a single committed dark look; explicit dark mode
+   maps to the same seven-color tokens. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: var(--dap-ink);
+  --foreground: var(--dap-frost);
 }
 
 @layer base {
@@ -126,5 +137,105 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Error/alert text carries shape as well as contrast: the palette has no
+     red, so validation messages get a hard leading bar and weight. */
+  p[role="alert"] {
+    @apply border-l-2 border-foreground pl-2 font-medium text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Technical microtype: metadata, coordinates, statuses, annotations. */
+  .tech-label {
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dap-fog);
+  }
+  /* Chrome gradient text — palette-only multi-stop metallic sweep. */
+  .chrome-text {
+    background-image: var(--gradient-chrome);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  /* Thin technical grid lines. */
+  .grid-lines {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--dap-slate) 14%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--dap-slate) 14%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 72px 72px;
+  }
+  /* Fine metallic border: palette gradient drawn in the border box. */
+  .metal-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(
+          140deg,
+          var(--dap-chrome),
+          color-mix(in srgb, var(--dap-steel) 70%, transparent) 45%,
+          var(--dap-fog)
+        )
+        border-box;
+  }
+  /* Subtle palette-derived grain (no external assets, transparency only). */
+  .grain {
+    position: relative;
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-conic-gradient(
+      color-mix(in srgb, var(--dap-frost) 3%, transparent) 0% 0.0001%,
+      transparent 0.0002% 0.0004%
+    );
+    opacity: 0.5;
+  }
+  /* Angled editorial cut. */
+  .angle-cut {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.5rem), 0 100%);
+  }
+}
+
+/* Precise, mechanical entrance motion. */
+@keyframes dap-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  /* The 80ms base delay keeps the animation from starting before first
+     paint, where Chromium can leave it stuck holding the from-state. */
+  animation: dap-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 80ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

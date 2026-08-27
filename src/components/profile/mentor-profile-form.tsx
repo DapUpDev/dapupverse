@@ -150,7 +150,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Your profile</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">Your profile</h1>
         <Badge variant="secondary">Mentor</Badge>
       </div>
 
@@ -305,7 +305,10 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
             }
           />
 
-          <div className="flex max-w-xs flex-col gap-1.5">
+          <div className="flex max-w-xs flex-col gap-1.5 rounded-lg border border-dashed border-fog/50 p-3">
+            <span aria-hidden="true" className="tech-label">
+              PRIVATE FIELD
+            </span>
             <Label htmlFor="mentor-price">Session rate (USD)</Label>
             <Input
               id="mentor-price"

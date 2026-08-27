@@ -39,9 +39,14 @@ export function ConnectedStudentPanel({
   if (!profile) return null;
 
   return (
-    <Card data-testid="connected-panel">
+    <Card data-testid="connected-panel" className="metal-border">
       <CardHeader>
-        <CardTitle className="text-lg">You&rsquo;re connected</CardTitle>
+        <span aria-hidden="true" className="tech-label">
+          CONNECTED
+        </span>
+        <CardTitle className="font-display text-lg">
+          You&rsquo;re connected
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">
@@ -109,30 +114,33 @@ export function MentorProfileView({ slug }: { slug: string }) {
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
       <div className="flex flex-col gap-8 md:flex-row md:items-start">
         <div className="flex flex-1 flex-col gap-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-20">
+          <div className="flex items-center gap-5">
+            <Avatar className="size-24 border-2 border-chrome/40">
               <AvatarFallback
                 aria-hidden="true"
-                className="text-xl font-semibold"
+                className="bg-gradient-to-br from-surface-strong to-card font-mono text-2xl font-semibold text-foreground"
               >
                 {mentorInitials(mentor.name)}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+            <div className="flex flex-col gap-1">
+              <span aria-hidden="true" className="tech-label">
+                MENTOR PROFILE
+              </span>
+              <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {mentor.name}
               </h1>
               <p className="text-muted-foreground">
                 {mentor.major} · {mentor.university}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
                 {mentor.countryRegion}
               </p>
             </div>
           </div>
 
           <section aria-labelledby="mentor-about">
-            <h2 id="mentor-about" className="text-lg font-semibold">
+            <h2 id="mentor-about" className="font-display text-lg font-bold">
               About
             </h2>
             <p className="mt-2 text-muted-foreground">{mentor.biography}</p>
@@ -141,7 +149,7 @@ export function MentorProfileView({ slug }: { slug: string }) {
           <Separator />
 
           <section aria-labelledby="mentor-services">
-            <h2 id="mentor-services" className="text-lg font-semibold">
+            <h2 id="mentor-services" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
               Services
             </h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -154,7 +162,7 @@ export function MentorProfileView({ slug }: { slug: string }) {
           </section>
 
           <section aria-labelledby="mentor-subjects">
-            <h2 id="mentor-subjects" className="text-lg font-semibold">
+            <h2 id="mentor-subjects" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
               Subjects &amp; specialties
             </h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -167,7 +175,7 @@ export function MentorProfileView({ slug }: { slug: string }) {
           </section>
 
           <section aria-labelledby="mentor-systems">
-            <h2 id="mentor-systems" className="text-lg font-semibold">
+            <h2 id="mentor-systems" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
               Education systems
             </h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -187,8 +195,11 @@ export function MentorProfileView({ slug }: { slug: string }) {
               mentorName={mentor.name}
             />
           ) : (
-            <Card>
+            <Card className="metal-border">
               <CardContent className="flex flex-col gap-3 pt-2">
+                <span aria-hidden="true" className="tech-label">
+                  START HERE
+                </span>
                 <ConnectCta mentor={mentor} />
               </CardContent>
             </Card>

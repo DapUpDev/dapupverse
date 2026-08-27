@@ -25,11 +25,14 @@ export function mentorInitials(name: string): string {
  */
 export function MentorCard({ mentor }: { mentor: Mentor }) {
   return (
-    <Card className="relative h-full transition-shadow hover:shadow-md">
+    <Card className="relative h-full border-border transition-all hover:border-chrome/60 hover:shadow-lg hover:shadow-background/60 has-focus-visible:border-chrome">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <Avatar className="size-12">
-            <AvatarFallback aria-hidden="true">
+          <Avatar className="size-12 border border-chrome/30">
+            <AvatarFallback
+              aria-hidden="true"
+              className="bg-gradient-to-br from-surface-strong to-card font-mono text-foreground"
+            >
               {mentorInitials(mentor.name)}
             </AvatarFallback>
           </Avatar>

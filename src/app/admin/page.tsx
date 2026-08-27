@@ -34,13 +34,22 @@ function AdminMentorTable() {
         </caption>
         <thead>
           <tr className="border-b bg-muted/50 text-left">
-            <th scope="col" className="px-4 py-2 font-medium">
+            <th
+              scope="col"
+              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
+            >
               Mentor
             </th>
-            <th scope="col" className="px-4 py-2 font-medium">
+            <th
+              scope="col"
+              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
+            >
               University
             </th>
-            <th scope="col" className="px-4 py-2 font-medium">
+            <th
+              scope="col"
+              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
+            >
               Session rate (private)
             </th>
           </tr>
@@ -89,9 +98,16 @@ export default function AdminPage() {
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
-        <Badge variant="secondary">Admin capability</Badge>
+      <span aria-hidden="true" className="tech-label">
+        CAPABILITY / ADMIN — DISTINCT FROM ACCOUNT TYPE
+      </span>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">
+          Admin
+        </h1>
+        <Badge variant="secondary" className="border border-chrome/50">
+          Admin capability
+        </Badge>
       </div>
       <p className="mt-1 text-muted-foreground">
         Placeholder for future admin tooling — mentor approval, reports, and

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CircleOff, Clock3, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,7 +108,9 @@ export function StudentConnections({ studentId }: { studentId: string }) {
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge>Connected</Badge>
+                      <Badge>
+                        <Link2 aria-hidden="true" /> Connected
+                      </Badge>
                       <ButtonLink
                         size="sm"
                         variant="outline"
@@ -167,7 +170,9 @@ export function StudentConnections({ studentId }: { studentId: string }) {
                         {request.purpose} · Sent {formatDate(request.createdAt)}
                       </p>
                     </div>
-                    <Badge variant="secondary">Pending</Badge>
+                    <Badge variant="secondary" className="border-dashed border-fog/60">
+                      <Clock3 aria-hidden="true" /> Pending
+                    </Badge>
                   </CardContent>
                 </Card>
               </li>
@@ -189,7 +194,9 @@ export function StudentConnections({ studentId }: { studentId: string }) {
                     <p className="font-medium text-muted-foreground">
                       {mentor?.name ?? "Mentor"}
                     </p>
-                    <Badge variant="outline">Ended</Badge>
+                    <Badge variant="outline">
+                      <CircleOff aria-hidden="true" /> Ended
+                    </Badge>
                   </CardContent>
                 </Card>
               </li>

@@ -144,7 +144,7 @@ export function Conversation({
                 >
                   {message.text}
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground">
                   {formatDateTime(message.sentAt)}
                 </span>
               </div>

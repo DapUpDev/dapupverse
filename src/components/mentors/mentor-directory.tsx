@@ -59,7 +59,12 @@ export function MentorDirectory() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Find a mentor</h1>
+        <span aria-hidden="true" className="tech-label">
+          DIRECTORY / SELECTED MENTORS
+        </span>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Find a mentor
+        </h1>
         <p className="max-w-2xl text-muted-foreground">
           Search a selected group of student mentors by name, school,
           expertise, or subject.
@@ -114,7 +119,10 @@ export function MentorDirectory() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
         {/* Desktop filters */}
         <aside aria-label="Mentor filters" className="hidden lg:block">
-          <div className="sticky top-20 flex flex-col gap-4">
+          <div className="sticky top-20 flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
+            <span aria-hidden="true" className="tech-label">
+              FILTERS
+            </span>
             <MentorFiltersPanel
               idPrefix="sidebar"
               filters={filters}
@@ -132,7 +140,10 @@ export function MentorDirectory() {
         </aside>
 
         <section aria-label="Mentor results">
-          <p aria-live="polite" className="text-sm text-muted-foreground">
+          <p
+            aria-live="polite"
+            className="font-mono text-xs tracking-widest text-muted-foreground uppercase"
+          >
             {ready && mentors
               ? `${mentors.length} mentor${mentors.length === 1 ? "" : "s"} found`
               : "Loading mentors…"}
@@ -151,8 +162,13 @@ export function MentorDirectory() {
               ))}
             </div>
           ) : (
-            <div className="mt-8 flex flex-col items-start gap-3 rounded-lg border border-dashed p-8">
-              <p className="font-medium">No mentors match your search.</p>
+            <div className="mt-8 flex flex-col items-start gap-3 rounded-lg border border-dashed border-fog/50 bg-card/40 p-8">
+              <span aria-hidden="true" className="tech-label">
+                0 RESULTS
+              </span>
+              <p className="font-display text-lg font-bold">
+                No mentors match your search.
+              </p>
               <p className="text-sm text-muted-foreground">
                 Try a different subject or clear your filters to see everyone.
               </p>

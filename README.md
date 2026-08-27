@@ -86,6 +86,8 @@ Do **not** deploy with the Vercel CLI. Import the GitHub repository through the 
 
 Never commit the local `.vercel/` directory (it is ignored).
 
-## Architecture
+## Architecture and design
 
 See [docs/architecture.md](docs/architecture.md) for the planned route structure, the role model (student/mentor account types vs. admin capability), and the planned auth and data-access boundaries.
+
+See [docs/design.md](docs/design.md) for the milestone 3 visual design system: the seven-color palette, semantic token mapping, three-level typography (Syne / Geist / Geist Mono), and page-by-page intensity rules. The temporary text wordmark will be replaced by an owner-supplied logo.

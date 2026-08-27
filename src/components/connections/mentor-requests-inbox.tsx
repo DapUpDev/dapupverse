@@ -1,5 +1,6 @@
 "use client";
 
+import { Archive as ArchiveIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -154,7 +155,11 @@ export function MentorRequestsInbox({ mentorId }: { mentorId: string }) {
 
       {archived.length > 0 ? (
         <section aria-labelledby="archived-heading">
-          <h2 id="archived-heading" className="text-lg font-semibold">
+          <h2
+            id="archived-heading"
+            className="flex items-center gap-2 text-lg font-semibold"
+          >
+            <ArchiveIcon aria-hidden="true" className="size-4 text-fog" />
             Archived
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
