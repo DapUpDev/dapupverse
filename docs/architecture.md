@@ -1,6 +1,39 @@
 # DapUp architecture notes
 
-Recorded at milestone 1 (frontend scaffold). These are intentions, not implemented features; do not create empty directories ahead of the milestone that needs them.
+Updated at milestone 2 (functional prototype with mock data).
+
+## Layering (milestone 2)
+
+- `src/lib/domain` — backend-agnostic domain types and pure logic
+  (`filter-mentors`, profile completion). No React, no storage.
+- `src/lib/data/seed.ts` — deterministic, fictional seed data for the demo.
+- `src/lib/mock/store.ts` — the browser-local mock store (in-memory,
+  mirrored to localStorage for demo persistence). Presentational components
+  never touch it directly.
+- `src/lib/repositories` — the typed repository interfaces
+  (`MentorRepository`, `ConnectionRepository`, `MessageRepository`,
+  `StudentProfileRepository`) and their mock adapters. A future backend
+  replaces the bindings in `index.ts` without changing consumers.
+  `useRepositoryQuery` is the one React hook that bridges store changes to
+  components.
+- `src/lib/demo-session` — the preview-identity module. The server decides
+  preview availability (`NODE_ENV === "development"` or
+  `VERCEL_ENV === "preview"`) and passes an explicit boolean to the client
+  provider; nothing browser-controlled can enable it. Clerk will replace
+  this provider in a later milestone behind the same `useDemoSession`-shaped
+  consumer surface.
+- `src/components` — presentational and journey components, all consuming
+  repositories and the demo session only.
+
+## Request lifecycle (deliberate design)
+
+`ConnectionState = "pending" | "accepted" | "disconnected" | "blocked"` —
+there is **no rejected state and no reject action anywhere**. Mentors accept
+requests or archive them; archiving is mentor-side inbox state
+(`archivedByMentor`) that never changes what the student sees. Messaging
+threads exist only after acceptance; disconnecting or blocking makes the
+thread read-only. Mentor pricing is private: public types (`Mentor`) simply
+do not contain the price field.
 
 ## Planned routes
 
