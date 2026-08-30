@@ -7,11 +7,12 @@ commits, or client code.
 
 ## 1. Instances
 
-- The **development** instance already exists (`clerk init` wired its keys
-  into `.env.local`).
-- Before launching on `dapupverse.com`, create the **production** instance
-  (Dashboard → your app → "Create production instance") and complete its
-  DNS steps for the production domain.
+- The **development** instance exists (`clerk init` wired its keys into
+  `.env.local`); it powers localhost and Vercel Preview deployments.
+- The **production** instance is live on `dapup.space` with its own
+  `pk_live`/`sk_live` keys. Remember: every setting below is configured
+  **per instance** — changes made in Development do not carry over to
+  Production, and each instance has its own separate user pool.
 
 ## 2. Sign-in methods (User & Authentication → Email, phone, username)
 
@@ -32,8 +33,7 @@ the Dashboard requests them):
 
 - `http://localhost:3000`
 - Your Vercel Preview URLs (`https://*-dapup.vercel.app`)
-- `https://dapupverse.com` and the Vercel production URL (production
-  instance)
+- `https://dapup.space` (production instance)
 
 ## 4. Custom session claim (Sessions → Customize session token)
 
@@ -101,6 +101,15 @@ In Vercel → Project → Settings → Environment Variables, add for
 These two keys are the only variables a deployment needs — the sign-in/
 sign-up route paths are baked into `next.config.ts`, and post-auth
 fallback destinations are component props. Redeploy after adding them.
+
+Key/environment pairing:
+
+- **Production** → the production instance's `pk_live` / `sk_live` keys.
+  Live keys work only on `dapup.space`; the production deployment's
+  `*.vercel.app` alias will not serve working auth, which is expected.
+- **Preview** → the development instance's `pk_test` / `sk_test` keys,
+  because previews run on `*.vercel.app` domains that the production
+  instance does not authorize.
 
 ## 7. e2e test users (development instance only)
 
