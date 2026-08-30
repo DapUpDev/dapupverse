@@ -24,7 +24,8 @@ test.describe("route access", () => {
   }) => {
     await page.goto("/app/messages");
     await expect(page).toHaveURL(/\/sign-in/);
-    await expect(page.getByText(/welcome back/i)).toBeVisible();
+    // Clerk's default sign-in card renders.
+    await expect(page.getByText(/sign in to dapup/i)).toBeVisible();
 
     await page.goto("/admin");
     await expect(page).toHaveURL(/\/sign-in/);
@@ -39,7 +40,7 @@ test.describe("route access", () => {
     await page.goto("/");
     await page.getByRole("link", { name: "Create account" }).click();
     await expect(page).toHaveURL(/\/sign-up/);
-    await expect(page.getByRole("heading", { name: "Join DapUp" })).toBeVisible();
+    await expect(page.getByText(/create your account/i)).toBeVisible();
   });
 
   test("a student is denied from the mentor request inbox", async ({

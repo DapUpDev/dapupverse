@@ -20,7 +20,7 @@ test.describe("connect-with-mentor journey", () => {
     );
     await signUpLink.click();
     await expect(page).toHaveURL(/\/sign-up/);
-    await expect(page.getByRole("heading", { name: "Join DapUp" })).toBeVisible();
+    await expect(page.getByText(/create your account/i)).toBeVisible();
   });
 
   test("student → profile setup → request → mentor accept → messaging → private price", async ({
