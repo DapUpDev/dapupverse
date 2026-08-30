@@ -97,10 +97,10 @@ In Vercel → Project → Settings → Environment Variables, add for
   development keys otherwise).
 - `CLERK_SECRET_KEY` — same page. Server-only; Vercel keeps it out of the
   client bundle. Never commit it.
-- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` = `/sign-in`
-- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` = `/sign-up`
 
-Redeploy after adding them.
+These two keys are the only variables a deployment needs — the sign-in/
+sign-up route paths are baked into `next.config.ts`, and post-auth
+fallback destinations are component props. Redeploy after adding them.
 
 ## 7. e2e test users (development instance only)
 
