@@ -2,7 +2,6 @@ import React from "react";
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
-import { resetDemoRoleForTests } from "@/lib/demo-session/provider";
 import { mockDataStore } from "@/lib/mock/store";
 
 // Next.js runtime pieces aren't available under Vitest; stub the router and
@@ -13,6 +12,9 @@ vi.mock("next/navigation", async () => {
     useRouter: () => routerMock,
     usePathname: () => "/",
     useSearchParams: () => new URLSearchParams(),
+    redirect: (url: string) => {
+      throw new Error(`NEXT_REDIRECT:${url}`);
+    },
   };
 });
 
@@ -25,14 +27,23 @@ vi.mock("next/link", () => ({
     React.createElement("a", { href, ...props }, children),
 }));
 
+// Identity comes from test fixtures, not Clerk, in unit/component tests.
+vi.mock("@/lib/auth/use-auth-identity", async () => {
+  const { getTestIdentity } = await import("@/test/auth-fixtures");
+  return {
+    useAuthIdentity: () => ({ identity: getTestIdentity(), isLoaded: true }),
+  };
+});
+
 afterEach(async () => {
   cleanup();
   window.localStorage.clear();
   window.sessionStorage.clear();
-  resetDemoRoleForTests();
   mockDataStore.reset();
   const { resetRouterMock } = await import("@/test/router-mock");
   resetRouterMock();
+  const { resetTestIdentity } = await import("@/test/auth-fixtures");
+  resetTestIdentity();
 });
 
 // jsdom lacks a few browser APIs that Base UI / app code touch.

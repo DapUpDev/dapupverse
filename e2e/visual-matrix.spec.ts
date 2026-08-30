@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { signInAs, signOut } from "./clerk-helpers";
 
 /**
  * Visual QA screenshot matrix (milestone 3). Not a functional test — run
@@ -11,13 +12,6 @@ const MOBILE = { width: 390, height: 844 };
 
 test.skip(!process.env.SCREENSHOTS, "screenshot matrix runs only on demand");
 
-async function switchRole(page: Page, label: string) {
-  await page.getByTestId("role-switcher").click();
-  await page.getByRole("menuitemradio", { name: label, exact: true }).click();
-  await expect(page.getByTestId("role-switcher")).toHaveText(
-    new RegExp(label.replace("+", "\\+")),
-  );
-}
 
 async function shoot(page: Page, name: string, fullPage = true) {
   await page.waitForTimeout(400);
@@ -60,7 +54,7 @@ test("stateful journey screenshots", async ({ page }) => {
 
   // Student: empty messages + profile edit (incomplete).
   await page.goto("/");
-  await switchRole(page, "Student");
+  await signInAs(page, "student");
   await page.goto("/app/messages");
   await expect(page.getByText(/no conversations yet/i)).toBeVisible();
   await shoot(page, "messages-empty-student-desktop");
@@ -93,7 +87,8 @@ test("stateful journey screenshots", async ({ page }) => {
   await shoot(page, "student-pending-connection-desktop");
 
   // Mentor: requests inbox, accept, inbox/conversation.
-  await switchRole(page, "Mentor");
+  await signOut(page);
+  await signInAs(page, "mentor");
   await page.goto("/app/requests");
   await expect(page.getByText("Demo Student")).toBeVisible();
   await shoot(page, "mentor-requests-desktop");
@@ -145,7 +140,8 @@ test("stateful journey screenshots", async ({ page }) => {
   await shoot(page, "conversation-disconnected-desktop");
 
   // Student: accepted connection with private price visible.
-  await switchRole(page, "Student");
+  await signOut(page);
+  await signInAs(page, "student");
   await page.goto("/mentors/jae-park");
   await expect(page.getByText("$40 USD")).toBeVisible();
   await shoot(page, "accepted-connection-price-desktop");

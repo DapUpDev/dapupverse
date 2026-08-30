@@ -27,7 +27,7 @@ import { ImagePlaceholderField } from "@/components/profile/image-placeholder-fi
 import {
   loadConnectionIntent,
   useHasConnectionIntent,
-} from "@/lib/demo-session/connection-intent";
+} from "@/lib/connection-intent";
 import {
   EDUCATION_SYSTEMS,
   isStudentProfileComplete,

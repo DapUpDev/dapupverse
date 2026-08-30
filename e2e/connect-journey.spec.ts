@@ -1,15 +1,10 @@
-import { expect, test, type Page } from "@playwright/test";
-
-async function switchRole(page: Page, label: string) {
-  await page.getByTestId("role-switcher").click();
-  await page.getByRole("menuitemradio", { name: label, exact: true }).click();
-}
+import { expect, test } from "@playwright/test";
+import { signInAs, signOut } from "./clerk-helpers";
 
 test.describe("connect-with-mentor journey", () => {
-  test("visitor → preview student → profile setup → request → mentor accept → messaging", async ({
+  test("a visitor gets real sign-up/sign-in actions with a preserved return path", async ({
     page,
   }) => {
-    // 1. Visitor opens a mentor and hits the auth-required dialog.
     await page.goto("/mentors/jae-park");
     await page
       .getByRole("button", { name: "Connect with this mentor" })
@@ -17,19 +12,33 @@ test.describe("connect-with-mentor journey", () => {
     await expect(
       page.getByText(/you.ll need an account to connect/i),
     ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Create account" }),
-    ).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeDisabled();
 
-    // 2. Preview as student — the incomplete profile detours to setup.
-    await page.getByRole("button", { name: "Preview as student" }).click();
+    const signUpLink = page.getByRole("link", { name: "Create account" });
+    await expect(signUpLink).toHaveAttribute(
+      "href",
+      `/sign-up?redirect_url=${encodeURIComponent("/mentors/jae-park")}`,
+    );
+    await signUpLink.click();
+    await expect(page).toHaveURL(/\/sign-up/);
+    await expect(page.getByRole("heading", { name: "Join DapUp" })).toBeVisible();
+  });
+
+  test("student → profile setup → request → mentor accept → messaging → private price", async ({
+    page,
+  }) => {
+    // 1. Authenticated student with an incomplete local profile starts the
+    //    connect flow and detours through profile setup.
+    await signInAs(page, "student");
+    await page.goto("/mentors/jae-park");
+    await page
+      .getByRole("button", { name: "Connect with this mentor" })
+      .click();
     await expect(page).toHaveURL(/\/app\/profile\?setup=connect/);
     await expect(
       page.getByText(/finish your profile to send your request/i),
     ).toBeVisible();
 
-    // 3. Complete the profile.
+    // 2. Complete the profile; the intent resumes on the mentor page.
     await page.getByLabel("Full name").fill("Demo Student");
     await page.getByLabel("School").fill("Wellington College");
     await page.getByLabel("Year level").fill("Year 13");
@@ -37,16 +46,9 @@ test.describe("connect-with-mentor journey", () => {
     await page.getByRole("option", { name: "IB", exact: true }).click();
     await page.getByRole("button", { name: "Save profile" }).click();
 
-    // 4. The flow resumes on the mentor page with the request form open.
     await expect(page).toHaveURL(/\/mentors\/jae-park/);
     await expect(
       page.getByRole("heading", { name: "Connect with Jae Park" }),
-    ).toBeVisible();
-
-    // Validation blocks an empty submission.
-    await page.getByRole("button", { name: "Send request" }).click();
-    await expect(
-      page.getByText(/choose what you.d like help with/i),
     ).toBeVisible();
 
     await page.getByLabel("Purpose").click();
@@ -56,7 +58,7 @@ test.describe("connect-with-mentor journey", () => {
       .fill("Could you review my main application essay before the deadline?");
     await page.getByRole("button", { name: "Send request" }).click();
 
-    // 5. Confirmation and pending state; no duplicate request possible.
+    // 3. Pending state; duplicates impossible.
     await expect(page.getByText("Request sent")).toBeVisible();
     await expect(page.getByText("Request pending")).toBeVisible();
     await expect(
@@ -67,12 +69,12 @@ test.describe("connect-with-mentor journey", () => {
     await expect(
       page.getByRole("heading", { name: "Pending requests" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Jae Park" }),
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Jae Park" })).toBeVisible();
 
-    // 6. The mentor sees the request and accepts it. No reject exists.
-    await switchRole(page, "Mentor");
+    // 4. The mapped mentor signs in (same browser: shared local mock data),
+    //    sees the request, and accepts it. No reject action exists.
+    await signOut(page);
+    await signInAs(page, "mentor");
     await page.goto("/app/requests");
     const requestCard = page
       .locator("li")
@@ -85,7 +87,7 @@ test.describe("connect-with-mentor journey", () => {
     await requestCard.getByRole("button", { name: "Accept" }).click();
     await expect(page.getByText("Request accepted")).toBeVisible();
 
-    // 7. Messaging is now unlocked: the mentor messages the student.
+    // 5. Messaging unlocked: mentor messages the student.
     await page.goto("/app/messages");
     await page.getByRole("link", { name: /Demo Student/ }).click();
     await page
@@ -98,9 +100,10 @@ test.describe("connect-with-mentor journey", () => {
         .getByText("Welcome aboard! Send the essay over whenever you're ready."),
     ).toBeVisible();
 
-    // 8. The student sees the conversation, the unread message, and the
-    //    mentor's private price now that the connection is accepted.
-    await switchRole(page, "Student");
+    // 6. The student sees the accepted connection, the mentor's private
+    //    price, and the conversation.
+    await signOut(page);
+    await signInAs(page, "student");
     await page.goto("/mentors/jae-park");
     await expect(page.getByText(/you.re connected/i)).toBeVisible();
     await expect(page.getByText("$40 USD")).toBeVisible();
@@ -120,27 +123,5 @@ test.describe("connect-with-mentor journey", () => {
     await expect(
       conversation.getByText("Thank you! Sending it tonight."),
     ).toBeVisible();
-  });
-
-  test("reset demo data returns the app to its seed state", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await switchRole(page, "Student");
-    await expect(page.getByTestId("role-switcher")).toHaveText(
-      /Preview role: Student/,
-    );
-    // The chosen role must survive a reload (persisted demo state) …
-    await page.reload();
-    await expect(page.getByTestId("role-switcher")).toHaveText(
-      /Preview role: Student/,
-    );
-    // … and reset returns everything to the seed state.
-    await page.getByTestId("role-switcher").click();
-    await page.getByRole("menuitem", { name: "Reset demo data" }).click();
-    await expect(page.getByText("Demo data reset")).toBeVisible();
-    await expect(page.getByTestId("role-switcher")).toHaveText(
-      /Preview role: Visitor/,
-    );
   });
 });

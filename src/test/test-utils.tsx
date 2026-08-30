@@ -1,28 +1,15 @@
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { render, type RenderResult } from "@testing-library/react";
-import { DemoSessionProvider, useDemoSession } from "@/lib/demo-session/provider";
-import type { DemoRole } from "@/lib/demo-session/types";
+import { setTestIdentity, type TestRole } from "@/test/auth-fixtures";
 
-/** Test helper: switches the demo role after mount. */
-export function SetRole({ role }: { role: DemoRole }) {
-  const { setRole } = useDemoSession();
-  useEffect(() => {
-    setRole(role);
-  }, [role, setRole]);
-  return null;
-}
-
+/**
+ * Render helper for component tests. The auth hook is mocked globally in
+ * setup.ts to return the fixture identity selected here.
+ */
 export function renderWithProviders(
   ui: ReactNode,
-  {
-    previewEnabled = true,
-    role,
-  }: { previewEnabled?: boolean; role?: DemoRole } = {},
+  { role = "visitor" }: { role?: TestRole } = {},
 ): RenderResult {
-  return render(
-    <DemoSessionProvider previewEnabled={previewEnabled}>
-      {role ? <SetRole role={role} /> : null}
-      {ui}
-    </DemoSessionProvider>,
-  );
+  setTestIdentity(role);
+  return render(<>{ui}</>);
 }

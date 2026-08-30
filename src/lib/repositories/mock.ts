@@ -41,18 +41,24 @@ export function createMockRepositories(store: MockDataStore): {
   connectionRepository: ConnectionRepository;
   messageRepository: MessageRepository;
 } {
+  // Incomplete profiles (no name yet — e.g. a newly promoted mentor still
+  // setting up) are excluded from the public directory.
+  const isPubliclyListed = (profile: MentorProfile) =>
+    profile.name.trim() !== "";
+
   const mentorRepository: MentorRepository = {
     async list(filters?: MentorFilters): Promise<Mentor[]> {
       const publicMentors = store
         .getSnapshot()
-        .mentorProfiles.map(toPublicMentor);
+        .mentorProfiles.filter(isPubliclyListed)
+        .map(toPublicMentor);
       return filterMentors(publicMentors, filters);
     },
 
     async getBySlug(slug: string): Promise<Mentor | null> {
       const profile = store
         .getSnapshot()
-        .mentorProfiles.find((m) => m.slug === slug);
+        .mentorProfiles.find((m) => m.slug === slug && isPubliclyListed(m));
       return profile ? toPublicMentor(profile) : null;
     },
 
@@ -75,6 +81,30 @@ export function createMockRepositories(store: MockDataStore): {
       if (!updated) throw new Error(`Unknown mentor: ${mentorId}`);
       return updated;
     },
+
+    async ensureProfile(mentorId: string): Promise<MentorProfile> {
+      const existing = store
+        .getSnapshot()
+        .mentorProfiles.find((m) => m.id === mentorId);
+      if (existing) return structuredClone(existing);
+      const profile: MentorProfile = {
+        id: mentorId,
+        slug: mentorId,
+        name: "",
+        university: "",
+        major: "",
+        countryRegion: "",
+        biography: "",
+        services: [],
+        subjects: [],
+        educationSystems: [],
+        privatePriceUsd: 0,
+      };
+      store.mutate((draft) => {
+        draft.mentorProfiles.push(profile);
+      });
+      return structuredClone(profile);
+    },
   };
 
   const studentProfileRepository: StudentProfileRepository = {
@@ -96,6 +126,26 @@ export function createMockRepositories(store: MockDataStore): {
       });
       if (!updated) throw new Error(`Unknown student: ${studentId}`);
       return updated;
+    },
+
+    async ensure(studentId: string): Promise<StudentProfile> {
+      const existing = store
+        .getSnapshot()
+        .studentProfiles.find((s) => s.id === studentId);
+      if (existing) return structuredClone(existing);
+      const profile: StudentProfile = {
+        id: studentId,
+        fullName: "",
+        school: "",
+        yearLevel: "",
+        educationSystem: null,
+        subjects: [],
+        biography: "",
+      };
+      store.mutate((draft) => {
+        draft.studentProfiles.push(profile);
+      });
+      return structuredClone(profile);
     },
   };
 

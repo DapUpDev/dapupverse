@@ -16,12 +16,12 @@ Updated at milestone 2 (functional prototype with mock data).
   replaces the bindings in `index.ts` without changing consumers.
   `useRepositoryQuery` is the one React hook that bridges store changes to
   components.
-- `src/lib/demo-session` — the preview-identity module. The server decides
-  preview availability (`NODE_ENV === "development"` or
-  `VERCEL_ENV === "preview"`) and passes an explicit boolean to the client
-  provider; nothing browser-controlled can enable it. Clerk will replace
-  this provider in a later milestone behind the same `useDemoSession`-shaped
-  consumer surface.
+- `src/lib/auth` — the authentication boundary (milestone 4). All Clerk
+  usage is isolated here: `claims.ts` parses server-managed `publicMetadata`
+  with least-privilege fallback, `identity.ts`/`guards.ts` provide
+  server-side identity and route enforcement, and `use-auth-identity.ts`
+  gives client components a presentation-only identity. See
+  docs/authentication.md for the route-access matrix.
 - `src/components` — presentational and journey components, all consuming
   repositories and the demo session only.
 
@@ -67,13 +67,25 @@ Account type and admin capability are **separate axes**:
 - **Account type**: `student` or `mentor`. Determines the primary product experience (discovering mentors vs. receiving requests).
 - **Admin**: a capability that can be granted independently. `admin` and `mentor` are **not** the same role, and no code may assume a mentor is an admin or vice versa.
 
-## Authentication (future)
+## Authentication (implemented — Clerk)
 
-Authentication will use **Clerk**, introduced in a later milestone. Integration must be isolated behind a dedicated auth module (e.g. `src/lib/auth/`) so the rest of the application depends on our own interface, not Clerk's SDK surface. Until then, the app has no auth code at all — no fake sessions, placeholder middleware, or `isAuthenticated` flags.
+Authentication uses **Clerk** (milestone 4), isolated behind
+`src/lib/auth/` so the rest of the application depends on DapUp's own
+`AuthIdentity` interface, not Clerk's SDK surface. Public signup defaults to
+student; mentors and the independent admin capability are granted manually
+via server-managed Clerk public metadata (docs/clerk-setup.md). Route access
+is server-enforced in layouts/pages via `requireAuth` /
+`requireAccountType` / `requireAdmin`.
 
 ## Data access (future)
 
-The permanent database/backend is deliberately unselected. When chosen, all data access goes behind typed service/repository boundaries (e.g. `src/lib/services/`), so UI components never talk to a database client or HTTP API directly. Do not reuse anything from the old WeWeb/Supabase setup.
+The permanent database/backend is deliberately unselected — AWS is the
+intended direction, but no service has been chosen or implemented.
+Application data is browser-local mock data behind the typed repositories;
+real multi-user requests and messaging require backend persistence. When
+chosen, all data access stays behind these boundaries so UI components
+never talk to a database client or HTTP API directly. Supabase is not part
+of the new architecture and must not be reused from the old WeWeb setup.
 
 ## WeWeb export
 

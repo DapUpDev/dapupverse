@@ -4,31 +4,31 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useDemoSession } from "@/lib/demo-session/provider";
+import { ButtonLink } from "@/components/ui/button-link";
+import { safeInternalPath } from "@/lib/auth/redirects";
 
 /**
- * Shown when a visitor tries to connect with a mentor. The Create account /
- * Sign in actions are future-auth UI only — real authentication arrives with
- * Clerk in a later milestone, so they are intentionally inert here.
+ * Shown when a visitor tries to connect with a mentor. Links into the real
+ * Clerk sign-up/sign-in flows, carrying a validated internal return path so
+ * the connect journey resumes on the mentor page afterwards.
  */
 export function AuthRequiredDialog({
   open,
   onOpenChange,
   mentorName,
-  onPreviewAsStudent,
+  returnTo,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mentorName: string;
-  onPreviewAsStudent: () => void;
+  /** Internal path to return to after authentication. */
+  returnTo: string;
 }) {
-  const { previewEnabled } = useDemoSession();
+  const dest = safeInternalPath(returnTo) ?? "/mentors";
+  const redirect = `redirect_url=${encodeURIComponent(dest)}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,30 +41,20 @@ export function AuthRequiredDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button className="flex-1" disabled>
+          <ButtonLink className="flex-1" href={`/sign-up?${redirect}`}>
             Create account
-          </Button>
-          <Button variant="outline" className="flex-1" disabled>
+          </ButtonLink>
+          <ButtonLink
+            variant="outline"
+            className="flex-1"
+            href={`/sign-in?${redirect}`}
+          >
             Sign in
-          </Button>
+          </ButtonLink>
         </div>
         <p className="text-xs text-muted-foreground">
-          Accounts aren&rsquo;t enabled yet — sign-up and sign-in arrive in an
-          upcoming release.
+          Every new account starts as a student — it takes under a minute.
         </p>
-        {previewEnabled ? (
-          <>
-            <Separator />
-            <DialogFooter className="sm:flex-col sm:items-stretch sm:gap-2">
-              <Button variant="secondary" onClick={onPreviewAsStudent}>
-                Preview as student
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                Demo session only: continues this flow with mock data.
-              </p>
-            </DialogFooter>
-          </>
-        ) : null}
       </DialogContent>
     </Dialog>
   );

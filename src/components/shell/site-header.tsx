@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
+import { Show, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import {
   Sheet,
   SheetContent,
@@ -12,16 +14,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { RoleSwitcher } from "@/components/shell/role-switcher";
-import { navItemsForSession } from "@/components/shell/navigation";
-import { useDemoSession } from "@/lib/demo-session/provider";
+import { navItemsForIdentity } from "@/components/shell/navigation";
+import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
-  const { session } = useDemoSession();
+  const { identity } = useAuthIdentity();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const items = navItemsForSession(session);
+  const items = navItemsForIdentity(identity);
 
   const isActive = (href: string) =>
     href !== "/" && !href.includes("#")
@@ -63,7 +64,22 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <RoleSwitcher />
+          <Show when="signed-out">
+            <ButtonLink
+              variant="ghost"
+              size="sm"
+              href="/sign-in"
+              className="hidden sm:inline-flex"
+            >
+              Sign in
+            </ButtonLink>
+            <ButtonLink size="sm" href="/sign-up">
+              Create account
+            </ButtonLink>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger
               render={
@@ -98,6 +114,17 @@ export function SiteHeader() {
                       </Link>
                     </li>
                   ))}
+                  <Show when="signed-out">
+                    <li>
+                      <Link
+                        href="/sign-in"
+                        onClick={() => setMobileOpen(false)}
+                        className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                      >
+                        Sign in
+                      </Link>
+                    </li>
+                  </Show>
                 </ul>
               </nav>
             </SheetContent>

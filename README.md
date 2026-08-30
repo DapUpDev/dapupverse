@@ -1,10 +1,10 @@
 # DapUp
 
-DapUp is a mentor-discovery and connection platform. Students discover mentors, maintain a student profile, send connection requests, and message connected mentors. Mentors maintain a mentor profile, accept or reject student requests, and message students.
+DapUp is a mentor-discovery and connection platform. Students discover mentors, maintain a student profile, send connection requests, and message connected mentors. Mentors maintain a mentor profile, accept or archive pending student requests (there is no rejected state — archiving never changes what the student sees), and message students.
 
 This repository is the **clean Next.js replacement for the previous WeWeb frontend**. The old WeWeb code export is reference material only: it must remain outside version control and must never be committed, imported, or copied into this codebase.
 
-## Status: Milestone 2 — functional prototype with mock data
+## Status: Milestone 4 — real authentication, mock data
 
 The foundation (milestone 1) is Next.js App Router with strict TypeScript, a
 `src/` directory, Tailwind CSS v4, shadcn/ui, and ESLint.
@@ -24,22 +24,36 @@ journeys, running entirely on **typed, browser-local mock data**:
   conversations
 - Student and mentor profile view/edit; the mentor's price is private
   (visible only to the mentor, connected students, and admins)
-- A demo-session module with four preview identities (visitor, student,
-  mentor, mentor + admin), available **only in local development and Vercel
-  preview deployments** — production shows public pages plus a clear
-  "account access isn't enabled yet" notice and no role selector
 
-The demo session is explicitly not authentication or security. It is a
-replaceable preview mechanism that Clerk will supplant.
+Milestone 3 added the seven-color Y2K/chrome visual system
+([docs/design.md](docs/design.md)), and **milestone 4 added real
+authentication with [Clerk](https://clerk.com)**
+([docs/authentication.md](docs/authentication.md)):
 
-Intentionally **not** included yet:
+- Email/password and Google sign-in via branded `/sign-in` and `/sign-up`
+  routes (email verification codes and the Google connection are configured
+  in the Clerk Dashboard — see [docs/clerk-setup.md](docs/clerk-setup.md)).
+- Every public signup is an effective **student**; mentors and admins are
+  promoted manually through server-managed Clerk metadata. Admin is an
+  independent capability, never implied by mentor.
+- `/app/**`, `/app/requests` (mentor-only), and `/admin` (admin-only) are
+  **server-enforced** via `src/lib/auth/` guards.
 
-- **Authentication** — [Clerk](https://clerk.com) will be integrated in a later milestone, isolated behind a dedicated auth module.
-- **Backend persistence** — the permanent database and backend will be selected later; the mock repositories in `src/lib/repositories` define the typed boundaries a real backend will implement.
+**Application data is still browser-local mock data.** Authentication is
+real, but profiles, requests, and messages live in each browser's
+localStorage — they do not sync between devices or users, and real
+multi-user messaging will not work until backend persistence exists. AWS is
+the intended later backend direction, but nothing has been selected or
+implemented. Supabase is not part of the new architecture.
+
+Still intentionally **not** included:
+
+- **Backend persistence** — the mock repositories in `src/lib/repositories` define the typed boundaries a real backend will implement.
 - **Scheduling (Calendly), payments, analytics, CAPTCHA, cookie tooling** — all deferred.
-- **The final visual redesign** — milestone 3 reskins the deliberately neutral presentation without touching business logic.
 
-**No environment variables are required for this milestone.** Do not create `.env` files or invent placeholder secrets. When environment variables become necessary, document them in a tracked `.env.example` (permitted by `.gitignore`) and keep real values in untracked `.env.local`.
+**Environment variables:** copy [.env.example](.env.example) to an
+untracked `.env.local` and add the Clerk keys (`clerk init` does this
+automatically). Never commit real keys.
 
 ## Requirements
 
@@ -81,7 +95,7 @@ Do **not** deploy with the Vercel CLI. Import the GitHub repository through the 
 2. In the Vercel dashboard (DapUp's Vercel account), click **Add New… → Project**.
 3. Select **Import Git Repository** and choose this repository.
 4. Vercel auto-detects Next.js; keep the default framework preset, build command (`next build`), and output settings.
-5. Add **no environment variables** — none are required for milestone 1.
+5. Add the Clerk environment variables from [.env.example](.env.example) to the Preview and Production environments (see [docs/clerk-setup.md](docs/clerk-setup.md)).
 6. Click **Deploy**.
 
 Never commit the local `.vercel/` directory (it is ignored).

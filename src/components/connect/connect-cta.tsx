@@ -13,8 +13,8 @@ import {
   clearConnectionIntent,
   loadConnectionIntent,
   saveConnectionIntent,
-} from "@/lib/demo-session/connection-intent";
-import { useDemoSession } from "@/lib/demo-session/provider";
+} from "@/lib/connection-intent";
+import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import { isStudentProfileComplete, type Mentor } from "@/lib/domain/types";
 import {
   connectionRepository,
@@ -23,23 +23,25 @@ import {
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
 
 /**
- * The `Connect with this mentor` call to action. Behavior depends on the
- * current demo session:
+ * The `Connect with this mentor` call to action.
  *
- * - Visitor: auth-required dialog (future-auth UI), with a preview-only
- *   "Preview as student" continuation.
- * - Student with incomplete profile: detours through profile setup, keeping a
- *   typed connection intent so the flow resumes here.
+ * - Visitor: auth-required dialog linking to the real Clerk sign-up/sign-in,
+ *   with the typed connection intent preserved across authentication.
+ * - Student with incomplete profile: detours through profile setup, keeping
+ *   the intent so the flow resumes here.
  * - Student with complete profile: the request form.
  * - Existing pending/accepted/blocked request: status instead of a new form.
+ * - Mentors cannot send student connection requests.
  */
 export function ConnectCta({ mentor }: { mentor: Mentor }) {
   const router = useRouter();
-  const { session, previewEnabled, setRole } = useDemoSession();
+  const { identity } = useAuthIdentity();
   const [authOpen, setAuthOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
 
-  const studentId = session.accountType === "student" ? session.userId : null;
+  const studentId =
+    identity.accountType === "student" ? identity.dataUserId : null;
+  const returnTo = `/mentors/${mentor.slug}`;
 
   const { data: studentProfile } = useRepositoryQuery(
     () =>
@@ -71,7 +73,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
       saveConnectionIntent({
         kind: "connect-with-mentor",
         mentorSlug: mentor.slug,
-        returnTo: `/mentors/${mentor.slug}`,
+        returnTo,
       });
       toast("Finish your profile first", {
         description:
@@ -83,9 +85,9 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
     setRequestOpen(true);
   };
 
-  // Continue a stored connection intent for this mentor: open the request
-  // form when the student profile is complete, or detour through profile
-  // setup (keeping the intent) when it isn't.
+  // Continue a stored connection intent for this mentor (e.g. after
+  // returning from sign-in or profile setup): open the request form when the
+  // profile is complete, or detour through profile setup keeping the intent.
   useEffect(() => {
     if (!studentId || studentProfile === undefined) return;
     const intent = loadConnectionIntent();
@@ -100,17 +102,21 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
     router.push("/app/profile?setup=connect");
   }, [studentId, studentProfile, mentor.slug, router]);
 
-  // Mentors don't send connection requests in this demo.
-  if (session.accountType === "mentor") {
-    return previewEnabled ? (
+  // Mentors don't send student connection requests.
+  if (identity.accountType === "mentor") {
+    return (
       <p className="text-sm text-muted-foreground">
-        You&rsquo;re previewing as a mentor. Switch the preview role to
-        Student to try connecting.
+        You&rsquo;re signed in as a mentor. Students send connection requests;
+        yours arrive in{" "}
+        <Link href="/app/requests" className="underline underline-offset-4">
+          Requests
+        </Link>
+        .
       </p>
-    ) : null;
+    );
   }
 
-  if (session.role === "visitor") {
+  if (!identity.isAuthenticated) {
     return (
       <>
         <Button
@@ -119,7 +125,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
             saveConnectionIntent({
               kind: "connect-with-mentor",
               mentorSlug: mentor.slug,
-              returnTo: `/mentors/${mentor.slug}`,
+              returnTo,
             });
             setAuthOpen(true);
           }}
@@ -130,13 +136,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
           open={authOpen}
           onOpenChange={setAuthOpen}
           mentorName={mentor.name}
-          onPreviewAsStudent={() => {
-            setAuthOpen(false);
-            setRole("student");
-            toast("Previewing as student", {
-              description: "Demo session only — continuing your request.",
-            });
-          }}
+          returnTo={returnTo}
         />
       </>
     );

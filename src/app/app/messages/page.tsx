@@ -1,56 +1,23 @@
-"use client";
+import { requireAuth } from "@/lib/auth/guards";
+import { MessagesInbox } from "@/components/messages/messages-inbox";
 
-import { RequireDemoAccount } from "@/components/app/require-demo-account";
-import {
-  ThreadList,
-  useThreadList,
-} from "@/components/messages/thread-list";
-import { useDemoSession } from "@/lib/demo-session/provider";
-import { connectionRepository } from "@/lib/repositories";
-import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
-
-function MessagesInbox() {
-  const { session } = useDemoSession();
-  const userId = session.userId;
-  const { data: items, ready } = useThreadList(userId);
-  const { data: requests } = useRepositoryQuery(
-    () =>
-      userId && session.accountType === "student"
-        ? connectionRepository.listForStudent(userId)
-        : Promise.resolve([]),
-    [userId, session.accountType],
-  );
-  const hasPendingRequests = (requests ?? []).some(
-    (r) => r.state === "pending",
-  );
-
+export default async function MessagesPage() {
+  const identity = await requireAuth("/app/messages");
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <ThreadList
-        items={items}
-        ready={ready}
-        hasPendingRequests={hasPendingRequests}
-      />
-      <div className="hidden items-center justify-center rounded-lg border border-dashed p-8 lg:flex">
-        <p className="text-sm text-muted-foreground">
-          {items && items.length > 0
-            ? "Select a conversation to start reading."
-            : "Your conversations will appear here."}
-        </p>
+    <main className="mx-auto w-full max-w-5xl px-4 py-10">
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">
+        Messages
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Demo data: conversations are stored in this browser only and
+        don&rsquo;t sync between devices or accounts yet.
+      </p>
+      <div className="mt-6">
+        <MessagesInbox
+          userId={identity.dataUserId!}
+          accountType={identity.accountType ?? "student"}
+        />
       </div>
-    </div>
-  );
-}
-
-export default function MessagesPage() {
-  return (
-    <RequireDemoAccount>
-      <main className="mx-auto w-full max-w-5xl px-4 py-10">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">Messages</h1>
-        <div className="mt-6">
-          <MessagesInbox />
-        </div>
-      </main>
-    </RequireDemoAccount>
+    </main>
   );
 }

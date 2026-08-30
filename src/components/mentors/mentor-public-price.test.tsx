@@ -23,7 +23,7 @@ describe("public price invisibility", () => {
   it("the public mentor profile page shows no pricing to a visitor", async () => {
     const { container } = renderWithProviders(
       <MentorProfileView slug="jae-park" />,
-      { previewEnabled: true },
+      { role: "visitor" },
     );
     await screen.findByRole("heading", { name: "Jae Park" });
     expect(container.textContent).not.toMatch(/\$|\bprice\b|\brate\b|\busd\b/i);

@@ -14,7 +14,7 @@ import type {
   StudentProfile,
 } from "@/lib/domain/types";
 
-/** Fixed identity ids used by the demo-session module. */
+/** Fixed identity ids used by tests and optional mentorProfileId mappings. */
 export const DEMO_STUDENT_ID = "student-demo";
 export const DEMO_MENTOR_ID = "mentor-jae";
 export const DEMO_ADMIN_MENTOR_ID = "mentor-mira";

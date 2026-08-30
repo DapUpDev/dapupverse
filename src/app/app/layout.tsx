@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
-import { AccountAccessNotice } from "@/components/app/account-access-notice";
-import { isPreviewEnvironment } from "@/lib/demo-session/preview";
+import { requireAuth } from "@/lib/auth/guards";
 
 /**
- * Gate for the future authenticated area. On production (no preview
- * environment), account pages clearly state that access is not enabled yet —
- * there is no role selection and no fake authenticated experience.
+ * Server-enforced gate for the authenticated area. Individual pages add
+ * their own account-type/capability checks; this layout guarantees no
+ * signed-out visitor ever sees /app content.
  */
-export default function AppAreaLayout({ children }: { children: ReactNode }) {
-  if (!isPreviewEnvironment()) {
-    return <AccountAccessNotice />;
-  }
+export default async function AppAreaLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  await requireAuth("/app");
   return <>{children}</>;
 }

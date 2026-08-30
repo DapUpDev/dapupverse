@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
-import { AccountAccessNotice } from "@/components/app/account-access-notice";
-import { isPreviewEnvironment } from "@/lib/demo-session/preview";
+import { requireAdmin } from "@/lib/auth/guards";
 
-/** Same production gate as /app: no accounts exist yet in production. */
-export default function AdminAreaLayout({ children }: { children: ReactNode }) {
-  if (!isPreviewEnvironment()) {
-    return <AccountAccessNotice />;
-  }
+/**
+ * Server-enforced admin gate. Access requires the explicit isAdmin
+ * capability — being a mentor is never enough on its own.
+ */
+export default async function AdminAreaLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  await requireAdmin("/admin");
   return <>{children}</>;
 }

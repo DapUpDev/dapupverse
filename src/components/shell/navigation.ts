@@ -1,8 +1,14 @@
-import type { DemoSession } from "@/lib/demo-session/types";
+import type { AccountType, UserCapabilities } from "@/lib/domain/types";
 
 export type NavItem = {
   href: string;
   label: string;
+};
+
+/** The slice of an identity that navigation depends on. */
+export type NavIdentity = {
+  accountType: AccountType | null;
+  capabilities: UserCapabilities;
 };
 
 /**
@@ -10,10 +16,11 @@ export type NavItem = {
  * identity; there are no duplicated student/mentor sites.
  *
  * The Admin item is gated on the explicit `isAdmin` capability — never on
- * the mentor account type.
+ * the mentor account type. Navigation is presentation only; real
+ * authorization happens on the server (src/lib/auth/guards.ts).
  */
-export function navItemsForSession(session: DemoSession): NavItem[] {
-  if (session.accountType === "student") {
+export function navItemsForIdentity(identity: NavIdentity): NavItem[] {
+  if (identity.accountType === "student") {
     return [
       { href: "/mentors", label: "Find Mentors" },
       { href: "/app/connections", label: "Connections" },
@@ -21,14 +28,14 @@ export function navItemsForSession(session: DemoSession): NavItem[] {
       { href: "/app/profile", label: "Profile" },
     ];
   }
-  if (session.accountType === "mentor") {
+  if (identity.accountType === "mentor") {
     const items: NavItem[] = [
       { href: "/app/requests", label: "Requests" },
       { href: "/app/connections", label: "Connections" },
       { href: "/app/messages", label: "Messages" },
       { href: "/app/profile", label: "Profile" },
     ];
-    if (session.capabilities.isAdmin) {
+    if (identity.capabilities.isAdmin) {
       items.push({ href: "/admin", label: "Admin" });
     }
     return items;

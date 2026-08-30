@@ -32,11 +32,19 @@ export interface MentorRepository {
    */
   getPrivateProfile(mentorId: string): Promise<MentorProfile | null>;
   updateProfile(input: UpdateMentorProfileInput): Promise<MentorProfile>;
+  /**
+   * Create an incomplete browser-local mentor profile if none exists (no-op
+   * otherwise). Used for promoted mentors without a seeded-profile mapping —
+   * they must never borrow another mentor's identity.
+   */
+  ensureProfile(mentorId: string): Promise<MentorProfile>;
 }
 
 export interface StudentProfileRepository {
   get(studentId: string): Promise<StudentProfile | null>;
   update(input: UpdateStudentProfileInput): Promise<StudentProfile>;
+  /** Create an incomplete browser-local profile if none exists (no-op otherwise). */
+  ensure(studentId: string): Promise<StudentProfile>;
 }
 
 export interface ConnectionRepository {

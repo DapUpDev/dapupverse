@@ -1,7 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Load local Clerk development keys for the dev server and global setup.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // Absent in clean environments; Clerk-backed tests will report the gap.
+}
+
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

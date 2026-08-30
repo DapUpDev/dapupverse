@@ -1,14 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDemoSession } from "@/lib/demo-session/provider";
 import { SEED_MENTOR_PROFILES } from "@/lib/data/seed";
 import { mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
@@ -73,29 +66,10 @@ function AdminMentorTable() {
 }
 
 /**
- * Admin-capability placeholder. Access is gated on the explicit `isAdmin`
- * capability — being a mentor is never enough on its own.
+ * Admin tools placeholder. Access is enforced server-side in the /admin
+ * layout via the explicit isAdmin capability.
  */
 export default function AdminPage() {
-  const { session } = useDemoSession();
-
-  if (!session.capabilities.isAdmin) {
-    return (
-      <main className="flex flex-1 items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Admin capability required</CardTitle>
-            <CardDescription>
-              This area is available only to users with admin capability. In
-              the demo, switch the preview role to &ldquo;Mentor +
-              admin&rdquo;.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </main>
-    );
-  }
-
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10">
       <span aria-hidden="true" className="tech-label">

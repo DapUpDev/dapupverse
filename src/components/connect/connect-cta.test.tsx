@@ -6,7 +6,7 @@ import { DEMO_STUDENT_ID, SEED_MENTOR_PROFILES } from "@/lib/data/seed";
 import {
   loadConnectionIntent,
   saveConnectionIntent,
-} from "@/lib/demo-session/connection-intent";
+} from "@/lib/connection-intent";
 import { studentProfileRepository } from "@/lib/repositories";
 import { toPublicMentor } from "@/lib/repositories/mock";
 import { routerMock } from "@/test/router-mock";
@@ -24,12 +24,10 @@ async function completeDemoStudentProfile() {
   });
 }
 
-describe("ConnectCta — visitor", () => {
-  it("shows the auth-required dialog with future-auth actions", async () => {
+describe("ConnectCta — signed-out visitor", () => {
+  it("shows the auth-required dialog with working sign-in/sign-up actions", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ConnectCta mentor={mentor} />, {
-      previewEnabled: true,
-    });
+    renderWithProviders(<ConnectCta mentor={mentor} />, { role: "visitor" });
 
     await user.click(
       screen.getByRole("button", { name: /connect with this mentor/i }),
@@ -38,31 +36,25 @@ describe("ConnectCta — visitor", () => {
     expect(
       await screen.findByText(/you.ll need an account to connect/i),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /create account/i }),
-    ).toBeDisabled();
-    expect(screen.getByRole("button", { name: /sign in/i })).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: /preview as student/i }),
-    ).toBeInTheDocument();
-  });
 
-  it("omits the preview continuation when preview is disabled (production)", async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<ConnectCta mentor={mentor} />, {
-      previewEnabled: false,
-    });
-
-    await user.click(
-      screen.getByRole("button", { name: /connect with this mentor/i }),
+    const signUp = screen.getByRole("link", { name: /create account/i });
+    const signIn = screen.getByRole("link", { name: /sign in/i });
+    const expectedRedirect = encodeURIComponent(`/mentors/${mentor.slug}`);
+    expect(signUp).toHaveAttribute(
+      "href",
+      `/sign-up?redirect_url=${expectedRedirect}`,
+    );
+    expect(signIn).toHaveAttribute(
+      "href",
+      `/sign-in?redirect_url=${expectedRedirect}`,
     );
 
-    expect(
-      await screen.findByText(/you.ll need an account to connect/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /preview as student/i }),
-    ).not.toBeInTheDocument();
+    // The typed connection intent is preserved across authentication.
+    expect(loadConnectionIntent()).toEqual({
+      kind: "connect-with-mentor",
+      mentorSlug: mentor.slug,
+      returnTo: `/mentors/${mentor.slug}`,
+    });
   });
 });
 
@@ -116,5 +108,17 @@ describe("ConnectCta — student profile gating and intent", () => {
       await screen.findByRole("button", { name: /send request/i }),
     ).toBeInTheDocument();
     expect(routerMock.push).not.toHaveBeenCalled();
+  });
+});
+
+describe("ConnectCta — mentors cannot send student requests", () => {
+  it("shows an explanation instead of a connect action", () => {
+    renderWithProviders(<ConnectCta mentor={mentor} />, { role: "mentor" });
+    expect(
+      screen.queryByRole("button", { name: /connect with this mentor/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/signed in as a mentor/i),
+    ).toBeInTheDocument();
   });
 });

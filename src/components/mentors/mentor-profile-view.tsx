@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectCta } from "@/components/connect/connect-cta";
 import { mentorInitials } from "@/components/mentors/mentor-card";
-import { useDemoSession } from "@/lib/demo-session/provider";
+import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import {
   connectionRepository,
   mentorRepository,
@@ -71,13 +71,14 @@ export function ConnectedStudentPanel({
 }
 
 export function MentorProfileView({ slug }: { slug: string }) {
-  const { session } = useDemoSession();
+  const { identity } = useAuthIdentity();
   const { data: mentor, ready } = useRepositoryQuery(
     () => mentorRepository.getBySlug(slug),
     [slug],
   );
 
-  const studentId = session.accountType === "student" ? session.userId : null;
+  const studentId =
+    identity.accountType === "student" ? identity.dataUserId : null;
   const { data: activeRequest } = useRepositoryQuery(
     () =>
       studentId && mentor
