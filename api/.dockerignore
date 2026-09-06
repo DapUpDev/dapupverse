@@ -1,0 +1,13 @@
+# Never ship local environments, secrets, tests, or tooling into the image.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+tests/
+*.md
+.git/
+.gitignore
+Dockerfile
+.dockerignore

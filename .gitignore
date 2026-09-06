@@ -48,6 +48,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# python (api/)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# terraform (infra/) — state and provider binaries never belong in git
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.auto.tfvars.example
+.terraform.lock.hcl.bak
+
 # WeWeb export (read-only reference material — must never be committed)
 DapUp-main*.zip
 /weweb-export/
