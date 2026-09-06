@@ -1,0 +1,68 @@
+variable "project" {
+  description = "Project name used as a resource-name prefix."
+  type        = string
+  default     = "dapup"
+}
+
+variable "environment" {
+  description = "Deployment environment name."
+  type        = string
+  default     = "prod"
+}
+
+variable "aws_region" {
+  type    = string
+  default = "us-west-2"
+}
+
+variable "image_tag" {
+  description = <<-EOT
+    ECR image tag (Git commit SHA) to deploy. Ownership contract:
+    - Set it only for the initial bootstrap deployment (Stage 2).
+    - Leave it null afterwards: Terraform then reads the image that is
+      currently deployed (registered by the GitHub Actions pipeline) and
+      carries it forward, so a Terraform apply can never roll back a
+      pipeline deployment.
+  EOT
+  type        = string
+  default     = null
+}
+
+variable "container_port" {
+  type    = number
+  default = 8000
+}
+
+variable "task_cpu" {
+  description = "Fargate CPU units (256 = 0.25 vCPU)."
+  type        = number
+  default     = 256
+}
+
+variable "task_memory" {
+  description = "Fargate memory in MiB."
+  type        = number
+  default     = 512
+}
+
+variable "desired_count" {
+  type    = number
+  default = 1
+}
+
+variable "api_domain" {
+  description = "Public hostname for the API (Stage 3)."
+  type        = string
+  default     = "api.dapup.space"
+}
+
+variable "cors_allowed_origins" {
+  description = "Browser origins allowed to call the API (the production frontend)."
+  type        = list(string)
+  default     = ["https://www.dapup.space", "https://dapup.space"]
+}
+
+variable "log_retention_days" {
+  type    = number
+  default = 30
+}
