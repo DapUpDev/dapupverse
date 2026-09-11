@@ -54,6 +54,12 @@ that happens, re-request it with
 stable per domain and account, so the DNS record does not change. Never
 delete the validation record: ACM re-checks it at every renewal.
 
+Vercel also adds CAA records to the zone (`letsencrypt.org`, `pki.goog`,
+`sectigo.com`) which forbid every other certificate authority. ACM then fails
+immediately with `CAA_ERROR`. Add one more CAA record at the zone apex —
+flags `0`, tag `issue`, value `amazon.com` — and re-request the certificate as
+above. Leave Vercel's own CAA records alone; they cover the frontend.
+
 ## Image ownership contract (Terraform vs. GitHub Actions)
 
 - `var.image_tag` is set **only** for the bootstrap deployment.
