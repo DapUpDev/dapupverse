@@ -50,3 +50,9 @@ output "dns_records_to_add" {
 output "github_deploy_role_arn" {
   value = aws_iam_role.github_deploy.arn
 }
+
+# The exact `sub` claim the deploy role trusts; compare against a failing
+# run's token if STS ever answers "Not authorized".
+output "github_oidc_subject" {
+  value = local.github_oidc_subject
+}

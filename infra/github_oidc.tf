@@ -26,14 +26,24 @@ data "aws_iam_policy_document" "github_assume" {
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
     }
-    # Exact match: this repo, this branch. A fork, a PR, or another branch
-    # produces a different `sub` and is refused by STS.
+    # Exact match: this repo (by immutable numeric IDs, see variables.tf),
+    # this branch. A fork, a PR, another branch, or a re-created repo with
+    # the same name produces a different `sub` and is refused by STS.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/${var.github_branch}"]
+      values   = [local.github_oidc_subject]
     }
   }
+}
+
+locals {
+  github_owner = split("/", var.github_repo)[0]
+  github_name  = split("/", var.github_repo)[1]
+  github_oidc_subject = format(
+    "repo:%s@%d/%s@%d:ref:refs/heads/%s",
+    local.github_owner, var.github_owner_id, local.github_name, var.github_repo_id, var.github_branch,
+  )
 }
 
 resource "aws_iam_role" "github_deploy" {
