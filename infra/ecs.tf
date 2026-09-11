@@ -122,5 +122,18 @@ resource "aws_ecs_service" "api" {
     assign_public_ip = true # required to reach ECR/CloudWatch without a NAT gateway
   }
 
-  depends_on = [aws_iam_role_policy_attachment.task_execution_managed]
+  load_balancer {
+    target_group_arn = aws_lb_target_group.api.arn
+    container_name   = local.container_name
+    container_port   = var.container_port
+  }
+
+  # Give a fresh task time to boot before ALB health checks can mark it
+  # unhealthy and trigger a replacement.
+  health_check_grace_period_seconds = 60
+
+  depends_on = [
+    aws_iam_role_policy_attachment.task_execution_managed,
+    aws_lb_listener.http,
+  ]
 }

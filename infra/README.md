@@ -29,7 +29,8 @@ Every apply has one purpose. Always run `terraform fmt -check`,
 | 1 | Create the registry so an image can exist (bootstrap-only targeted apply) | `terraform apply -target=aws_ecr_repository.api` |
 | — | Build + push the image tagged with the Git SHA (see below) | `docker build/push` |
 | 2 | Create everything else and deploy that exact image | `terraform apply -var image_tag=<sha>` |
-| 3 | (Stage 3) HTTPS front door: ALB, certificate, DNS | `terraform apply` |
+| 3a | (Stage 3) ALB over plain HTTP + request the ACM certificate; then add the two records from `terraform output dns_records_to_add` in Vercel DNS | `terraform apply` |
+| 3b | (Stage 3) Validate the certificate, add the 443 listener, redirect 80→443 | `terraform apply -var enable_https=true` |
 | 4 | (Stage 4) GitHub OIDC deploy role | `terraform apply` |
 
 ### Image push (Stage 2, manual)
@@ -41,6 +42,17 @@ aws ecr get-login-password --region us-west-2 | docker login --username AWS --pa
 docker build --platform linux/amd64 -t "$REPO:$SHA" ./api
 docker push "$REPO:$SHA"
 ```
+
+### DNS (Stage 3, manual)
+
+`dapup.space` is hosted at Vercel, not Route 53, so Terraform outputs the two
+CNAME records instead of creating them (Vercel → Domains → dapup.space → DNS
+Records; enter names relative to the zone, e.g. `api`). ACM abandons an
+unvalidated request after **72 hours** (status `VALIDATION_TIMED_OUT`); if
+that happens, re-request it with
+`terraform apply -replace=aws_acm_certificate.api` — the validation CNAME is
+stable per domain and account, so the DNS record does not change. Never
+delete the validation record: ACM re-checks it at every renewal.
 
 ## Image ownership contract (Terraform vs. GitHub Actions)
 

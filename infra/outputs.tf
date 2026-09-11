@@ -21,3 +21,27 @@ output "deployed_image" {
 output "log_group_name" {
   value = aws_cloudwatch_log_group.api.name
 }
+
+output "alb_dns_name" {
+  value = aws_lb.api.dns_name
+}
+
+output "api_url" {
+  value = "https://${var.api_domain}"
+}
+
+# Records the operator must create in Vercel DNS (dapup.space zone).
+output "dns_records_to_add" {
+  value = {
+    certificate_validation = {
+      type  = local.acm_validation.resource_record_type
+      name  = local.acm_validation.resource_record_name
+      value = local.acm_validation.resource_record_value
+    }
+    api_hostname = {
+      type  = "CNAME"
+      name  = var.api_domain
+      value = aws_lb.api.dns_name
+    }
+  }
+}
