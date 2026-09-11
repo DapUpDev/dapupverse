@@ -66,3 +66,16 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+
+variable "enable_https" {
+  description = <<-EOT
+    Stage 3 switch. false: ALB serves plain HTTP for verification while the
+    ACM certificate awaits DNS validation. true (after the validation CNAME
+    exists in Vercel DNS): validate the certificate, add the 443 listener,
+    and turn port 80 into a redirect to HTTPS.
+    Default is true (steady state since Stage 3b); set false only when
+    bootstrapping a new environment before its DNS records exist.
+  EOT
+  type        = bool
+  default     = true
+}
