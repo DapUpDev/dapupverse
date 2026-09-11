@@ -73,7 +73,9 @@ variable "enable_https" {
     ACM certificate awaits DNS validation. true (after the validation CNAME
     exists in Vercel DNS): validate the certificate, add the 443 listener,
     and turn port 80 into a redirect to HTTPS.
+    Default is true (steady state since Stage 3b); set false only when
+    bootstrapping a new environment before its DNS records exist.
   EOT
   type        = bool
-  default     = false
+  default     = true
 }
