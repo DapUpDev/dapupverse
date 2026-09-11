@@ -91,7 +91,9 @@ smoke-test `https://api.dapup.space/health` for the new version.
 - Terraform sets `track_latest = true` on the task definition, so revisions
   registered by the pipeline are read as current state, not drift; combined
   with the ownership contract below, `terraform plan` stays a no-op after a
-  deploy.
+  deploy. The workflow copies the current revision's tags forward
+  (`--include TAGS`) — the provider's `default_tags` apply to task
+  definitions too, and an untagged revision shows up as tag drift.
 - Manual redeploy of the current commit: Actions → Deploy API → Run workflow.
 
 ## Verification

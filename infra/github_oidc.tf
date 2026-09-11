@@ -90,6 +90,19 @@ data "aws_iam_policy_document" "github_deploy" {
     resources = ["*"]
   }
 
+  # Registering a revision *with tags* additionally needs TagResource, but
+  # only as part of that registration — not free-standing tag edits.
+  statement {
+    sid       = "TagNewTaskDefinitions"
+    actions   = ["ecs:TagResource"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "ecs:CreateAction"
+      values   = ["RegisterTaskDefinition"]
+    }
+  }
+
   statement {
     sid = "UpdateApiService"
     actions = [

@@ -4,9 +4,10 @@
 #   - Terraform owns the task definition's SHAPE (cpu, memory, env, roles,
 #     health check, logging) and everything around it.
 #   - This workflow owns only the IMAGE: it downloads the current task
-#     definition, swaps the image (and APP_VERSION) and registers a new
-#     revision. It never edits any other field, so a later `terraform plan`
-#     is a no-op (`track_latest = true` on the task definition).
+#     definition (including its tags), swaps the image (and APP_VERSION)
+#     and registers a new revision. It never edits any other field, so a
+#     later `terraform plan` is a no-op (`track_latest = true` on the task
+#     definition).
 #
 # Auth: GitHub OIDC -> STS AssumeRoleWithWebIdentity. No AWS keys stored in
 # GitHub. The role's trust policy only accepts tokens minted for this
@@ -94,11 +95,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # --include TAGS + the jq merge carry Terraform's tags onto the new
+      # revision; without them the revision is untagged and `terraform plan`
+      # reports tag drift after every deploy.
       - name: Download the current task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition "$TASK_FAMILY" \
-            --query taskDefinition > task-definition.json
+            --task-definition "$TASK_FAMILY" --include TAGS \
+            --query '{taskDefinition: taskDefinition, tags: tags}' \
+            | jq '.taskDefinition + {tags: .tags}' > task-definition.json
 
       - name: Swap in the new image
         id: render
