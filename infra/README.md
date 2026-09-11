@@ -78,7 +78,13 @@ image and `APP_VERSION` changed → `UpdateService` and wait for stability →
 smoke-test `https://api.dapup.space/health` for the new version.
 
 - No AWS keys in GitHub. The role `dapup-prod-github-deploy` trusts only
-  tokens whose subject is `repo:DapUpDev/dapupverse:ref:refs/heads/main`.
+  tokens whose subject is exactly `terraform output github_oidc_subject`
+  (`repo:DapUpDev@<owner-id>/dapupverse@<repo-id>:ref:refs/heads/main`).
+  This repo has GitHub's *immutable subject* OIDC setting on, so the claim
+  carries numeric IDs; the name-only form `repo:DapUpDev/dapupverse:...`
+  never matches and STS answers "Not authorized to perform
+  sts:AssumeRoleWithWebIdentity". Check the repo's setting with
+  `gh api repos/DapUpDev/dapupverse/actions/oidc/customization/sub`.
 - The role can push to one ECR repository, register task definitions, update
   one service, and pass only the two task roles to ECS. It cannot touch the
   ALB, IAM, networking, or state.
