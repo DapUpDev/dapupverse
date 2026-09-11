@@ -79,3 +79,15 @@ variable "enable_https" {
   type        = bool
   default     = true
 }
+
+variable "github_repo" {
+  description = "GitHub repository (owner/name) allowed to assume the deploy role."
+  type        = string
+  default     = "DapUpDev/dapupverse"
+}
+
+variable "github_branch" {
+  description = "The only branch whose workflow runs may deploy."
+  type        = string
+  default     = "main"
+}

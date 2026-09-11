@@ -54,6 +54,11 @@ resource "aws_ecs_task_definition" "api" {
   execution_role_arn       = aws_iam_role.task_execution.arn
   task_role_arn            = aws_iam_role.task.arn
 
+  # The pipeline registers new revisions of this family (same shape, new
+  # image). Refresh this resource from the latest ACTIVE revision so those
+  # revisions are recognised as the current state rather than drift.
+  track_latest = true
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64" # images are built for linux/amd64

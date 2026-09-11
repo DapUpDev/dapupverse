@@ -31,7 +31,7 @@ Every apply has one purpose. Always run `terraform fmt -check`,
 | 2 | Create everything else and deploy that exact image | `terraform apply -var image_tag=<sha>` |
 | 3a | (Stage 3) ALB over plain HTTP + request the ACM certificate; then add the two records from `terraform output dns_records_to_add` in Vercel DNS | `terraform apply` |
 | 3b | (Stage 3) Validate the certificate, add the 443 listener, redirect 80→443 | `terraform apply -var enable_https=true` |
-| 4 | (Stage 4) GitHub OIDC deploy role | `terraform apply` |
+| 4 | (Stage 4) GitHub OIDC provider + least-privilege deploy role | `terraform apply` |
 
 ### Image push (Stage 2, manual)
 
@@ -68,6 +68,25 @@ above. Leave Vercel's own CAA records alone; they cover the frontend.
   carries it forward. Terraform applies change task *shape* — CPU, memory,
   environment, roles — but never the image, so an apply cannot roll back a
   pipeline deployment. The pipeline changes only the image.
+
+## Deploy pipeline (Stage 4)
+
+`.github/workflows/deploy-api.yml` runs on every push to `main` that touches
+`api/`: unit tests → OIDC assume-role → build `linux/amd64` → push
+`dapup-api:<12-char sha>` → register a task-definition revision with only the
+image and `APP_VERSION` changed → `UpdateService` and wait for stability →
+smoke-test `https://api.dapup.space/health` for the new version.
+
+- No AWS keys in GitHub. The role `dapup-prod-github-deploy` trusts only
+  tokens whose subject is `repo:DapUpDev/dapupverse:ref:refs/heads/main`.
+- The role can push to one ECR repository, register task definitions, update
+  one service, and pass only the two task roles to ECS. It cannot touch the
+  ALB, IAM, networking, or state.
+- Terraform sets `track_latest = true` on the task definition, so revisions
+  registered by the pipeline are read as current state, not drift; combined
+  with the ownership contract below, `terraform plan` stays a no-op after a
+  deploy.
+- Manual redeploy of the current commit: Actions → Deploy API → Run workflow.
 
 ## Verification
 
