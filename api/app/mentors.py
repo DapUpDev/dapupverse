@@ -206,9 +206,18 @@ def get_private_profile(
     user: Annotated[Principal, Depends(current_user)],
     session: Annotated[Session, Depends(get_session)],
 ) -> MentorPrivate:
-    """The mentor themself or an admin. Anyone else gets 403 whether or not
-    the mentor exists, so the endpoint cannot be used to enumerate ids."""
-    if user.user_id != mentor_id and not user.is_admin:
+    """The mentor themself, an admin, or a student with an ACCEPTED
+    connection to this mentor (the only place a student ever sees the
+    price). Anyone else gets 403 whether or not the mentor exists, so the
+    endpoint cannot be used to enumerate ids."""
+    from app.connections import has_accepted_connection  # local import: connections imports this module
+
+    allowed = (
+        user.user_id == mentor_id
+        or user.is_admin
+        or has_accepted_connection(session, student_id=user.user_id, mentor_id=mentor_id)
+    )
+    if not allowed:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Not allowed.")
     row = session.get(MentorProfile, mentor_id)
     if row is None:
