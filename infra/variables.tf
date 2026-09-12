@@ -109,3 +109,9 @@ variable "github_branch" {
   type        = string
   default     = "main"
 }
+
+variable "az_count" {
+  description = "Zones the load balancer and tasks span. 2 is the ALB minimum; each zone adds a billed public IPv4 address."
+  type        = number
+  default     = 2
+}
