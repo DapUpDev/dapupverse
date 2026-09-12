@@ -1,33 +1,23 @@
-resource "aws_ecr_repository" "api" {
-  name = "${var.project}-api"
+# The registry moved to infra/foundation (it is shared by every service,
+# so it belongs in the foundation stack). These `removed` blocks make the
+# next apply drop the two resources from THIS stack's state without
+# destroying them; infra/foundation/import-ecr.tf adopts them. The data
+# source below keeps the rest of this stack reading the same repository.
 
-  # Tags are commit SHAs and must never be overwritten: an immutable tag is
-  # the guarantee that "deployed sha X" means exactly one image forever.
-  image_tag_mutability = "IMMUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  encryption_configuration {
-    encryption_type = "AES256"
+removed {
+  from = aws_ecr_repository.api
+  lifecycle {
+    destroy = false
   }
 }
 
-# Keep the registry small: the last 20 images are plenty for rollbacks.
-resource "aws_ecr_lifecycle_policy" "api" {
-  repository = aws_ecr_repository.api.name
+removed {
+  from = aws_ecr_lifecycle_policy.api
+  lifecycle {
+    destroy = false
+  }
+}
 
-  policy = jsonencode({
-    rules = [{
-      rulePriority = 1
-      description  = "Keep the 20 most recent images"
-      selection = {
-        tagStatus   = "any"
-        countType   = "imageCountMoreThan"
-        countNumber = 20
-      }
-      action = { type = "expire" }
-    }]
-  })
+data "aws_ecr_repository" "api" {
+  name = "${var.project}-api"
 }

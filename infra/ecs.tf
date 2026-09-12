@@ -38,7 +38,7 @@ data "aws_ecs_container_definition" "current" {
 locals {
   image = (
     var.image_tag != null
-    ? "${aws_ecr_repository.api.repository_url}:${var.image_tag}"
+    ? "${data.aws_ecr_repository.api.repository_url}:${var.image_tag}"
     : data.aws_ecs_container_definition.current[0].image
   )
   # APP_VERSION mirrors the tag portion of the image so /health reports it.

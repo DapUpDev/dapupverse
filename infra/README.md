@@ -26,7 +26,7 @@ Every apply has one purpose. Always run `terraform fmt -check`,
 
 | # | Purpose | Command |
 | --- | --- | --- |
-| 1 | Create the registry so an image can exist (bootstrap-only targeted apply) | `terraform apply -target=aws_ecr_repository.api` |
+| 1 | Registry `dapup-api` — now owned by `infra/foundation` (adopted via import/removed blocks; this stack reads it through a data source) | `terraform -chdir=infra/foundation apply` |
 | — | Build + push the image tagged with the Git SHA (see below) | `docker build/push` |
 | 2 | Create everything else and deploy that exact image | `terraform apply -var image_tag=<sha>` |
 | 3a | (Stage 3) ALB over plain HTTP + request the ACM certificate; then add the two records from `terraform output dns_records_to_add` in Vercel DNS | `terraform apply` |
@@ -59,6 +59,14 @@ Vercel also adds CAA records to the zone (`letsencrypt.org`, `pki.goog`,
 immediately with `CAA_ERROR`. Add one more CAA record at the zone apex —
 flags `0`, tag `issue`, value `amazon.com` — and re-request the certificate as
 above. Leave Vercel's own CAA records alone; they cover the frontend.
+
+## Relationship to infra/foundation
+
+`infra/foundation` owns the shared layer (VPC, RDS, S3, ECR, secrets,
+bastion) under its own state key. This stack reads the registry through
+`data.aws_ecr_repository.api`; when the ECS service moves into the
+foundation VPC it will read subnets, the database secret ARN, and the RDS
+security group from the foundation's outputs the same way.
 
 ## Image ownership contract (Terraform vs. GitHub Actions)
 
