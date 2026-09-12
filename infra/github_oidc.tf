@@ -75,7 +75,7 @@ data "aws_iam_policy_document" "github_deploy" {
       "ecr:PutImage",
       "ecr:DescribeImages",
     ]
-    resources = [aws_ecr_repository.api.arn]
+    resources = [data.aws_ecr_repository.api.arn]
   }
 
   # Task definitions are not resource-scoped by AWS for Describe/Register;

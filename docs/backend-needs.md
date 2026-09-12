@@ -136,7 +136,7 @@ out-of-band so it never lands in Terraform state.
 
 - **Authentication of API calls**: the frontend sends Clerk's session JWT; FastAPI verifies it against Clerk's JWKS and reads `account_type`/`is_admin` from `users`, not from the token, so role changes take effect immediately.
 - **Authorization lives in the API**: price visibility, thread membership, request state transitions. The frontend's guards remain presentation only, exactly as `docs/authentication.md` says.
-- **Networking**: RDS gets its own security group that accepts 5432 only from the ECS task security group, the same group-to-group pattern the ALB uses.
+- **Networking**: RDS lives in the private subnets of the foundation VPC (`infra/foundation`), which is peered with the default VPC where the API runs. Peering is free, so the API stays put and the load balancer is never recreated. RDS's security group accepts 5432 only from the API task security group across the peering, the same group-to-group pattern the ALB uses.
 - **Observability**: CloudWatch logs (exists), plus alarms on ALB 5xx, task count, queue depth, and DLQ non-empty. Structured JSON logs with `request_id` and `user_id`.
 - **Rough incremental cost**: RDS `db.t4g.micro` ~$13/mo, Secrets Manager ~$0.40 per secret/mo, S3 and SQS and EventBridge under $1/mo at this scale, second Fargate service ~$9/mo, Bedrock per token.
 
