@@ -89,10 +89,14 @@ is set (Vercel), a repository is bound to its HTTP adapter; otherwise to the
 browser-local mock (local development, unit tests, e2e). Repositories move
 one at a time:
 
-| Repository | Binding today |
-| --- | --- |
-| `mentorRepository` | HTTP (`http-mentor.ts`): directory, detail, the mentor's own profile |
-| `studentProfileRepository`, `connectionRepository`, `messageRepository` | browser-local mock, still |
+| Repository | HTTP adapter | API routes |
+| --- | --- | --- |
+| `mentorRepository` | `http-mentor.ts` | `/mentors`, `/mentors/{slug}`, `/mentors/{id}/private`, `/me/mentor-profile` |
+| `studentProfileRepository` | `http-student-profile.ts` | `/me/student-profile`, `/students/{id}/profile` |
+| `connectionRepository` | `http-connection.ts` | `/connections`, `/connections/{id}/{accept,archive,unarchive,disconnect,block}`, `/connections/active` |
+| `messageRepository` | `http-message.ts` | `/threads`, `/threads/{id}/{messages,read,unread}` |
+
+Every screen reads and writes through the API when the base URL is set.
 
 The Clerk session token travels as `Authorization: Bearer` and the API
 verifies it itself (`api/README.md`); authorization decisions such as who

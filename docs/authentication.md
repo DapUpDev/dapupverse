@@ -77,19 +77,15 @@ Server guards redirect signed-out users through `/sign-in` with a validated
 internal `redirect_url` (`safeInternalPath` prevents open redirects).
 Client-side role rendering (navigation, CTAs) is presentation only.
 
-## Known limitations (browser-local mock data)
+## Data and authorization
 
-Authentication is real; application data is not. Profiles, requests,
-connections, and messages live in this browser's localStorage only:
+In production every repository talks to the DapUp API (`api/`), which
+verifies the Clerk session token itself and enforces authorization: who
+may see a mentor's price, who may read a student's profile, who may act
+on a connection, who may read a thread. The frontend's guards remain
+presentation and routing only.
 
-- Nothing syncs between devices, browsers, or real users.
-- Thread-participant authorization is a mock-layer check, not
-  production-grade security; Clerk does not protect browser-local records.
-- Clearing browser storage erases demo data but never affects the Clerk
-  account or its metadata.
-- The e2e suite exploits this deliberately: test users share one browser's
-  store to simulate both sides of a connection.
-
-The repository interfaces in `src/lib/repositories` are unchanged so a
-later real backend (AWS direction; nothing selected yet) can replace the
-mock bindings. Supabase is not part of the new architecture.
+The browser-local mock is still the binding for local development, unit
+tests, and the e2e suite (which deliberately shares one browser's store
+between test users to play both sides of a connection). Clearing browser
+storage there erases demo data but never touches the Clerk account.

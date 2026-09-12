@@ -16,9 +16,18 @@ for the infrastructure and the deploy pipeline.
 | `GET /me/mentor-profile` | token; mentor account | The caller's own private profile, 404 before it exists. |
 | `PUT /me/mentor-profile` | token; mentor account | Create-if-missing then apply the given fields (partial). An empty body just ensures the row. The slug is minted from the first real name and never changes. |
 
-Who is a mentor comes from the session token's `metadata` claim (see
-Authentication below), so the Clerk Dashboard session-token setting is a
-prerequisite for any mentor write.
+| `GET`/`PUT /me/student-profile` | token; student account | The caller's own profile; create-if-missing then partial update. |
+| `GET /students/{id}/profile` | token | The student themself, an admin, or a mentor that student has sent a request to. |
+| `POST /connections` | token; student with a complete profile | Send a request. `409 duplicate_request`, `403 blocked_pair`. |
+| `GET /connections`, `GET /connections/{id}`, `GET /connections/active?mentorId=` | token | Mine (either side); one, participants only; my active request to one mentor. |
+| `POST /connections/{id}/accept` · `archive` · `unarchive` · `disconnect` · `block` | token | Lifecycle. Accept (addressed mentor) creates the thread; archive is a mentor-only inbox flag; disconnect by either party; block by the mentor. No reject exists. |
+| `GET /threads`, `GET /threads/{id}` | token | My conversations; participants only. |
+| `GET`/`POST /threads/{id}/messages` | token; participants | History; send (`409 messaging_unavailable` once the connection has ended). |
+| `POST /threads/{id}/read`, `GET /threads/{id}/unread` | token; participants | Read receipt; unread count. |
+
+Who is a mentor or a student comes from the session token's `metadata`
+claim (see Authentication below), so the Clerk Dashboard session-token
+setting is a prerequisite for any write.
 
 ## Authentication
 

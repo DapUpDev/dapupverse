@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth/guards";
 import { MessagesInbox } from "@/components/messages/messages-inbox";
+import { apiBaseUrl } from "@/lib/api/client";
 
 export default async function MessagesPage() {
   const identity = await requireAuth("/app/messages");
@@ -8,10 +9,12 @@ export default async function MessagesPage() {
       <h1 className="font-display text-3xl font-extrabold tracking-tight">
         Messages
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Demo data: conversations are stored in this browser only and
-        don&rsquo;t sync between devices or accounts yet.
-      </p>
+      {apiBaseUrl() ? null : (
+        <p className="mt-1 text-sm text-muted-foreground">
+          Demo data: conversations are stored in this browser only and
+          don&rsquo;t sync between devices or accounts yet.
+        </p>
+      )}
       <div className="mt-6">
         <MessagesInbox
           userId={identity.dataUserId!}
