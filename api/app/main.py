@@ -1,14 +1,26 @@
-"""DapUp API — minimal FastAPI service for the first AWS milestone.
+"""DapUp API.
 
-Deliberately has no dependency on Clerk, a database, or any other external
-service: /health must answer purely from the running container so it can
-serve as the load-balancer and ECS health signal.
+/health has no dependency on Clerk, a database, or any other external
+service: it must answer purely from the running container so it can serve
+as the load-balancer and ECS health signal. Everything else is protected by
+Clerk session-token verification (see app/auth.py).
 """
 
+import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.auth import Principal, current_user
+
+# One line to stdout per event, which the awslogs driver ships to CloudWatch.
+# Without this the app's own loggers (e.g. rejected-token reasons) are
+# silently dropped: uvicorn configures only its own loggers.
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 # Injected at deploy time (Git commit SHA) so /health identifies exactly which
 # build is serving traffic. Defaults to "dev" for local runs.
@@ -40,3 +52,10 @@ app.add_middleware(
 def health() -> dict[str, str]:
     """Unauthenticated liveness check used by Docker, ECS, and the ALB."""
     return {"status": "ok", "service": "dapup-api", "version": APP_VERSION}
+
+
+@app.get("/me")
+def me(user: Principal = Depends(current_user)) -> dict[str, str | None]:
+    """Who the API thinks you are. A signed-out call gets 401; that rejection
+    is the first proof of the auth boundary."""
+    return {"user_id": user.user_id, "session_id": user.session_id}

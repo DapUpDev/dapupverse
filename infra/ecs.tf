@@ -77,6 +77,7 @@ resource "aws_ecs_task_definition" "api" {
     environment = [
       { name = "APP_VERSION", value = local.app_version },
       { name = "CORS_ALLOWED_ORIGINS", value = join(",", var.cors_allowed_origins) },
+      { name = "CLERK_ISSUER", value = var.clerk_issuer },
     ]
 
     # ECS-level liveness: a failing container is replaced by the scheduler
