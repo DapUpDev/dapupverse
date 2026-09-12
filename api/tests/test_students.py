@@ -70,14 +70,16 @@ def test_who_may_view_a_student(client, keys):
     client.put("/me/student-profile", json=MAYA, headers=bearer(keys))
     own = client.get("/students/user_stu1/profile", headers=bearer(keys))
     assert own.status_code == 200 and own.json()["school"] == "Lincoln High"
+    # A mentor sees a student only once that student has sent them a request
+    # (covered in test_connections); with none, it is a stranger.
     mentor = client.get("/students/user_stu1/profile", headers=bearer(keys, sub="user_m", metadata=MENTOR))
-    assert mentor.status_code == 200
+    assert mentor.status_code == 403
     admin = client.get("/students/user_stu1/profile", headers=bearer(keys, sub="user_a", metadata=ADMIN))
     assert admin.status_code == 200
     other_student = client.get("/students/user_stu1/profile", headers=bearer(keys, sub="user_stu2"))
     assert other_student.status_code == 403
     assert client.get("/students/user_stu1/profile").status_code == 401
-    assert client.get("/students/user_nobody/profile", headers=bearer(keys, sub="user_m", metadata=MENTOR)).status_code == 404
+    assert client.get("/students/user_nobody/profile", headers=bearer(keys, sub="user_a", metadata=ADMIN)).status_code == 404
 
 
 def test_write_mirrors_the_user_row(client, keys, database_url):

@@ -80,11 +80,14 @@ def require_student(user: Principal = Depends(current_user)) -> Principal:
     return user
 
 
-def may_view_student(viewer: Principal, student_id: str) -> bool:
-    """The student themself, an admin, or a mentor (who sees requesters).
-    The connections slice narrows the mentor case to mentors with a request
-    from this student."""
-    return viewer.user_id == student_id or viewer.is_admin or viewer.account_type == "mentor"
+def may_view_student(session: Session, viewer: Principal, student_id: str) -> bool:
+    """The student themself, an admin, or a mentor this student has sent a
+    request to (any state: the inbox shows archived and past ones too)."""
+    from app.connections import has_any_request  # local import: connections imports this module
+
+    if viewer.user_id == student_id or viewer.is_admin:
+        return True
+    return viewer.account_type == "mentor" and has_any_request(session, student_id=student_id, mentor_id=viewer.user_id)
 
 
 @router.get("/me/student-profile", response_model=StudentProfileOut, response_model_by_alias=True)
@@ -124,7 +127,7 @@ def get_student_profile(
     user: Annotated[Principal, Depends(current_user)],
     session: Annotated[Session, Depends(get_session)],
 ) -> StudentProfileOut:
-    if not may_view_student(user, student_id):
+    if not may_view_student(session, user, student_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Not allowed.")
     row = session.get(StudentProfile, student_id)
     if row is None:
