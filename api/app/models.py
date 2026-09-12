@@ -66,3 +66,23 @@ class MentorProfile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class StudentProfile(Base):
+    """One per student account. Never public; mentors see it attached to
+    the requests a student sends them."""
+
+    __tablename__ = "student_profiles"
+
+    user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    full_name: Mapped[str] = mapped_column(String(120), default="")
+    school: Mapped[str] = mapped_column(String(200), default="")
+    year_level: Mapped[str] = mapped_column(String(60), default="")
+    education_system: Mapped[str | None] = mapped_column(String(20))
+    subjects: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    biography: Mapped[str] = mapped_column(Text, default="")
+    avatar_key: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
