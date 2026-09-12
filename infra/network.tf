@@ -33,3 +33,23 @@ resource "aws_vpc_security_group_egress_rule" "ecs_tasks_all" {
   cidr_ipv4         = "0.0.0.0/0"
   description       = "All outbound"
 }
+
+# One subnet per zone, but only var.az_count zones. A load balancer holds one
+# public IPv4 address per zone it is attached to, and each address is
+# billed hourly; two zones is the minimum it accepts and all this service
+# needs. The tasks use the same subnets so every target is in a zone the
+# load balancer serves.
+data "aws_subnet" "default" {
+  for_each = toset(data.aws_subnets.default.ids)
+  id       = each.value
+}
+
+locals {
+  service_azs = slice(
+    sort(distinct([for s in data.aws_subnet.default : s.availability_zone])),
+    0, var.az_count,
+  )
+  service_subnet_ids = sort([
+    for s in data.aws_subnet.default : s.id if contains(local.service_azs, s.availability_zone)
+  ])
+}

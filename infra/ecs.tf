@@ -122,7 +122,7 @@ resource "aws_ecs_service" "api" {
   }
 
   network_configuration {
-    subnets          = data.aws_subnets.default.ids
+    subnets          = local.service_subnet_ids
     security_groups  = [aws_security_group.ecs_tasks.id]
     assign_public_ip = true # required to reach ECR/CloudWatch without a NAT gateway
   }
