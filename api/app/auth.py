@@ -48,10 +48,42 @@ CLOCK_LEEWAY_SECONDS = 5
 
 @dataclass(frozen=True)
 class Principal:
-    """The verified identity a protected route receives."""
+    """The verified identity a protected route receives.
+
+    Roles come from the token's `metadata` claim (Clerk publicMetadata,
+    mirrored into the session token by the owner's dashboard setting; see
+    docs/clerk-setup.md). Parsing is least-privilege, exactly like the
+    frontend's claims.ts: anything missing or malformed means student, not
+    admin. `email` is present only when the same setting includes it.
+    """
 
     user_id: str
     session_id: str | None
+    account_type: str = "student"
+    is_admin: bool = False
+    email: str | None = None
+
+
+def principal_from_claims(claims: dict) -> Principal:
+    metadata = claims.get("metadata")
+    account_type = "student"
+    is_admin = False
+    if isinstance(metadata, dict):
+        if metadata.get("accountType") == "mentor":
+            account_type = "mentor"
+        capabilities = metadata.get("capabilities")
+        if isinstance(capabilities, dict) and capabilities.get("isAdmin") is True:
+            is_admin = True
+    email = claims.get("email")
+    if not isinstance(email, str) or "@" not in email:
+        email = None
+    return Principal(
+        user_id=claims["sub"],
+        session_id=claims.get("sid"),
+        account_type=account_type,
+        is_admin=is_admin,
+        email=email,
+    )
 
 
 class AuthError(Exception):
@@ -101,7 +133,7 @@ class ClerkVerifier:
         if azp is not None and azp not in self.authorized_parties:
             raise AuthError("token was not issued for this application")
 
-        return Principal(user_id=claims["sub"], session_id=claims.get("sid"))
+        return principal_from_claims(claims)
 
 
 def _split_csv(value: str) -> list[str]:

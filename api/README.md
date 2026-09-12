@@ -8,7 +8,8 @@ for the infrastructure and the deploy pipeline.
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET /health` | none | Liveness for Docker, ECS, and the load balancer. Reports the running build. |
-| `GET /me` | Clerk session token | Returns the verified caller's `user_id` and `session_id`. The proof that authentication works. |
+| `GET /ready` | none | Can this task reach the database? For operators; the load balancer keeps using `/health`. |
+| `GET /me` | Clerk session token | Upserts the caller into the `users` table and returns the row: `user_id`, `account_type`, `is_admin`, `email`, timestamps. The first real read and write. |
 
 ## Authentication
 
@@ -29,13 +30,34 @@ Rejections are always `401 Not authenticated` with `WWW-Authenticate: Bearer`.
 The reason (expired, wrong issuer, wrong origin, bad signature) is logged,
 never returned, so a caller learns nothing from probing.
 
+## Database
+
+PostgreSQL on RDS, private, reached from the ECS tasks over the peering
+connection (see `infra/foundation/README.md`). Credentials arrive as
+`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, injected by the
+task definition's `secrets` block from Secrets Manager; the API never reads
+Secrets Manager itself and holds no AWS credentials for it. `DATABASE_URL`
+overrides all five for local work. `DB_SSLMODE` defaults to `require`.
+
+Schema changes are Alembic migrations in `alembic/versions`. They run at
+container start (`docker-entrypoint.sh` → `python -m app.migrate`) under a
+Postgres advisory lock, so two tasks starting together cannot both migrate.
+A failed migration exits the container, the task never becomes healthy, and
+the ECS circuit breaker rolls the deployment back.
+
+Roles: the API reads `account_type` and `is_admin` from the session token's
+`metadata` claim and the address from its `email` claim. Both come from the
+Clerk Dashboard session-token setting in `docs/clerk-setup.md`; without
+them every caller is a student with no admin capability and no email.
+
 ## Local development
 
 ```bash
 cd api
 uv sync
-uv run pytest
-CLERK_ISSUER=https://<slug>.clerk.accounts.dev CORS_ALLOWED_ORIGINS=http://localhost:3000 uv run uvicorn app.main:app --reload
+uv run pytest          # database tests start a temporary PostgreSQL from a local initdb, or use TEST_DATABASE_URL
+CLERK_ISSUER=https://<slug>.clerk.accounts.dev CORS_ALLOWED_ORIGINS=http://localhost:3000 DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/dapup?sslmode=disable uv run python -m app.migrate
+CLERK_ISSUER=... CORS_ALLOWED_ORIGINS=... DATABASE_URL=... uv run uvicorn app.main:app --reload
 ```
 
 Get a token from a signed-in browser tab on the frontend (`await window.Clerk.session.getToken()`)
