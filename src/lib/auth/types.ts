@@ -5,6 +5,7 @@
  */
 
 import type { AccountType, UserCapabilities } from "@/lib/domain/types";
+import { apiBaseUrl } from "@/lib/api/client";
 import { parseDapUpMetadata } from "@/lib/auth/claims";
 
 export type AuthIdentity = {
@@ -38,8 +39,10 @@ export function identityFromClaims(
   return {
     isAuthenticated: true,
     clerkUserId,
+    // With the real API every record is keyed by the Clerk user id; the
+    // mentorProfileId bridge exists only for the browser-local mock data.
     dataUserId:
-      metadata.accountType === "mentor" && metadata.mentorProfileId
+      metadata.accountType === "mentor" && metadata.mentorProfileId && !apiBaseUrl()
         ? metadata.mentorProfileId
         : clerkUserId,
     accountType: metadata.accountType,
