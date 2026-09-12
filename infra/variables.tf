@@ -115,3 +115,9 @@ variable "az_count" {
   type        = number
   default     = 2
 }
+
+variable "clerk_issuer" {
+  description = "Clerk instance the API trusts (its frontend API origin). Public keys only; no secret."
+  type        = string
+  default     = "https://clerk.dapup.space"
+}
