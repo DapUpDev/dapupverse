@@ -22,6 +22,8 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    /** Machine-readable code when the API sent `{detail: {code, message}}`. */
+    public readonly code: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -81,13 +83,20 @@ export async function apiFetch<T>(path: string, init: ApiRequest = {}): Promise<
 
   if (!response.ok) {
     let detail = response.statusText || `HTTP ${response.status}`;
+    let code: string | null = null;
     try {
       const data = (await response.json()) as { detail?: unknown };
-      if (typeof data?.detail === "string") detail = data.detail;
+      if (typeof data?.detail === "string") {
+        detail = data.detail;
+      } else if (data?.detail && typeof data.detail === "object") {
+        const structured = data.detail as { code?: unknown; message?: unknown };
+        if (typeof structured.message === "string") detail = structured.message;
+        if (typeof structured.code === "string") code = structured.code;
+      }
     } catch {
       // Non-JSON error body: keep the status text.
     }
-    throw new ApiError(response.status, detail);
+    throw new ApiError(response.status, detail, code);
   }
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
