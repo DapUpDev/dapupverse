@@ -1,8 +1,8 @@
 # The container registry is foundational: every service pushes to it, so it
 # belongs here rather than inside one service's stack. The repository
-# already exists (created by infra/ in Stage 2 of the API milestone); it is
-# adopted, not recreated. See import-ecr.tf and README.md "Adopting the
-# registry".
+# was created by infra/ in Stage 2 of the API milestone and adopted into
+# this stack on 2026-09-12 via one-time import blocks (since removed); see
+# README.md "Apply order (first time)".
 
 resource "aws_ecr_repository" "api" {
   name = "${var.project}-api"
