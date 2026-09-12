@@ -70,8 +70,10 @@ two declarative, no-destroy steps.
 
    RDS takes 5 to 10 minutes to create.
 
-3. **Delete `import-ecr.tf`** and commit. The adoption is done; leaving the
-   file would break a future destroy-and-re-apply.
+3. **Delete `import-ecr.tf`** and commit (done 2026-09-12). The adoption is
+   complete; leaving the file would break a future destroy-and-re-apply.
+   Steps 1 and 2 are history now: a fresh checkout applies with plain
+   `terraform apply` and owns the registry outright.
 
 ## Connecting to the database
 
