@@ -9,7 +9,16 @@ for the infrastructure and the deploy pipeline.
 | --- | --- | --- |
 | `GET /health` | none | Liveness for Docker, ECS, and the load balancer. Reports the running build. |
 | `GET /ready` | none | Can this task reach the database? For operators; the load balancer keeps using `/health`. |
-| `GET /me` | Clerk session token | Upserts the caller into the `users` table and returns the row: `user_id`, `account_type`, `is_admin`, `email`, timestamps. The first real read and write. |
+| `GET /me` | Clerk session token | Upserts the caller into the `users` table and returns the row: `user_id`, `account_type`, `is_admin`, `email`, timestamps. |
+| `GET /mentors` | none | Public directory. Filters: `query`, `educationSystem`, `subject`, `countryRegion`, `university`, `serviceType`. Never carries the price. |
+| `GET /mentors/{slug}` | none | Public mentor detail. 404 for unknown or unfilled profiles. |
+| `GET /mentors/{id}/private` | token; the mentor themself or an admin | The private shape, including `privatePriceUsd`. 403 for anyone else, including for ids that do not exist. |
+| `GET /me/mentor-profile` | token; mentor account | The caller's own private profile, 404 before it exists. |
+| `PUT /me/mentor-profile` | token; mentor account | Create-if-missing then apply the given fields (partial). An empty body just ensures the row. The slug is minted from the first real name and never changes. |
+
+Who is a mentor comes from the session token's `metadata` claim (see
+Authentication below), so the Clerk Dashboard session-token setting is a
+prerequisite for any mentor write.
 
 ## Authentication
 

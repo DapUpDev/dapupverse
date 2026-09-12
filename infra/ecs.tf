@@ -78,6 +78,7 @@ resource "aws_ecs_task_definition" "api" {
       { name = "APP_VERSION", value = local.app_version },
       { name = "CORS_ALLOWED_ORIGINS", value = join(",", var.cors_allowed_origins) },
       { name = "CLERK_ISSUER", value = var.clerk_issuer },
+      { name = "CORS_ALLOWED_ORIGIN_REGEX", value = var.cors_allowed_origin_regex },
     ]
 
     # Database credentials, fetched by the ECS agent (execution role) from

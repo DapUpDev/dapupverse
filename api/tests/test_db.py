@@ -47,7 +47,8 @@ def test_migration_creates_users_table(database_url, configured_database):
     assert {"id", "email", "account_type", "is_admin", "created_at", "updated_at", "last_seen_at"} <= columns
     with engine.connect() as connection:
         current = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-    assert current == configured_database == "0001_users"
+    assert current == configured_database  # the newest migration, whatever it is
+    assert "mentor_profiles" in inspector.get_table_names()
     engine.dispose()
 
 
