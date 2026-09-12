@@ -76,12 +76,16 @@ resource "aws_vpc_security_group_egress_rule" "bastion_to_rds" {
 resource "aws_instance" "bastion" {
   count = var.bastion_enabled ? 1 : 0
 
-  ami                         = data.aws_ssm_parameter.al2023_arm64.value
-  instance_type               = var.bastion_instance_type
-  subnet_id                   = aws_subnet.public[0].id
-  vpc_security_group_ids      = [aws_security_group.bastion[0].id]
-  iam_instance_profile        = aws_iam_instance_profile.bastion[0].name
-  associate_public_ip_address = true
+  ami                    = data.aws_ssm_parameter.al2023_arm64.value
+  instance_type          = var.bastion_instance_type
+  subnet_id              = aws_subnet.public[0].id
+  vpc_security_group_ids = [aws_security_group.bastion[0].id]
+  iam_instance_profile   = aws_iam_instance_profile.bastion[0].name
+  # The public subnet's map_public_ip_on_launch supplies the address. It is
+  # deliberately NOT set as associate_public_ip_address here: a stopped
+  # instance releases its address, the provider then reads false, and that
+  # attribute forces replacement, so the plan would rebuild the bastion on
+  # every stopped-state run.
   # No key_name: SSH is not a path onto this machine.
 
   # IMDSv2 only, so a request-forgery bug in anything running here cannot
