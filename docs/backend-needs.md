@@ -153,24 +153,36 @@ out-of-band so it never lands in Terraform state.
 Unit prices from the AWS Price List API for `us-west-2` (the machine-readable
 form of the public pricing pages) on 2026-09-11, except where noted. 730
 hours per month. Usage assumptions are for DapUp's current scale: about 7
-active students, a dozen mentors, a few thousand requests a day.
+active students, a dozen mentors, a few thousand requests a day. The account
+is on the paid plan with no free-tier credits, so every line is list price.
 
-### Running today
+### Decision (2026-09-11): trim, keep ECS
+
+Two cuts with no architecture change, chosen over a Lambda + API Gateway
+rebuild (about $22/month with the database) that would have replaced the
+load balancer entirely:
+
+- Load balancer and tasks span **2 zones instead of 4**. A load balancer
+  holds one billed public IPv4 address per attached zone; two is its
+  minimum. Saves $7.30.
+- **SES dedicated IP (managed) pool deleted.** Shared IPs are the default
+  and fine at this volume. Saves $15.00.
+
+### Running today, after the trim
 
 | Item | Unit price | Assumed usage | Month |
 | --- | --- | --- | --- |
 | ALB hours | $0.0225/h | 730 h | $16.43 |
 | ALB capacity units | $0.008/LCU-h | ~0.1 LCU average | $0.60 |
 | Fargate API task, 0.25 vCPU + 0.5 GB | $0.04048/vCPU-h, $0.004445/GB-h | 730 h | $9.01 |
-| Public IPv4 addresses | $0.005/h each | 4 on the ALB + 1 on the task | $18.25 |
+| Public IPv4 addresses | $0.005/h each | 2 on the ALB + 1 on the task | $10.95 |
 | CloudWatch logs and Container Insights | $0.50/GB ingested over 5 GB free; 10 metrics and 10 alarms free | ~1 GB, under free tier | $0.00 |
 | ECR image storage | $0.10/GB-month | up to 20 images, ~1.2 GB | $0.12 |
-| SES dedicated IP (managed) | $15.00/month | subscription, optional | $15.00 |
 | SES outbound email | $0.10 per 1,000 | 1,000 emails | $0.10 |
 | S3 Terraform state | $0.023/GB-month | < 1 MB | $0.01 |
-| **Subtotal** | | | **$59.52** |
+| **Subtotal** | | | **$37.22** |
 
-Cost Explorer's current run rate is about $2.20 a day, which agrees with this.
+Before the trim this was $59.52 (Cost Explorer showed about $1.75/day).
 
 ### Tier 1 additions (needed by the code as it exists)
 
@@ -178,40 +190,40 @@ Cost Explorer's current run rate is about $2.20 a day, which agrees with this.
 | --- | --- | --- | --- |
 | RDS PostgreSQL `db.t4g.micro`, Single-AZ | $0.016/h | 730 h | $11.68 |
 | RDS gp3 storage | $0.115/GB-month | 20 GB | $2.30 |
-| RDS backups | free up to the database size, then $0.095/GB-month | within free | $0.00 |
-| Fargate worker service, 0.25 vCPU + 0.5 GB | as above | 730 h | $9.01 |
-| Public IPv4 for the worker task | $0.005/h | 730 h | $3.65 |
-| S3 avatars | $0.023/GB-month + $0.005 per 1,000 PUTs | 5 GB, a few thousand requests | $0.17 |
-| SQS | $0.40 per million requests, first million free | < 1 M | $0.00 to $0.40 |
-| EventBridge bus | $1.00 per million events | ~10 k events | $0.01 |
-| Secrets Manager | $0.40 per secret-month + $0.05 per 10 k calls | 3 secrets | $1.25 |
-| CloudWatch alarms and logs | $0.10 per alarm metric over 10 free; logs as above | 5 alarms, ~2 GB logs | $0.50 headroom |
-| **Subtotal** | | | **$28.97** |
+| RDS backups | free up to the database size | within free | $0.00 |
+| Bastion `t4g.nano`, kept stopped between sessions | $0.0042/h + 8 GB gp3 | ~10 h/month running | $0.75 |
+| S3 avatars | $0.023/GB-month + requests | 5 GB | $0.17 |
+| SQS, EventBridge | first million requests free; $1 per million events | tiny | $0.05 |
+| Secrets Manager | $0.40 per secret-month | 3 secrets | $1.25 |
+| Background worker | run as a second task only when needed; until then, jobs run in the API task on a schedule | 0 h | $0.00 |
+| **Subtotal** | | | **$16.20** |
 
 ### Tier 2 additions (proposal roadmap)
 
 | Item | Unit price | Assumed usage | Month |
 | --- | --- | --- | --- |
-| Bedrock, triage + mentor brief | Claude Sonnet 5 at $2 / $10 per million input / output tokens (Anthropic's published rate; Bedrock's page and Price List API do not list current Claude models, so verify before relying on it) | 30 triage runs of 15 k in / 1.5 k out, 30 briefs of 8 k in / 1 k out | $2.13 |
-| Bedrock, Titan Text Embeddings V2 | $0.00002 per 1,000 tokens | 2 M tokens ingested | $0.04 |
+| Bedrock, triage + mentor brief | Claude Sonnet 5 at $2 / $10 per million input / output tokens (Anthropic's published rate; Bedrock's page and Price List API do not list current Claude models, so verify before relying on it) | 30 triage runs, 30 briefs | $2.13 |
+| Bedrock, Titan Text Embeddings V2 | $0.00002 per 1,000 tokens | 2 M tokens | $0.04 |
 | Retries, evaluation runs | | ~40% headroom | $0.83 |
 | S3 student documents | $0.023/GB-month | 20 GB | $0.46 |
 | RDS storage growth (pgvector) | $0.115/GB-month | +10 GB | $1.15 |
 | Secrets Manager, calendar credentials | $0.40 per secret-month | 1 secret | $0.40 |
-| SQS, EventBridge Scheduler | Scheduler: 14 M invocations free | weekly cycle | $0.10 |
-| CloudWatch extra logs | as above | ~2 GB | $0.50 headroom |
-| **Subtotal** | | | **$5.61** |
+| **Subtotal** | | | **$5.01** |
 
 ### Total and budget
 
 | | Month |
 | --- | --- |
-| Running today | $59.52 |
-| Tier 1 complete | $88.49 |
-| Tier 1 + Tier 2 complete | **$94.10** |
+| Running today, after the trim | $37.22 |
+| Tier 1 complete | $53.42 |
+| Tier 1 + Tier 2 complete | **$58.43** |
 
-Budget: the AWS Budget `dapup monthly cost budget` is set to **$105/month**,
-about 10% above the full total, with the existing alerts at 85% actual,
-100% actual, and 100% forecast. Two levers if it ever trips: dropping the
-SES dedicated IP saves $15, and pinning the ALB to two availability zones
-instead of four saves $7.30 in public IPv4 charges.
+Budget: the AWS Budget `dapup monthly cost budget` is set to **$55/month**,
+just above Tier 1 and within a few dollars of the full total, with the
+existing alerts at 85% actual, 100% actual, and 100% forecast. Raise it to
+$65 when Tier 2 starts.
+
+Further levers, in order of how much they save: Fargate Spot for the API
+task (about $6/month, occasional 2-minute interruptions); replacing the
+load balancer with API Gateway + Lambda (about $27/month, a re-architecture);
+turning the bastion off entirely between sessions (already assumed above).

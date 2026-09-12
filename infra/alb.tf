@@ -52,7 +52,7 @@ resource "aws_lb" "api" {
   load_balancer_type = "application"
   internal           = false
   security_groups    = [aws_security_group.alb.id]
-  subnets            = data.aws_subnets.default.ids
+  subnets            = local.service_subnet_ids
 
   drop_invalid_header_fields = true
   idle_timeout               = 60
