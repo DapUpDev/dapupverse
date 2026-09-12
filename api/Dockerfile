@@ -19,6 +19,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
 
 COPY app ./app
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
 # ---- Stage 2: minimal runtime image -----------------------------------------
 FROM python:3.13-slim AS runtime
@@ -33,6 +36,9 @@ RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser
 WORKDIR /app
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 COPY --from=builder --chown=appuser:appuser /app/app /app/app
+COPY --from=builder --chown=appuser:appuser /app/alembic.ini /app/alembic.ini
+COPY --from=builder --chown=appuser:appuser /app/alembic /app/alembic
+COPY --from=builder --chown=appuser:appuser /app/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 USER appuser
 EXPOSE 8000
@@ -41,7 +47,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status == 200 else 1)"
 
-# Bind to all interfaces: inside a container, 127.0.0.1 would be unreachable
-# from the host or the load balancer. --proxy-headers trusts X-Forwarded-*
-# from the ALB so the app sees the real scheme/host.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# The entrypoint applies pending migrations, then execs uvicorn bound to
+# all interfaces (inside a container 127.0.0.1 would be unreachable from
+# the load balancer) with --proxy-headers so the app sees the real
+# scheme/host behind the ALB. See docker-entrypoint.sh.
+ENTRYPOINT ["/bin/sh", "/app/docker-entrypoint.sh"]

@@ -42,12 +42,17 @@ token claims to:
 
 ```json
 {
-  "metadata": "{{user.public_metadata}}"
+  "metadata": "{{user.public_metadata}}",
+  "email": "{{user.primary_email_address}}"
 }
 ```
 
-The app also falls back to reading `publicMetadata` directly, so nothing
-breaks before this is configured — the claim just makes it faster.
+The Next.js app falls back to reading `publicMetadata` directly, so it
+works before this is configured — the claim just makes it faster. The
+**API** does not have that fallback (it holds no Clerk secret): it reads
+roles and the email from these two claims, and a token without them is
+treated as a student with no admin capability and no known email. Set the
+claims on **both** instances (development and production).
 
 ## 5. Promoting users (Users → select user → Metadata → Public)
 

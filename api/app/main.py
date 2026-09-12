@@ -9,10 +9,15 @@ Clerk session-token verification (see app/auth.py).
 import logging
 import os
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func, select, text
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
+from app.db import get_engine, get_session
+from app.models import User
 
 # One line to stdout per event, which the awslogs driver ships to CloudWatch.
 # Without this the app's own loggers (e.g. rejected-token reasons) are
@@ -54,8 +59,61 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": "dapup-api", "version": APP_VERSION}
 
 
+@app.get("/ready")
+def ready() -> dict[str, str]:
+    """Readiness: can this task reach the database? Not used by the load
+    balancer (that stays /health, dependency-free); for operators."""
+    engine = get_engine()
+    if engine is None:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Database is not configured.")
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception as exc:  # noqa: BLE001 - any failure means "not ready"
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Database unreachable.") from exc
+    return {"database": "ok"}
+
+
 @app.get("/me")
-def me(user: Principal = Depends(current_user)) -> dict[str, str | None]:
-    """Who the API thinks you are. A signed-out call gets 401; that rejection
-    is the first proof of the auth boundary."""
-    return {"user_id": user.user_id, "session_id": user.session_id}
+def me(
+    user: Principal = Depends(current_user),
+    session: Session = Depends(get_session),
+) -> dict[str, object]:
+    """Who the API thinks you are, as a row in the users table.
+
+    Upserts the caller: first call creates the mirror row, later calls
+    refresh role and last-seen. Clerk stays the source of truth for
+    identity; this row is what every other table will reference.
+    """
+    statement = (
+        insert(User)
+        .values(
+            id=user.user_id,
+            email=user.email,
+            account_type=user.account_type,
+            is_admin=user.is_admin,
+            last_seen_at=func.now(),
+        )
+        .on_conflict_do_update(
+            index_elements=[User.id],
+            set_={
+                "account_type": user.account_type,
+                "is_admin": user.is_admin,
+                "last_seen_at": func.now(),
+                "updated_at": func.now(),
+                # Only overwrite a known email with another known email.
+                **({"email": user.email} if user.email else {}),
+            },
+        )
+    )
+    session.execute(statement)
+    row = session.execute(select(User).where(User.id == user.user_id)).scalar_one()
+    return {
+        "user_id": row.id,
+        "session_id": user.session_id,
+        "account_type": row.account_type.value,
+        "is_admin": row.is_admin,
+        "email": row.email,
+        "created_at": row.created_at.isoformat(),
+        "last_seen_at": row.last_seen_at.isoformat() if row.last_seen_at else None,
+    }

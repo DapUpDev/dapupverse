@@ -80,6 +80,23 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CLERK_ISSUER", value = var.clerk_issuer },
     ]
 
+    # Database credentials, fetched by the ECS agent (execution role) from
+    # the foundation's secret at container start and injected as plain
+    # environment inside the container only. The `:key::` suffix picks one
+    # JSON field of the secret (current version, default stage).
+    secrets = [
+      for env_name, json_key in {
+        DB_HOST     = "host"
+        DB_PORT     = "port"
+        DB_NAME     = "dbname"
+        DB_USER     = "username"
+        DB_PASSWORD = "password"
+        } : {
+        name      = env_name
+        valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
+      }
+    ]
+
     # ECS-level liveness: a failing container is replaced by the scheduler
     # even before a load balancer exists.
     healthCheck = {
@@ -140,6 +157,7 @@ resource "aws_ecs_service" "api" {
 
   depends_on = [
     aws_iam_role_policy_attachment.task_execution_managed,
+    aws_iam_role_policy.task_execution_secrets, # the agent must be able to read the secret before a task launches
     aws_lb_listener.http,
   ]
 }
