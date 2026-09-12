@@ -11,12 +11,12 @@ import os
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func, select, text
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
 from app.db import get_engine, get_session
+from app.mentors import router as mentors_router, upsert_user
 from app.models import User
 
 # One line to stdout per event, which the awslogs driver ships to CloudWatch.
@@ -47,10 +47,16 @@ app = FastAPI(title="DapUp API", version=APP_VERSION)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins(),
+    # Optional pattern for Vercel preview deployments (public reads only:
+    # their Clerk tokens come from the development instance, which the
+    # production API does not trust, so nothing authenticated works there).
+    allow_origin_regex=os.getenv("CORS_ALLOWED_ORIGIN_REGEX") or None,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
     allow_credentials=False,
 )
+
+app.include_router(mentors_router)
 
 
 @app.get("/health")
@@ -85,28 +91,7 @@ def me(
     refresh role and last-seen. Clerk stays the source of truth for
     identity; this row is what every other table will reference.
     """
-    statement = (
-        insert(User)
-        .values(
-            id=user.user_id,
-            email=user.email,
-            account_type=user.account_type,
-            is_admin=user.is_admin,
-            last_seen_at=func.now(),
-        )
-        .on_conflict_do_update(
-            index_elements=[User.id],
-            set_={
-                "account_type": user.account_type,
-                "is_admin": user.is_admin,
-                "last_seen_at": func.now(),
-                "updated_at": func.now(),
-                # Only overwrite a known email with another known email.
-                **({"email": user.email} if user.email else {}),
-            },
-        )
-    )
-    session.execute(statement)
+    upsert_user(session, user)
     row = session.execute(select(User).where(User.id == user.user_id)).scalar_one()
     return {
         "user_id": row.id,

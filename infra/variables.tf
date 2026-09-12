@@ -121,3 +121,9 @@ variable "clerk_issuer" {
   type        = string
   default     = "https://clerk.dapup.space"
 }
+
+variable "cors_allowed_origin_regex" {
+  description = "Extra browser origins allowed by pattern: Vercel preview deployments (public reads only)."
+  type        = string
+  default     = "^https://[a-z0-9-]+[.]vercel[.]app$"
+}

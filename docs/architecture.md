@@ -77,15 +77,27 @@ via server-managed Clerk public metadata (docs/clerk-setup.md). Route access
 is server-enforced in layouts/pages via `requireAuth` /
 `requireAccountType` / `requireAdmin`.
 
-## Data access (future)
+## Data access
 
-The permanent database/backend is deliberately unselected — AWS is the
-intended direction, but no service has been chosen or implemented.
-Application data is browser-local mock data behind the typed repositories;
-real multi-user requests and messaging require backend persistence. When
-chosen, all data access stays behind these boundaries so UI components
-never talk to a database client or HTTP API directly. Supabase is not part
-of the new architecture and must not be reused from the old WeWeb setup.
+The backend is the FastAPI service in `api/` on AWS (ECS Fargate, RDS
+PostgreSQL, see `infra/`). The frontend reaches it only through
+`src/lib/api/client.ts`, and only from inside a repository adapter; UI
+components never talk HTTP directly.
+
+`src/lib/repositories/index.ts` is the switch. When `NEXT_PUBLIC_API_BASE_URL`
+is set (Vercel), a repository is bound to its HTTP adapter; otherwise to the
+browser-local mock (local development, unit tests, e2e). Repositories move
+one at a time:
+
+| Repository | Binding today |
+| --- | --- |
+| `mentorRepository` | HTTP (`http-mentor.ts`): directory, detail, the mentor's own profile |
+| `studentProfileRepository`, `connectionRepository`, `messageRepository` | browser-local mock, still |
+
+The Clerk session token travels as `Authorization: Bearer` and the API
+verifies it itself (`api/README.md`); authorization decisions such as who
+may see a mentor's price live in the API, not in the frontend. Supabase is
+not part of the architecture.
 
 ## WeWeb export
 

@@ -2,20 +2,16 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SEED_MENTOR_PROFILES } from "@/lib/data/seed";
 import { mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
 
 function AdminMentorTable() {
-  const { data: profiles, ready } = useRepositoryQuery(
-    async () =>
-      Promise.all(
-        SEED_MENTOR_PROFILES.map((m) =>
-          mentorRepository.getPrivateProfile(m.id),
-        ),
-      ),
-    [],
-  );
+  // Public list, then each private record: the repository (and, behind it,
+  // the API) is what grants admin visibility of the price.
+  const { data: profiles, ready } = useRepositoryQuery(async () => {
+    const mentors = await mentorRepository.list();
+    return Promise.all(mentors.map((m) => mentorRepository.getPrivateProfile(m.id)));
+  }, []);
 
   if (!ready) return <Skeleton className="h-48 rounded-xl" />;
 
