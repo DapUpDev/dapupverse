@@ -97,15 +97,21 @@ resource "aws_instance" "bastion" {
     encrypted   = true
   }
 
-  # psql on the box, for sessions that open a shell rather than a tunnel.
-  user_data = <<-EOT
-    #!/bin/bash
-    dnf install -y postgresql17
-  EOT
-
   tags = { Name = "${local.name}-bastion" }
 
   lifecycle {
     ignore_changes = [ami] # a newer AMI must not replace the box on every plan
   }
+}
+
+# Stopped between sessions. A stopped instance costs only its 8 GB disk
+# (about $0.64/month); running, it costs about $6.70/month, most of that
+# the public IPv4 address. Flip it with:
+#   terraform apply -var bastion_state=running
+# and back to stopped when done. The instance id, and so the port-forward
+# command, stays the same either way.
+resource "aws_ec2_instance_state" "bastion" {
+  count       = var.bastion_enabled ? 1 : 0
+  instance_id = aws_instance.bastion[0].id
+  state       = var.bastion_state
 }

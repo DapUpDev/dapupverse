@@ -24,15 +24,16 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_bastion" {
   description                  = "From bastion"
 }
 
+# The API's task security group in the peered default VPC (peering.tf).
 resource "aws_vpc_security_group_ingress_rule" "rds_from_clients" {
-  for_each = toset(var.db_client_security_group_ids)
+  for_each = data.aws_security_group.clients
 
   security_group_id            = aws_security_group.rds.id
   ip_protocol                  = "tcp"
   from_port                    = 5432
   to_port                      = 5432
-  referenced_security_group_id = each.value
-  description                  = "From application"
+  referenced_security_group_id = each.value.id
+  description                  = "From ${each.key} (peered VPC)"
 }
 
 resource "aws_db_instance" "postgres" {

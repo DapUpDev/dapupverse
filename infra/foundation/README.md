@@ -22,9 +22,20 @@ from the foundation's outputs.
 | Secrets Manager secret `dapup/prod/postgres` | Master credentials as JSON (`host`, `port`, `dbname`, `username`, `password`). | $0.40 |
 | S3 bucket `dapup-prod-student-files-<account>` | Avatars and student documents. Versioned, encrypted, public access blocked, TLS-only, CORS for presigned uploads. | under $1 |
 | ECR repository `dapup-api` (adopted, see below) | The registry the API pipeline pushes to. | under $1 |
-| Bastion: `t4g.nano` Amazon Linux 2023, no inbound rules, no SSH key, Session Manager only | Reach the private database from a laptop through an SSM tunnel. | $7 (instance $3, public IPv4 $3.65) |
+| VPC peering to the default VPC | The running API reaches the database without moving; its task security group is allowed in by reference. | $0 |
+| Bastion: `t4g.nano` Amazon Linux 2023, no inbound rules, no SSH key, Session Manager only, **stopped by default** | Reach the private database from a laptop through an SSM tunnel. | $0.64 stopped; $6.70 while running |
 
-Everything is `learning_mode = true` by default; see the table below.
+About $15/month at rest. Everything is `learning_mode = true` by default; see
+the table below.
+
+## Why peer instead of moving the API
+
+The API stack lives in the default VPC. Moving it here would recreate the
+load balancer (new DNS name, Vercel record change, cutover) for no benefit
+at this scale. A same-region peering connection has no hourly charge and
+lets the API's task security group be referenced directly in the database
+rules, so no IP ranges appear anywhere. If the API is ever rebuilt inside
+this VPC, set `peer_with_default_vpc = false` and pass its subnets instead.
 
 ## Prerequisites
 
@@ -64,8 +75,15 @@ two declarative, no-destroy steps.
 
 ## Connecting to the database
 
-Never through a public address. Open an SSM tunnel from the laptop to the
-bastion, and from there to the database:
+Never through a public address. The bastion is stopped between sessions;
+start it, open an SSM tunnel through it to the database, and stop it when
+done. Its instance id never changes, so the tunnel command stays valid.
+
+```bash
+terraform -chdir=infra/foundation apply -var bastion_state=running
+```
+
+Wait about a minute for the SSM agent to register, then:
 
 ```bash
 terraform -chdir=infra/foundation output -raw db_port_forward_command
@@ -84,14 +102,27 @@ The password is in Secrets Manager. To use it without printing it, let
 $env:PGPASSWORD = (aws secretsmanager get-secret-value --secret-id dapup/prod/postgres --query SecretString --output text | ConvertFrom-Json).password
 ```
 
-For a shell on the bastion itself (it has `psql` installed):
+For a shell on the bastion itself:
 
 ```bash
 aws ssm start-session --target <bastion_instance_id>
 ```
 
-Who can do this is governed by IAM (`ssm:StartSession` on the instance),
-not by network rules, and every session is logged by Systems Manager.
+(`sudo dnf install -y postgresql17` there if you want `psql` on the box.)
+
+When finished:
+
+```bash
+terraform -chdir=infra/foundation apply
+```
+
+which returns the bastion to `stopped`, the default. Starting it with the
+EC2 console or CLI works too, but the next apply will stop it again, which
+is the intended safety net.
+
+Who can open a session is governed by IAM (`ssm:StartSession` on the
+instance), not by network rules, and every session is logged by Systems
+Manager.
 
 ## Learning mode
 
@@ -125,5 +156,5 @@ workflow by hand (Actions → Deploy API → Run workflow) to push one.
 - Move the bastion to a private subnet behind SSM interface endpoints, or
   set `bastion_enabled = false` between administrative sessions.
 - VPC flow logs to CloudWatch for the private subnets.
-- Add the API task security group to `db_client_security_group_ids` when
-  the ECS service moves into this VPC.
+- Bound `db_max_allocated_storage_gb` (50 GB today) is a cost cap; raise it
+  deliberately when data grows.

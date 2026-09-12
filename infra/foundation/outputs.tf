@@ -23,8 +23,12 @@ output "rds_db_name" {
 }
 
 output "rds_security_group_id" {
-  description = "Add application security groups via var.db_client_security_group_ids, not to this group directly."
+  description = "Add application security groups via var.db_client_security_group_names, not to this group directly."
   value       = aws_security_group.rds.id
+}
+
+output "peering_connection_id" {
+  value = var.peer_with_default_vpc ? aws_vpc_peering_connection.peer[0].id : null
 }
 
 output "db_secret_arn" {

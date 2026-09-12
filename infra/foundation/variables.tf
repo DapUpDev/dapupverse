@@ -58,9 +58,9 @@ variable "db_allocated_storage_gb" {
 }
 
 variable "db_max_allocated_storage_gb" {
-  description = "Storage autoscaling ceiling. 0 disables autoscaling."
+  description = "Storage autoscaling ceiling, a cost cap as much as a capacity one. 0 disables autoscaling."
   type        = number
-  default     = 100
+  default     = 50
 }
 
 variable "db_name" {
@@ -78,14 +78,24 @@ variable "db_backup_retention_days" {
   default = 7
 }
 
-variable "db_client_security_group_ids" {
+variable "peer_with_default_vpc" {
   description = <<-EOT
-    Security groups allowed to reach PostgreSQL on 5432, besides the bastion.
-    Empty today. The API's task security group is added here once the ECS
-    service moves into this VPC.
+    Peer this VPC with the account's default VPC, where the API stack runs,
+    so the running API can reach PostgreSQL without moving (peering.tf).
+    Set false in an account that has no API stack yet.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "db_client_security_group_names" {
+  description = <<-EOT
+    Security groups in the peer VPC allowed to reach PostgreSQL on 5432,
+    besides the bastion. Looked up by name; the default is the API stack's
+    task group. Ignored when peer_with_default_vpc is false.
   EOT
   type        = list(string)
-  default     = []
+  default     = ["dapup-prod-api-tasks"]
 }
 
 # ---- Bastion ----------------------------------------------------------------
@@ -98,6 +108,16 @@ variable "bastion_enabled" {
 variable "bastion_instance_type" {
   type    = string
   default = "t4g.nano"
+}
+
+variable "bastion_state" {
+  description = "running or stopped. Stopped costs only the disk; switch to running for an admin session."
+  type        = string
+  default     = "stopped"
+  validation {
+    condition     = contains(["running", "stopped"], var.bastion_state)
+    error_message = "bastion_state must be \"running\" or \"stopped\"."
+  }
 }
 
 # ---- Student files bucket ---------------------------------------------------
