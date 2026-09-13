@@ -38,6 +38,8 @@ export type Mentor = {
   services: ServiceType[];
   subjects: string[];
   educationSystems: EducationSystem[];
+  /** Short-lived read URL for the profile picture, or null when none is set. */
+  avatarUrl: string | null;
 };
 
 /**
@@ -57,6 +59,8 @@ export type StudentProfile = {
   educationSystem: EducationSystem | null;
   subjects: string[];
   biography: string;
+  /** Short-lived read URL for the profile picture, or null when none is set. */
+  avatarUrl: string | null;
 };
 
 /** Fields a student must fill in before sending connection requests. */

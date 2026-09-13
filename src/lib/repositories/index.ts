@@ -12,12 +12,14 @@
 
 import { apiBaseUrl } from "@/lib/api/client";
 import { mockDataStore } from "@/lib/mock/store";
+import { createHttpAvatarRepository } from "@/lib/repositories/http-avatar";
 import { createHttpConnectionRepository } from "@/lib/repositories/http-connection";
 import { createHttpMentorRepository } from "@/lib/repositories/http-mentor";
 import { createHttpMessageRepository } from "@/lib/repositories/http-message";
 import { createHttpStudentProfileRepository } from "@/lib/repositories/http-student-profile";
 import { createMockRepositories } from "@/lib/repositories/mock";
 import type {
+  AvatarRepository,
   ConnectionRepository,
   MentorRepository,
   MessageRepository,
@@ -34,6 +36,10 @@ export const mentorRepository: MentorRepository = useApi
 export const studentProfileRepository: StudentProfileRepository = useApi
   ? createHttpStudentProfileRepository()
   : mock.studentProfileRepository;
+
+export const avatarRepository: AvatarRepository = useApi
+  ? createHttpAvatarRepository()
+  : mock.avatarRepository;
 
 export const connectionRepository: ConnectionRepository = useApi
   ? createHttpConnectionRepository()

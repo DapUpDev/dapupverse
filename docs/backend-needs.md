@@ -61,7 +61,7 @@ to upload and a presigned GET URL to view. The ECS task role gets
 
 | Need | Source in code | Key layout | Notes |
 | --- | --- | --- | --- |
-| Profile avatars, student and mentor | `image-placeholder-field.tsx`: preview only today, "real image storage arrives with the backend" | `avatars/{user_id}/{uuid}.{ext}` | Validate type and size at presign time. Resize and strip EXIF in a background job (below). Optionally CloudFront in front for cached public avatars. |
+| Profile avatars, student and mentor | DONE: `avatar-upload-field.tsx` + `http-avatar.ts` upload through presigned URLs; `avatarUrl` on every profile response | `avatars/{user_id}/{uuid}.{ext}` | Validate type and size at presign time. Resize and strip EXIF in a background job (below). Optionally CloudFront in front for cached public avatars. |
 | Student documents for RAG (Tier 2) | Proposal step 4 | `students/{student_id}/{doc_id}` | Prefix-per-student makes the access rule a bucket-policy condition, not just app code. S3 event notification triggers ingestion. |
 
 ## 3. Background jobs

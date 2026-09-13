@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Mentor } from "@/lib/domain/types";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -10,14 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function mentorInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
+
+export { initialsOf as mentorInitials } from "@/lib/domain/initials";
 
 /**
  * Public mentor card. Receives the public `Mentor` type, which contains no
@@ -28,14 +22,11 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
     <Card className="relative h-full border-border transition-all hover:border-chrome/60 hover:shadow-lg hover:shadow-background/60 has-focus-visible:border-chrome">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <Avatar className="size-12 border border-chrome/30">
-            <AvatarFallback
-              aria-hidden="true"
-              className="bg-gradient-to-br from-surface-strong to-card font-mono text-foreground"
-            >
-              {mentorInitials(mentor.name)}
-            </AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            name={mentor.name}
+            avatarUrl={mentor.avatarUrl}
+            className="size-12 border border-chrome/30"
+          />
           <div className="min-w-0">
             <CardTitle className="truncate text-base">
               <Link

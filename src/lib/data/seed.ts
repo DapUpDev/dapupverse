@@ -33,6 +33,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Computer Science", "Mathematics", "Physics"],
     educationSystems: ["IB", "AP"],
     privatePriceUsd: 40,
+    avatarUrl: null,
   },
   {
     id: "mentor-mira",
@@ -47,6 +48,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Chemistry", "Biology", "Mathematics"],
     educationSystems: ["A Levels", "IB"],
     privatePriceUsd: 35,
+    avatarUrl: null,
   },
   {
     id: "mentor-tomas",
@@ -61,6 +63,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Economics", "Business", "Mathematics"],
     educationSystems: ["IB"],
     privatePriceUsd: 25,
+    avatarUrl: null,
   },
   {
     id: "mentor-ana",
@@ -75,6 +78,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["English", "History", "Law"],
     educationSystems: ["A Levels"],
     privatePriceUsd: 20,
+    avatarUrl: null,
   },
   {
     id: "mentor-daniel",
@@ -89,6 +93,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Physics", "Mathematics", "Engineering"],
     educationSystems: ["AP"],
     privatePriceUsd: 45,
+    avatarUrl: null,
   },
   {
     id: "mentor-hana",
@@ -103,6 +108,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Biology", "Chemistry"],
     educationSystems: ["IB", "A Levels"],
     privatePriceUsd: 30,
+    avatarUrl: null,
   },
   {
     id: "mentor-lucas",
@@ -117,6 +123,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Mathematics", "Computer Science"],
     educationSystems: ["A Levels", "AP"],
     privatePriceUsd: 28,
+    avatarUrl: null,
   },
   {
     id: "mentor-priya",
@@ -131,6 +138,7 @@ export const SEED_MENTOR_PROFILES: MentorProfile[] = [
     subjects: ["Business", "Economics", "English"],
     educationSystems: ["AP", "IB"],
     privatePriceUsd: 32,
+    avatarUrl: null,
   },
 ];
 
@@ -145,6 +153,7 @@ export const SEED_STUDENT_PROFILES: StudentProfile[] = [
     educationSystem: null,
     subjects: [],
     biography: "",
+    avatarUrl: null,
   },
   {
     id: "student-noah",
@@ -154,6 +163,7 @@ export const SEED_STUDENT_PROFILES: StudentProfile[] = [
     educationSystem: "A Levels",
     subjects: ["Physics", "Mathematics"],
     biography: "Aiming for engineering in the US or Canada.",
+    avatarUrl: null,
   },
   {
     id: "student-lily",
@@ -163,6 +173,7 @@ export const SEED_STUDENT_PROFILES: StudentProfile[] = [
     educationSystem: "AP",
     subjects: ["Computer Science", "Mathematics"],
     biography: "Interested in CS and startups.",
+    avatarUrl: null,
   },
   {
     id: "student-omar",
@@ -172,6 +183,7 @@ export const SEED_STUDENT_PROFILES: StudentProfile[] = [
     educationSystem: "IB",
     subjects: ["Economics", "English"],
     biography: "Working on my extended essay in economics.",
+    avatarUrl: null,
   },
 ];
 
