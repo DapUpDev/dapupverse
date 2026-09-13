@@ -83,24 +83,32 @@ resource "aws_ecs_task_definition" "api" {
       { name = "EMAIL_FROM", value = var.email_from },
       { name = "SES_REGION", value = var.ses_region },
       { name = "APP_BASE_URL", value = var.app_base_url },
+      # Profile pictures: bucket name and the region to sign URLs for.
+      { name = "STORAGE_BUCKET", value = data.aws_s3_bucket.student_files.bucket },
+      { name = "AWS_REGION", value = var.aws_region },
     ]
 
     # Database credentials, fetched by the ECS agent (execution role) from
     # the foundation's secret at container start and injected as plain
     # environment inside the container only. The `:key::` suffix picks one
     # JSON field of the secret (current version, default stage).
-    secrets = [
-      for env_name, json_key in {
-        DB_HOST     = "host"
-        DB_PORT     = "port"
-        DB_NAME     = "dbname"
-        DB_USER     = "username"
-        DB_PASSWORD = "password"
-        } : {
-        name      = env_name
-        valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
-      }
-    ]
+    secrets = concat(
+      [
+        for env_name, json_key in {
+          DB_HOST     = "host"
+          DB_PORT     = "port"
+          DB_NAME     = "dbname"
+          DB_USER     = "username"
+          DB_PASSWORD = "password"
+          } : {
+          name      = env_name
+          valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
+        }
+      ],
+      # Clerk's webhook signing secret (a plain string, no JSON key). See
+      # clerk_webhook.tf for where the value comes from.
+      [{ name = "CLERK_WEBHOOK_SECRET", valueFrom = aws_secretsmanager_secret.clerk_webhook.arn }],
+    )
 
     # ECS-level liveness: a failing container is replaced by the scheduler
     # even before a load balancer exists.

@@ -28,8 +28,8 @@ import {
   DuplicateRequestError,
 } from "@/lib/repositories";
 
-const MESSAGE_MIN_LENGTH = 20;
-const MESSAGE_MAX_LENGTH = 600;
+const MESSAGE_MIN_LENGTH = 5;
+const MESSAGE_MAX_LENGTH = 500;
 
 /** The connection request form: purpose + short message, nothing else. */
 export function ConnectRequestDialog({

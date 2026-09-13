@@ -2,7 +2,8 @@
 #  - execution role: what the ECS *agent* needs to launch the container
 #    (pull from ECR, write logs). The application never sees these creds.
 #  - task role: what the *application code* is allowed to do at runtime.
-#    Empty today; future milestones grant S3/SQS/Bedrock here, scoped tightly.
+#    Grants live next to the feature that needs them (storage.tf for the
+#    avatars prefix of the S3 bucket); SQS/Bedrock will follow the same way.
 
 data "aws_iam_policy_document" "ecs_tasks_assume" {
   statement {

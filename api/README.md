@@ -25,6 +25,10 @@ for the infrastructure and the deploy pipeline.
 | `GET`/`POST /threads/{id}/messages` | token; participants | History; send (`409 messaging_unavailable` once the connection has ended). |
 | `POST /threads/{id}/read`, `GET /threads/{id}/unread` | token; participants | Read receipt; unread count. |
 | `GET /me/unread` | token | Unread messages across all my conversations: the red number on the Messages link. |
+| `POST /me/avatar/upload-url` | token | Presigned S3 PUT URL (5 min) for a JPEG/PNG/WebP up to 5 MB; `415 unsupported_type`, `413 too_large`. The browser uploads straight to S3. |
+| `PUT /me/avatar` | token | Confirm `{key}`: must be under `avatars/<my id>/` (`403 not_your_upload`), must exist (`404 upload_missing`), must be a small image (`422 invalid_image`, object deleted). Attaches it to my mentor or student profile and deletes the previous picture. |
+| `DELETE /me/avatar` | token | Remove my picture (204). |
+| `POST /webhooks/clerk` | Svix signature (no session token) | Clerk calls this. `user.deleted` removes the user row; the database cascades profiles, requests, threads, messages, and the pictures are deleted from S3. Other event types answer 200 `{handled: false}`. Bad or stale signature: 401. |
 
 Who is a mentor or a student comes from the session token's `metadata`
 claim (see Authentication below), so the Clerk Dashboard session-token
@@ -45,6 +49,8 @@ Configuration is two environment variables, both non-secret:
 | `CLERK_ISSUER` | `https://clerk.dapup.space` | The instance's frontend API origin. Development instances look like `https://<slug>.clerk.accounts.dev`. Set by Terraform (`var.clerk_issuer`). |
 | `CLERK_AUTHORIZED_PARTIES` | defaults to `CORS_ALLOWED_ORIGINS` | Origins a browser token may come from. |
 | `EMAIL_FROM` | `DapUp <no-reply@dapup.space>` | Sender for notification emails (request sent → mentor, accepted → student). Unset = no emails, nothing else changes. `SES_REGION` (default `us-east-2`) and `APP_BASE_URL` (links in emails) go with it. Set by Terraform. |
+| `CLERK_WEBHOOK_SECRET` | `whsec_…` from Clerk → Webhooks | Signing secret for `POST /webhooks/clerk`. Injected from Secrets Manager (`dapup/prod/clerk-webhook`) by the task definition. Unset = the route answers 503. |
+| `STORAGE_BUCKET` | `dapup-prod-student-files-<account>` | S3 bucket for profile pictures (`avatars/<user id>/…`). Unset = avatar routes answer 503 and `avatarUrl` is always null. Set by Terraform from the foundation bucket; the task role may only touch the `avatars/` prefix. |
 
 Rejections are always `401 Not authenticated` with `WWW-Authenticate: Bearer`.
 The reason (expired, wrong issuer, wrong origin, bad signature) is logged,

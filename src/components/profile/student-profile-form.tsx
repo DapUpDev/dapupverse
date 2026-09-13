@@ -22,8 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { mentorInitials } from "@/components/mentors/mentor-card";
-import { ImagePlaceholderField } from "@/components/profile/image-placeholder-field";
+import { AvatarUploadField } from "@/components/profile/avatar-upload-field";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   loadConnectionIntent,
   useHasConnectionIntent,
@@ -137,9 +137,11 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
 
       {editing ? (
         <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
-          <ImagePlaceholderField
-            initials={mentorInitials(form.fullName)}
+          <AvatarUploadField
+            name={form.fullName}
             idPrefix="student"
+            userId={profile.id}
+            avatarUrl={profile.avatarUrl}
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -300,7 +302,14 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
       ) : (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">{profile.fullName}</CardTitle>
+            <div className="flex items-center gap-3">
+              <ProfileAvatar
+                name={profile.fullName}
+                avatarUrl={profile.avatarUrl}
+                className="size-12 border border-chrome/30"
+              />
+              <CardTitle className="text-lg">{profile.fullName}</CardTitle>
+            </div>
             <Button variant="outline" onClick={() => setEditing(true)}>
               Edit profile
             </Button>

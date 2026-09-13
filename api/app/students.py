@@ -17,6 +17,7 @@ from app.auth import Principal, current_user
 from app.db import get_session
 from app.mentors import EDUCATION_SYSTEMS, _Camel, upsert_user
 from app.models import StudentProfile
+from app.storage import avatar_url_for
 
 router = APIRouter()
 
@@ -31,6 +32,7 @@ class StudentProfileOut(_Camel):
     education_system: str | None
     subjects: list[str]
     biography: str
+    avatar_url: str | None
 
 
 class StudentProfileUpdate(_Camel):
@@ -67,11 +69,21 @@ class StudentProfileUpdate(_Camel):
 def to_out(row: StudentProfile) -> StudentProfileOut:
     return StudentProfileOut(id=row.user_id, full_name=row.full_name, school=row.school,
                              year_level=row.year_level, education_system=row.education_system,
-                             subjects=row.subjects, biography=row.biography)
+                             subjects=row.subjects, biography=row.biography,
+                             avatar_url=avatar_url_for(row.avatar_key))
 
 
 def is_complete(row: StudentProfile) -> bool:
     return all(bool(getattr(row, field)) for field in REQUIRED_FOR_REQUESTS)
+
+
+def ensure_student_row(session: Session, user: Principal) -> StudentProfile:
+    """The caller's profile row, created (empty) if missing."""
+    row = session.get(StudentProfile, user.user_id)
+    if row is None:
+        row = StudentProfile(user_id=user.user_id)
+        session.add(row)
+    return row
 
 
 def require_student(user: Principal = Depends(current_user)) -> Principal:
@@ -110,10 +122,7 @@ def upsert_my_student_profile(
     """Create-if-missing, then apply the given fields (the frontend's
     ensure() and update() both land here)."""
     upsert_user(session, user)
-    row = session.get(StudentProfile, user.user_id)
-    if row is None:
-        row = StudentProfile(user_id=user.user_id)
-        session.add(row)
+    row = ensure_student_row(session, user)
     for field, value in body.model_dump(exclude_unset=True, by_alias=False).items():
         setattr(row, field, value)
     session.flush()

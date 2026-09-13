@@ -115,6 +115,22 @@ seconds, on navigation, and after any repository write). Addresses come from
 the `email` claim mirrored into `users.email`; no address, no email. Until
 SES production access is granted, only addresses verified in the SES console
 receive anything; rejections are logged, never surfaced.
+## Profile pictures (S3, presigned URLs)
+
+The file never passes through the API. The browser asks `POST /me/avatar/upload-url`
+for a presigned PUT URL (a normal HTTPS URL carrying a signature made with the
+task role's credentials, valid five minutes, pinned to one key and content type),
+PUTs the file straight to the private `student-files` bucket, then calls
+`PUT /me/avatar {key}` so the API can check the object landed and is a small
+image before recording `avatar_key` on the mentor or student profile. Reads work
+the same way: every profile response carries `avatarUrl`, a presigned GET URL
+valid for an hour, so the bucket stays private and nothing is ever public.
+Keys are `avatars/<user id>/<random>.<ext>`; the API refuses to attach a key
+outside the caller's own prefix, and the task role's IAM policy only reaches
+`avatars/*`. Frontend: `avatarRepository` (`http-avatar.ts`), the
+`AvatarUploadField` in both profile forms, and `ProfileAvatar` everywhere a
+picture or initials is shown. Locally (mock mode) the picture is a data URL in
+localStorage.
 
 ## WeWeb export
 

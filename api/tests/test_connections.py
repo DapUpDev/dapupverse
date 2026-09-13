@@ -155,5 +155,7 @@ def test_mentor_may_view_a_requester_but_not_a_stranger(client, keys, people):
 
 def test_validation(client, keys, people):
     assert send(client, keys, purpose="Life coaching").status_code == 422
-    assert send(client, keys, message="too short").status_code == 422
+    assert send(client, keys, message="hi").status_code == 422
+    assert send(client, keys, message="x" * 501).status_code == 422
+    assert send(client, keys, message="Help?").status_code == 201
     assert send(client, keys, mentorId="user_nobody").status_code == 404

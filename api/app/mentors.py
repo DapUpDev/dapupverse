@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from app.auth import Principal, current_user
 from app.db import get_session
 from app.models import MentorProfile, User
+from app.storage import avatar_url_for
 
 router = APIRouter()
 
@@ -51,6 +52,8 @@ class MentorPublic(_Camel):
     services: list[str]
     subjects: list[str]
     education_systems: list[str]
+    # Presigned read URL, valid about an hour; None when no picture is set.
+    avatar_url: str | None
 
 
 class MentorPrivate(MentorPublic):
@@ -103,7 +106,8 @@ class MentorProfileUpdate(_Camel):
 def _to_public(row: MentorProfile) -> MentorPublic:
     return MentorPublic(id=row.user_id, slug=row.slug, name=row.name, university=row.university,
                         major=row.major, country_region=row.country_region, biography=row.biography,
-                        services=row.services, subjects=row.subjects, education_systems=row.education_systems)
+                        services=row.services, subjects=row.subjects, education_systems=row.education_systems,
+                        avatar_url=avatar_url_for(row.avatar_key))
 
 
 def _to_private(row: MentorProfile) -> MentorPrivate:
@@ -150,6 +154,15 @@ def _unique_slug(session: Session, base: str, own_id: str) -> str:
     while f"{base}-{n}" in taken:
         n += 1
     return f"{base}-{n}"
+
+
+def ensure_mentor_row(session: Session, user: Principal) -> MentorProfile:
+    """The caller's profile row, created (empty, unlisted) if missing."""
+    row = session.get(MentorProfile, user.user_id)
+    if row is None:
+        row = MentorProfile(user_id=user.user_id, slug=_unique_slug(session, user.user_id.lower(), user.user_id))
+        session.add(row)
+    return row
 
 
 def _listed(query):
@@ -245,10 +258,7 @@ def upsert_my_mentor_profile(
     """Create-if-missing, then apply the given fields. Idempotent: an empty
     body just guarantees the row exists (the frontend's ensureProfile)."""
     upsert_user(session, user)
-    row = session.get(MentorProfile, user.user_id)
-    if row is None:
-        row = MentorProfile(user_id=user.user_id, slug=_unique_slug(session, user.user_id.lower(), user.user_id))
-        session.add(row)
+    row = ensure_mentor_row(session, user)
     changes = body.model_dump(exclude_unset=True, by_alias=False)
     # The slug is minted from the first real name and then left alone.
     # (A freshly constructed row has name None until it is flushed.)

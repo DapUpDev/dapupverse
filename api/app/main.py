@@ -15,12 +15,14 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
+from app.avatars import router as avatars_router
 from app.db import get_engine, get_session
 from app.mentors import router as mentors_router, upsert_user
 from app.messages import router as messages_router
 from app.models import User
 from app.connections import router as connections_router
 from app.students import router as students_router
+from app.webhooks import router as webhooks_router
 
 # One line to stdout per event, which the awslogs driver ships to CloudWatch.
 # Without this the app's own loggers (e.g. rejected-token reasons) are
@@ -63,6 +65,8 @@ app.include_router(mentors_router)
 app.include_router(students_router)
 app.include_router(connections_router)
 app.include_router(messages_router)
+app.include_router(avatars_router)
+app.include_router(webhooks_router)
 
 
 @app.get("/health")

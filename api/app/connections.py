@@ -56,7 +56,7 @@ class ConnectionOut(_Camel):
 class CreateConnectionIn(_Camel):
     mentor_id: str = Field(max_length=64)
     purpose: str
-    message: str = Field(min_length=20, max_length=600)
+    message: str = Field(min_length=5, max_length=500)
 
 
 def to_out(row: ConnectionRequest) -> ConnectionOut:
