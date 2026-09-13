@@ -20,7 +20,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "api/**"
+      - "backend/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch: # manual redeploy of the current commit
 
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: api
+        working-directory: backend
     # A real PostgreSQL for the database tests (migrations, /me, /ready).
     services:
       postgres:
@@ -102,7 +102,7 @@ jobs:
       - name: Build and push linux/amd64 image
         uses: docker/build-push-action@v6
         with:
-          context: api
+          context: backend
           platforms: linux/amd64
           push: true
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.sha }}

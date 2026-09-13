@@ -79,7 +79,7 @@ Client-side role rendering (navigation, CTAs) is presentation only.
 
 ## Data and authorization
 
-In production every repository talks to the DapUp API (`api/`), which
+In production every repository talks to the DapUp API (`backend/`), which
 verifies the Clerk session token itself and enforces authorization: who
 may see a mentor's price, who may read a student's profile, who may act
 on a connection, who may read a thread. The frontend's guards remain
