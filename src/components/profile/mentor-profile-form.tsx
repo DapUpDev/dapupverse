@@ -14,8 +14,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { mentorInitials } from "@/components/mentors/mentor-card";
-import { ImagePlaceholderField } from "@/components/profile/image-placeholder-field";
+import { AvatarUploadField } from "@/components/profile/avatar-upload-field";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   EDUCATION_SYSTEMS,
   SERVICE_TYPES,
@@ -156,9 +156,11 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
 
       {editing ? (
         <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
-          <ImagePlaceholderField
-            initials={mentorInitials(form.name)}
+          <AvatarUploadField
+            name={form.name}
             idPrefix="mentor"
+            userId={profile.id}
+            avatarUrl={profile.avatarUrl}
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -358,7 +360,14 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
       ) : (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">{profile.name}</CardTitle>
+            <div className="flex items-center gap-3">
+              <ProfileAvatar
+                name={profile.name}
+                avatarUrl={profile.avatarUrl}
+                className="size-12 border border-chrome/30"
+              />
+              <CardTitle className="text-lg">{profile.name}</CardTitle>
+            </div>
             <Button variant="outline" onClick={() => setEditing(true)}>
               Edit profile
             </Button>

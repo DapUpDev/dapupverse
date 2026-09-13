@@ -24,6 +24,9 @@ for the infrastructure and the deploy pipeline.
 | `GET /threads`, `GET /threads/{id}` | token | My conversations; participants only. |
 | `GET`/`POST /threads/{id}/messages` | token; participants | History; send (`409 messaging_unavailable` once the connection has ended). |
 | `POST /threads/{id}/read`, `GET /threads/{id}/unread` | token; participants | Read receipt; unread count. |
+| `POST /me/avatar/upload-url` | token | Presigned S3 PUT URL (5 min) for a JPEG/PNG/WebP up to 5 MB; `415 unsupported_type`, `413 too_large`. The browser uploads straight to S3. |
+| `PUT /me/avatar` | token | Confirm `{key}`: must be under `avatars/<my id>/` (`403 not_your_upload`), must exist (`404 upload_missing`), must be a small image (`422 invalid_image`, object deleted). Attaches it to my mentor or student profile and deletes the previous picture. |
+| `DELETE /me/avatar` | token | Remove my picture (204). |
 
 Who is a mentor or a student comes from the session token's `metadata`
 claim (see Authentication below), so the Clerk Dashboard session-token
@@ -43,6 +46,7 @@ Configuration is two environment variables, both non-secret:
 | --- | --- | --- |
 | `CLERK_ISSUER` | `https://clerk.dapup.space` | The instance's frontend API origin. Development instances look like `https://<slug>.clerk.accounts.dev`. Set by Terraform (`var.clerk_issuer`). |
 | `CLERK_AUTHORIZED_PARTIES` | defaults to `CORS_ALLOWED_ORIGINS` | Origins a browser token may come from. |
+| `STORAGE_BUCKET` | `dapup-prod-student-files-<account>` | S3 bucket for profile pictures (`avatars/<user id>/…`). Unset = avatar routes answer 503 and `avatarUrl` is always null. Set by Terraform from the foundation bucket; the task role may only touch the `avatars/` prefix. |
 
 Rejections are always `401 Not authenticated` with `WWW-Authenticate: Bearer`.
 The reason (expired, wrong issuer, wrong origin, bad signature) is logged,

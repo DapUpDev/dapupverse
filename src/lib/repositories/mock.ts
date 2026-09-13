@@ -22,6 +22,7 @@ import {
   BlockedPairError,
   DuplicateRequestError,
   MessagingUnavailableError,
+  type AvatarRepository,
   type ConnectionRepository,
   type MentorRepository,
   type MessageRepository,
@@ -37,6 +38,7 @@ export function toPublicMentor(profile: MentorProfile): Mentor {
 
 export function createMockRepositories(store: MockDataStore): {
   mentorRepository: MentorRepository;
+  avatarRepository: AvatarRepository;
   studentProfileRepository: StudentProfileRepository;
   connectionRepository: ConnectionRepository;
   messageRepository: MessageRepository;
@@ -99,6 +101,7 @@ export function createMockRepositories(store: MockDataStore): {
         subjects: [],
         educationSystems: [],
         privatePriceUsd: 0,
+        avatarUrl: null,
       };
       store.mutate((draft) => {
         draft.mentorProfiles.push(profile);
@@ -141,6 +144,7 @@ export function createMockRepositories(store: MockDataStore): {
         educationSystem: null,
         subjects: [],
         biography: "",
+        avatarUrl: null,
       };
       store.mutate((draft) => {
         draft.studentProfiles.push(profile);
@@ -360,8 +364,38 @@ export function createMockRepositories(store: MockDataStore): {
     },
   };
 
+  // Demo pictures live in localStorage as data URLs, on whichever profile
+  // (mentor or student) belongs to the user.
+  const setAvatar = (userId: string, avatarUrl: string | null) => {
+    store.mutate((draft) => {
+      const mentor = draft.mentorProfiles.find((m) => m.id === userId);
+      const student = draft.studentProfiles.find((s) => s.id === userId);
+      if (!mentor && !student) throw new Error(`Unknown user: ${userId}`);
+      if (mentor) mentor.avatarUrl = avatarUrl;
+      if (student) student.avatarUrl = avatarUrl;
+    });
+  };
+
+  const avatarRepository: AvatarRepository = {
+    async upload(userId: string, file: File): Promise<string | null> {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      setAvatar(userId, dataUrl);
+      return dataUrl;
+    },
+
+    async remove(userId: string): Promise<void> {
+      setAvatar(userId, null);
+    },
+  };
+
   return {
     mentorRepository,
+    avatarRepository,
     studentProfileRepository,
     connectionRepository,
     messageRepository,

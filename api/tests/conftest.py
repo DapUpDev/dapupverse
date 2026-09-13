@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from app.auth import ClerkVerifier, get_verifier
 from app.main import app
+from app.storage import ObjectInfo, get_storage
 
 ISSUER = "https://clerk.example.test"
 APP_ORIGIN = "https://www.dapup.space"
@@ -74,6 +75,43 @@ def mint(private_key, **overrides) -> str:
     claims.update(overrides)
     claims = {k: v for k, v in claims.items() if v is not None}
     return jwt.encode(claims, private_key, algorithm="RS256")
+
+
+# ---- storage -------------------------------------------------------------
+class FakeStorage:
+    """In-memory stand-in for S3. Tests "upload" by calling put() directly,
+    which is what the browser's PUT to the presigned URL would do."""
+
+    def __init__(self) -> None:
+        self.objects: dict[str, ObjectInfo] = {}
+        self.deleted: list[str] = []
+
+    def put(self, key: str, content_type: str = "image/png", size: int = 1024) -> None:
+        self.objects[key] = ObjectInfo(content_type=content_type, size=size)
+
+    def presign_put(self, key: str, content_type: str) -> str:
+        return f"https://fake-s3.test/{key}?X-Amz-Signature=put&content-type={content_type}"
+
+    def presign_get(self, key: str) -> str:
+        return f"https://fake-s3.test/{key}?X-Amz-Signature=get"
+
+    def head(self, key: str) -> ObjectInfo | None:
+        return self.objects.get(key)
+
+    def delete(self, key: str) -> None:
+        self.objects.pop(key, None)
+        self.deleted.append(key)
+
+
+@pytest.fixture
+def fake_storage(monkeypatch):
+    """Routes get it through the dependency; avatar_url_for() through the
+    module function (patched so the presigned URL helper sees the fake)."""
+    storage = FakeStorage()
+    app.dependency_overrides[get_storage] = lambda: storage
+    monkeypatch.setattr("app.storage.get_storage", lambda: storage)
+    yield storage
+    app.dependency_overrides.pop(get_storage, None)
 
 
 # ---- database ------------------------------------------------------------

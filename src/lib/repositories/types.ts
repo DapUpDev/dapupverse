@@ -47,6 +47,17 @@ export interface StudentProfileRepository {
   ensure(studentId: string): Promise<StudentProfile>;
 }
 
+export interface AvatarRepository {
+  /**
+   * Upload a profile picture for the signed-in user and attach it to their
+   * profile (mentor or student, decided by the account). Resolves to the
+   * new read URL. The mock stores a data URL; the HTTP adapter uploads to
+   * S3 through a presigned URL minted by the API.
+   */
+  upload(userId: string, file: File): Promise<string | null>;
+  remove(userId: string): Promise<void>;
+}
+
 export interface ConnectionRepository {
   createRequest(input: CreateConnectionRequestInput): Promise<ConnectionRequest>;
   acceptRequest(id: string): Promise<Connection>;

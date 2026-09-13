@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectCta } from "@/components/connect/connect-cta";
-import { mentorInitials } from "@/components/mentors/mentor-card";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import {
   connectionRepository,
@@ -116,14 +115,12 @@ export function MentorProfileView({ slug }: { slug: string }) {
       <div className="flex flex-col gap-8 md:flex-row md:items-start">
         <div className="flex flex-1 flex-col gap-6">
           <div className="flex items-center gap-5">
-            <Avatar className="size-24 border-2 border-chrome/40">
-              <AvatarFallback
-                aria-hidden="true"
-                className="bg-gradient-to-br from-surface-strong to-card font-mono text-2xl font-semibold text-foreground"
-              >
-                {mentorInitials(mentor.name)}
-              </AvatarFallback>
-            </Avatar>
+            <ProfileAvatar
+              name={mentor.name}
+              avatarUrl={mentor.avatarUrl}
+              className="size-24 border-2 border-chrome/40"
+              fallbackClassName="text-2xl font-semibold"
+            />
             <div className="flex flex-col gap-1">
               <span aria-hidden="true" className="tech-label">
                 MENTOR PROFILE

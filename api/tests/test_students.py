@@ -46,7 +46,7 @@ def test_ensure_then_update(client, keys):
     ensured = client.put("/me/student-profile", json={}, headers=bearer(keys))
     assert ensured.status_code == 200, ensured.text
     assert ensured.json() == {"id": "user_stu1", "fullName": "", "school": "", "yearLevel": "",
-                              "educationSystem": None, "subjects": [], "biography": ""}
+                              "educationSystem": None, "subjects": [], "biography": "", "avatarUrl": None}
     updated = client.put("/me/student-profile", json=MAYA, headers=bearer(keys)).json()
     assert updated["fullName"] == "Maya Lin" and updated["educationSystem"] == "AP"
     assert client.get("/me/student-profile", headers=bearer(keys)).json() == updated

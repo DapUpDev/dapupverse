@@ -15,6 +15,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
+from app.avatars import router as avatars_router
 from app.db import get_engine, get_session
 from app.mentors import router as mentors_router, upsert_user
 from app.messages import router as messages_router
@@ -63,6 +64,7 @@ app.include_router(mentors_router)
 app.include_router(students_router)
 app.include_router(connections_router)
 app.include_router(messages_router)
+app.include_router(avatars_router)
 
 
 @app.get("/health")
