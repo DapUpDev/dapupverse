@@ -8,8 +8,11 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name       = aws_ecs_cluster.main.name
-  capacity_providers = ["FARGATE"]
+  cluster_name = aws_ecs_cluster.main.name
+  # FARGATE_SPOT: spare capacity at up to 70% off; AWS may reclaim a task
+  # with two minutes' notice. Fine for the queue worker (a job that is
+  # interrupted simply becomes visible on the queue again), never for the API.
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
 
   default_capacity_provider_strategy {
     capacity_provider = "FARGATE"

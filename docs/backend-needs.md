@@ -145,7 +145,7 @@ out-of-band so it never lands in Terraform state.
 1. RDS + migrations + `users` sync from Clerk. The API can then answer "who are you" from its own database.
 2. Tier 1 tables and endpoints behind the existing repository interfaces; swap `src/lib/repositories/index.ts` to HTTP adapters.
 3. S3 avatars.
-4. SQS worker service + SES notifications.
+4. SQS worker service (DONE 2026-09-13: queue, weekly schedule, Spot worker that logs jobs) + SES notifications (DONE).
 5. Tier 2 in the proposal's order: progress core, RAG, triage, scheduling.
 
 ## Monthly cost estimate
