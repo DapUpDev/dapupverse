@@ -132,6 +132,19 @@ outside the caller's own prefix, and the task role's IAM policy only reaches
 picture or initials is shown. Locally (mock mode) the picture is a data URL in
 localStorage.
 
+## Background work: queue, worker, clock
+
+Anything that should not make a request wait goes through a queue. `infra/queue.tf`
+is an SQS queue (plus a dead-letter queue after five failed tries); `infra/worker.tf`
+is a second Fargate service running the same image as the API with the command
+`python -m app.worker` (`backend/app/worker.py`): no public address, long-polls the
+queue, handles each message, deletes it only once handled. Today "handle" means
+log the job; the AI workflows module replaces that. `infra/schedule.tf` is the
+clock: EventBridge Scheduler drops one `{"job": "weekly-checkin"}` message on the
+queue every Monday 09:00 UTC. The worker has its own role: the queue, read-only
+student files, and Anthropic models on Bedrock (via inference profiles). It runs
+on Fargate Spot, one task, and the deploy pipeline rolls it onto every new image.
+
 ## WeWeb export
 
 The previous frontend's WeWeb code export is a read-only record of prior screens and behavior. It stays out of this repository (`.gitignore` guards common paths), and its generated runtime, compiled bundles, and any embedded service configuration must never be copied here.

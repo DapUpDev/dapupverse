@@ -151,3 +151,30 @@ variable "app_base_url" {
   type        = string
   default     = "https://www.dapup.space"
 }
+
+variable "worker_desired_count" {
+  description = "Queue workers to keep running. 0 parks the worker (jobs wait on the queue, up to 14 days)."
+  type        = number
+  default     = 1
+}
+
+variable "worker_cpu" {
+  type    = number
+  default = 256
+}
+
+variable "worker_memory" {
+  type    = number
+  default = 512
+}
+
+variable "weekly_schedule" {
+  description = "EventBridge Scheduler cron for the weekly job (UTC). Default: Mondays 09:00."
+  type        = string
+  default     = "cron(0 9 ? * MON *)"
+}
+
+variable "weekly_schedule_enabled" {
+  type    = bool
+  default = true
+}

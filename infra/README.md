@@ -104,6 +104,31 @@ smoke-test `https://api.dapup.space/health` for the new version.
   definitions too, and an untagged revision shows up as tag drift.
 - Manual redeploy of the current commit: Actions → Deploy API → Run workflow.
 
+## Worker, queue, clock
+
+Three files, one apply: `queue.tf` (SQS job queue + dead-letter queue),
+`worker.tf` (second Fargate service, same image, command `python -m app.worker`,
+own task role: queue + read-only student files + Anthropic on Bedrock, Fargate
+Spot, no public address), `schedule.tf` (EventBridge Scheduler, Mondays 09:00
+UTC, drops `{"job":"weekly-checkin"}` on the queue). The worker's task
+definition follows the same ownership contract as the API's; the deploy
+workflow rolls the worker onto every new image (skipped until the service
+exists).
+
+Order for the first rollout: merge the worker PR first (so the image the
+service starts from already contains `app/worker.py`), then `terraform apply`.
+After that, the usual apply-before-merge order applies again.
+
+Proof:
+
+```bash
+aws sqs send-message --queue-url "$(terraform output -raw jobs_queue_url)" --message-body '{"job":"hello","source":"manual"}'
+aws logs tail /ecs/dapup-prod-worker --since 5m
+aws scheduler get-schedule --name dapup-prod-weekly --query "{state:State,when:ScheduleExpression}"
+```
+
+Park the worker (jobs wait on the queue) with `worker_desired_count = 0`.
+
 ## Verification
 
 ```bash

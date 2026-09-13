@@ -8,6 +8,15 @@ file under a root-level `api/` folder as a Python Serverless Function, and the
 Hobby plan allows 12 per deployment. Named `api/`, this code broke the site's
 deploys (2026-09-13). The API itself never runs on Vercel.
 
+## Two processes, one image
+
+- **API**: the default command. Runs migrations, then uvicorn.
+- **Worker** (`python -m app.worker`, see `app/worker.py`): long-polls the SQS
+  job queue, logs each job, deletes it once handled, exits cleanly on SIGTERM.
+  Env: `QUEUE_URL` (required), `WORKER_ONCE=1` to poll once and exit (local
+  runs). Deployed as the `dapup-prod-worker` Fargate service; the deploy
+  workflow rolls it onto the same image as the API.
+
 ## Routes
 
 | Route | Auth | Purpose |

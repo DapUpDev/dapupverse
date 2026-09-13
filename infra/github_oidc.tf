@@ -104,12 +104,12 @@ data "aws_iam_policy_document" "github_deploy" {
   }
 
   statement {
-    sid = "UpdateApiService"
+    sid = "UpdateServices"
     actions = [
       "ecs:DescribeServices",
       "ecs:UpdateService",
     ]
-    resources = [aws_ecs_service.api.id]
+    resources = [aws_ecs_service.api.id, aws_ecs_service.worker.id]
   }
 
   # Registering a task definition hands its roles to ECS. Only the two
@@ -120,6 +120,7 @@ data "aws_iam_policy_document" "github_deploy" {
     resources = [
       aws_iam_role.task_execution.arn,
       aws_iam_role.task.arn,
+      aws_iam_role.worker_task.arn,
     ]
     condition {
       test     = "StringEquals"

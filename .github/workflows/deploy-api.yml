@@ -37,6 +37,9 @@ env:
   ECS_SERVICE: dapup-prod-api
   TASK_FAMILY: dapup-prod-api
   CONTAINER_NAME: api
+  WORKER_SERVICE: dapup-prod-worker
+  WORKER_FAMILY: dapup-prod-worker
+  WORKER_CONTAINER: worker
   HEALTH_URL: https://api.dapup.space/health
 
 permissions:
@@ -138,6 +141,36 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           wait-for-service-stability: true
           wait-for-minutes: 10
+
+      # The queue worker runs the same image with a different command, so it
+      # gets the same treatment: copy its current task definition, swap the
+      # image, register, roll. Its family and service are created by
+      # Terraform; until they exist (the first deploy after the worker PR
+      # merges) this step just says so and moves on.
+      - name: Roll the worker onto the same image
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.sha }}
+          VERSION: ${{ steps.tag.outputs.sha }}
+        run: |
+          active=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$WORKER_SERVICE"             --query 'services[?status==`ACTIVE`].serviceName' --output text)
+          if [ "$active" != "$WORKER_SERVICE" ]; then
+            echo "worker service not created yet (terraform apply pending); skipping"; exit 0
+          fi
+          aws ecs describe-task-definition --task-definition "$WORKER_FAMILY" --include TAGS             --query '{taskDefinition: taskDefinition, tags: tags}'             | jq --arg image "$IMAGE" --arg version "$VERSION" --arg name "$WORKER_CONTAINER" '
+                .taskDefinition + {tags: .tags}
+                | .containerDefinitions |= map(
+                    if .name == $name then
+                      .image = $image
+                      | .environment |= map(if .name == "APP_VERSION" then .value = $version else . end)
+                    else . end)
+                | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities,
+                      .registeredAt, .registeredBy, .deregisteredAt)
+              ' > worker-task-definition.json
+          arn=$(aws ecs register-task-definition --cli-input-json file://worker-task-definition.json             --query taskDefinition.taskDefinitionArn --output text)
+          echo "registered $arn"
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service "$WORKER_SERVICE" --task-definition "$arn" > /dev/null
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$WORKER_SERVICE"
+          echo "worker rolled"
 
       # The circuit breaker rolls back a bad deploy on the AWS side; this
       # makes the workflow itself go red if the new version is not serving.

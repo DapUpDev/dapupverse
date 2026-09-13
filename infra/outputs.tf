@@ -56,3 +56,12 @@ output "github_deploy_role_arn" {
 output "github_oidc_subject" {
   value = local.github_oidc_subject
 }
+
+output "jobs_queue_url" {
+  description = "Drop a message here (aws sqs send-message) and watch it appear in the worker's logs."
+  value       = aws_sqs_queue.jobs.url
+}
+
+output "worker_log_group" {
+  value = aws_cloudwatch_log_group.worker.name
+}
