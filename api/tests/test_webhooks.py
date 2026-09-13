@@ -91,6 +91,11 @@ def test_rejections(client):
     assert client.post("/webhooks/clerk", json=body).status_code == 401
 
 
+def test_placeholder_secret_rejects_instead_of_crashing(client, monkeypatch):
+    monkeypatch.setenv("CLERK_WEBHOOK_SECRET", "whsec_placeholder-set-me-from-the-clerk-dashboard")
+    assert deliver(client, {"type": "user.deleted", "data": {"id": "user_x"}}).status_code == 401
+
+
 def test_unconfigured_answers_503(client, monkeypatch):
     monkeypatch.delenv("CLERK_WEBHOOK_SECRET")
     assert deliver(client, {"type": "user.deleted", "data": {"id": "user_x"}}).status_code == 503

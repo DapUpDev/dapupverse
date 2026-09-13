@@ -46,7 +46,12 @@ def verify_svix(secret: str, msg_id: str, timestamp: str, signature_header: str,
         return False
     if abs((now if now is not None else time.time()) - sent_at) > TOLERANCE_SECONDS:
         return False
-    key = base64.b64decode(secret.removeprefix("whsec_"))
+    try:
+        key = base64.b64decode(secret.removeprefix("whsec_"), validate=True)
+    except ValueError:
+        # A secret that is not base64 (the Terraform placeholder before the
+        # owner pastes the real one) can never verify anything: plain 401.
+        return False
     signed = f"{msg_id}.{timestamp}.".encode() + body
     expected = base64.b64encode(hmac.new(key, signed, hashlib.sha256).digest()).decode()
     # The header may carry several "v1,<sig>" entries (during a secret rotation).
