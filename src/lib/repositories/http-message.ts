@@ -52,14 +52,19 @@ export function createHttpMessageRepository(): MessageRepository {
 
     async markThreadRead(threadId: string): Promise<void> {
       await apiFetch<void>(`/threads/${encodeURIComponent(threadId)}/read`, { method: "POST" });
-      // Not announced: read receipts only affect badges, and the caller's
-      // own query re-runs on its next render anyway.
+      // Announced so the header's unread badge drops right away.
+      notifyRepositoryChange();
     },
 
     async unreadCount(threadId: string): Promise<number> {
       const result = await apiFetch<{ count: number }>(
         `/threads/${encodeURIComponent(threadId)}/unread`,
       );
+      return result.count;
+    },
+
+    async unreadTotal(): Promise<number> {
+      const result = await apiFetch<{ count: number }>("/me/unread");
       return result.count;
     },
   };

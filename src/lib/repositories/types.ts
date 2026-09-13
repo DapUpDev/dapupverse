@@ -82,6 +82,8 @@ export interface MessageRepository {
   sendMessage(threadId: string, senderId: string, text: string): Promise<Message>;
   markThreadRead(threadId: string, userId: string): Promise<void>;
   unreadCount(threadId: string, userId: string): Promise<number>;
+  /** Unread messages across every conversation the user is in (the header badge). */
+  unreadTotal(userId: string): Promise<number>;
 }
 
 /** Thrown when a student already has an active request to the same mentor. */

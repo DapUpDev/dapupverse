@@ -10,7 +10,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import Field
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -137,6 +137,26 @@ def mark_read(thread_id: str, user: Annotated[Principal, Depends(current_user)],
               session: Annotated[Session, Depends(get_session)]) -> None:
     thread = _load_thread(session, thread_id, user)
     _mark_read(session, thread, user.user_id)
+
+
+@router.get("/me/unread", response_model=UnreadOut, response_model_by_alias=True)
+def unread_total(user: Annotated[Principal, Depends(current_user)],
+                 session: Annotated[Session, Depends(get_session)]) -> UnreadOut:
+    """Unread messages across every conversation I am in: the red number
+    on the Messages link. One query: messages in my threads, sent by the
+    other person, newer than my read receipt (or any, if I never read)."""
+    stmt = (
+        select(func.count())
+        .select_from(Message)
+        .join(MessageThread, MessageThread.id == Message.thread_id)
+        .outerjoin(ThreadRead, and_(ThreadRead.thread_id == Message.thread_id, ThreadRead.user_id == user.user_id))
+        .where(
+            or_(MessageThread.mentor_id == user.user_id, MessageThread.student_id == user.user_id),
+            Message.sender_id != user.user_id,
+            or_(ThreadRead.last_read_at.is_(None), Message.sent_at > ThreadRead.last_read_at),
+        )
+    )
+    return UnreadOut(count=session.scalar(stmt) or 0)
 
 
 @router.get("/threads/{thread_id}/unread", response_model=UnreadOut, response_model_by_alias=True)

@@ -75,7 +75,7 @@ message never causes a duplicate side effect.
 | Job | Trigger | Why it is not inline | AWS piece |
 | --- | --- | --- | --- |
 | Sync Clerk users into `users` | Clerk webhook `user.created/updated/deleted` hits the API | Webhook must answer fast and be retry-safe; enqueue, then apply | API endpoint + SQS |
-| Email notifications: new request, request accepted, new message | Domain events from the API | Email latency and failures must not block the request | EventBridge → SQS → worker → **Amazon SES** (identity `dapup.space`, already verified in us-east-2; production access request pending) |
+| Email notifications: new request → mentor, accepted → student (DONE 2026-09-12; new messages are NOT emailed, the app shows an unread badge instead) | The two routes in `connections.py` | Email latency and failures must not block the request | v1: the API sends through **Amazon SES** in a FastAPI background task after the response (`app/notifications.py`); move behind SQS once the worker exists. Identity `dapup.space` verified in us-east-2; production access still pending, sandbox delivers only to verified addresses. |
 | Avatar processing (resize, EXIF strip) | S3 `ObjectCreated` on `avatars/` | CPU work off the request path | S3 event → SQS → worker |
 | One-off: migrate the old Supabase records and files | Manual | ~7 active students today; run once, verify, cut over | ECS one-off task |
 | RAG ingestion: chunk, embed, store (Tier 2) | S3 upload or record change | Slow, retryable, model-bound | SQS → worker → Bedrock → pgvector |

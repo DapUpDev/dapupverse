@@ -79,6 +79,10 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CORS_ALLOWED_ORIGINS", value = join(",", var.cors_allowed_origins) },
       { name = "CLERK_ISSUER", value = var.clerk_issuer },
       { name = "CORS_ALLOWED_ORIGIN_REGEX", value = var.cors_allowed_origin_regex },
+      # Notification emails (see email.tf). Unset EMAIL_FROM = no emails.
+      { name = "EMAIL_FROM", value = var.email_from },
+      { name = "SES_REGION", value = var.ses_region },
+      { name = "APP_BASE_URL", value = var.app_base_url },
       # Profile pictures: bucket name and the region to sign URLs for.
       { name = "STORAGE_BUCKET", value = data.aws_s3_bucket.student_files.bucket },
       { name = "AWS_REGION", value = var.aws_region },

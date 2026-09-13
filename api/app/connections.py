@@ -23,7 +23,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import Field
 from sqlalchemy import exists, func, or_, select
 from sqlalchemy.orm import Session
@@ -31,7 +31,8 @@ from sqlalchemy.orm import Session
 from app.auth import Principal, current_user
 from app.db import get_session
 from app.mentors import _Camel, require_mentor, upsert_user
-from app.models import ConnectionRequest, MentorProfile, MessageThread, StudentProfile
+from app.models import ConnectionRequest, MentorProfile, MessageThread, StudentProfile, User
+from app.notifications import Mailer, deliver, get_mailer, request_accepted_email, request_sent_email
 from app.students import is_complete, require_student
 
 router = APIRouter()
@@ -109,6 +110,8 @@ def create_request(
     body: CreateConnectionIn,
     user: Annotated[Principal, Depends(require_student)],
     session: Annotated[Session, Depends(get_session)],
+    mailer: Annotated[Mailer | None, Depends(get_mailer)],
+    background: BackgroundTasks,
 ) -> ConnectionOut:
     if body.purpose not in PURPOSES:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"unknown purpose: {body.purpose}")
@@ -132,6 +135,13 @@ def create_request(
     session.add(row)
     session.flush()
     session.refresh(row)
+    # Tell the mentor by email, after the response has gone out. Everything
+    # the email needs is read now, while the session is still open.
+    mentor_user = session.get(User, body.mentor_id)
+    if mailer and mentor_user and mentor_user.email:
+        background.add_task(deliver, mailer, request_sent_email(
+            to=mentor_user.email, mentor_name=mentor.name, student_name=profile.full_name,
+            purpose=row.purpose, message=row.message))
     return to_out(row)
 
 
@@ -182,6 +192,8 @@ def accept(
     connection_id: str,
     user: Annotated[Principal, Depends(require_mentor)],
     session: Annotated[Session, Depends(get_session)],
+    mailer: Annotated[Mailer | None, Depends(get_mailer)],
+    background: BackgroundTasks,
 ) -> ConnectionOut:
     row = _load(session, connection_id)
     _mentor_of(row, user)
@@ -193,6 +205,13 @@ def accept(
     session.add(MessageThread(connection_id=row.id, mentor_id=row.mentor_id, student_id=row.student_id))
     session.flush()
     session.refresh(row)
+    student_user = session.get(User, row.student_id)
+    if mailer and student_user and student_user.email:
+        mentor_profile = session.get(MentorProfile, row.mentor_id)
+        student_profile = session.get(StudentProfile, row.student_id)
+        background.add_task(deliver, mailer, request_accepted_email(
+            to=student_user.email, student_name=student_profile.full_name if student_profile else "",
+            mentor_name=mentor_profile.name if mentor_profile else "Your mentor"))
     return to_out(row)
 
 
