@@ -123,3 +123,34 @@ Key/environment pairing:
 test phone numbers and signs them in via server-minted sign-in tokens using
 the local `CLERK_SECRET_KEY`. They exist only in the development instance
 and are safe to delete; the suite recreates them.
+
+## 8. Webhook for deleted accounts (Configure → Webhooks)
+
+Clerk owns the accounts; our database owns everything else. Every API call
+refreshes the caller's `users` row, but a person who deletes their Clerk
+account never calls again, so Clerk has to tell us. This is the one route
+without a session token: Clerk signs each delivery instead, and the API
+checks the signature.
+
+Production instance only (the development instance has nothing to clean up):
+
+1. Clerk dashboard → **Configure → Webhooks → Add endpoint**.
+2. Endpoint URL: `https://api.dapup.space/webhooks/clerk`.
+3. Subscribe to **`user.deleted`** only. Other events are acknowledged and
+   ignored.
+4. Create it, then open **Signing secret** and copy the `whsec_…` value.
+5. Put it in Secrets Manager (never in a file or a PR):
+
+   ```bash
+   aws secretsmanager put-secret-value --secret-id dapup/prod/clerk-webhook --secret-string "whsec_PASTE_HERE"
+   ```
+
+6. Restart the API tasks so they pick it up (`aws ecs update-service --cluster dapup-prod --service dapup-prod-api --force-new-deployment`), or just wait for the next deploy.
+7. Test: in the endpoint's **Testing** tab send an example `user.deleted`.
+   Expect `200 {"handled": true, "removed": false}` (the example id does not
+   exist). The API logs one line per delivery under `dapup.webhooks`.
+
+What a real deletion does: the `users` row goes, and the database cascades
+the mentor or student profile, requests, threads, messages, and read
+receipts; the profile picture is deleted from S3. The other person in a chat
+loses that history too (decided 2026-09-12: simplest and honest).
