@@ -79,7 +79,7 @@ is server-enforced in layouts/pages via `requireAuth` /
 
 ## Data access
 
-The backend is the FastAPI service in `api/` on AWS (ECS Fargate, RDS
+The backend is the FastAPI service in `backend/` on AWS (ECS Fargate, RDS
 PostgreSQL, see `infra/`). The frontend reaches it only through
 `src/lib/api/client.ts`, and only from inside a repository adapter; UI
 components never talk HTTP directly.
@@ -99,14 +99,14 @@ one at a time:
 Every screen reads and writes through the API when the base URL is set.
 
 The Clerk session token travels as `Authorization: Bearer` and the API
-verifies it itself (`api/README.md`); authorization decisions such as who
+verifies it itself (`backend/README.md`); authorization decisions such as who
 may see a mentor's price live in the API, not in the frontend. Supabase is
 not part of the architecture.
 
 ## Notifications
 
 Two emails, sent by the API through SES after the HTTP response has gone out
-(FastAPI background task, `api/app/notifications.py`): a student sent a
+(FastAPI background task, `backend/app/notifications.py`): a student sent a
 request (to the mentor, linking to `/app/requests`) and a mentor accepted (to
 the student, linking to `/app/messages`). New chat messages are deliberately
 not emailed; the header shows an Instagram-style unread count instead

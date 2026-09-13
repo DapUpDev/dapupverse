@@ -3,6 +3,11 @@
 Runs on ECS Fargate behind `https://api.dapup.space`; see `infra/README.md`
 for the infrastructure and the deploy pipeline.
 
+Why this folder is `backend/` and not `api/`: Vercel treats every `.py`
+file under a root-level `api/` folder as a Python Serverless Function, and the
+Hobby plan allows 12 per deployment. Named `api/`, this code broke the site's
+deploys (2026-09-13). The API itself never runs on Vercel.
+
 ## Routes
 
 | Route | Auth | Purpose |
@@ -79,7 +84,7 @@ them every caller is a student with no admin capability and no email.
 ## Local development
 
 ```bash
-cd api
+cd backend
 uv sync
 uv run pytest          # database tests start a temporary PostgreSQL from a local initdb, or use TEST_DATABASE_URL
 CLERK_ISSUER=https://<slug>.clerk.accounts.dev CORS_ALLOWED_ORIGINS=http://localhost:3000 DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/dapup?sslmode=disable uv run python -m app.migrate

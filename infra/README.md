@@ -80,7 +80,7 @@ security group from the foundation's outputs the same way.
 ## Deploy pipeline (Stage 4)
 
 `.github/workflows/deploy-api.yml` runs on every push to `main` that touches
-`api/`: unit tests → OIDC assume-role → build `linux/amd64` → push
+`backend/`: unit tests → OIDC assume-role → build `linux/amd64` → push
 `dapup-api:<12-char sha>` → register a task-definition revision with only the
 image and `APP_VERSION` changed → `UpdateService` and wait for stability →
 smoke-test `https://api.dapup.space/health` for the new version.
