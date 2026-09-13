@@ -358,6 +358,16 @@ export function createMockRepositories(store: MockDataStore): {
           m.sentAt > lastRead,
       ).length;
     },
+
+    async unreadTotal(userId: string): Promise<number> {
+      const mine = store
+        .getSnapshot()
+        .threads.filter((t) => t.mentorId === userId || t.studentId === userId);
+      const counts = await Promise.all(
+        mine.map((t) => messageRepository.unreadCount(t.id, userId)),
+      );
+      return counts.reduce((sum, n) => sum + n, 0);
+    },
   };
 
   return {

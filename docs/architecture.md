@@ -103,6 +103,19 @@ verifies it itself (`api/README.md`); authorization decisions such as who
 may see a mentor's price live in the API, not in the frontend. Supabase is
 not part of the architecture.
 
+## Notifications
+
+Two emails, sent by the API through SES after the HTTP response has gone out
+(FastAPI background task, `api/app/notifications.py`): a student sent a
+request (to the mentor, linking to `/app/requests`) and a mentor accepted (to
+the student, linking to `/app/messages`). New chat messages are deliberately
+not emailed; the header shows an Instagram-style unread count instead
+(`GET /me/unread`, `UnreadBadge` next to the Messages link, refreshed every 30
+seconds, on navigation, and after any repository write). Addresses come from
+the `email` claim mirrored into `users.email`; no address, no email. Until
+SES production access is granted, only addresses verified in the SES console
+receive anything; rejections are logged, never surfaced.
+
 ## WeWeb export
 
 The previous frontend's WeWeb code export is a read-only record of prior screens and behavior. It stays out of this repository (`.gitignore` guards common paths), and its generated runtime, compiled bundles, and any embedded service configuration must never be copied here.

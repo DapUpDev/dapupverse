@@ -127,3 +127,27 @@ variable "cors_allowed_origin_regex" {
   type        = string
   default     = "^https://[a-z0-9-]+[.]vercel[.]app$"
 }
+
+variable "ses_region" {
+  description = "Region of the SES identity used for notification emails (verified in us-east-2, not the stack's region)."
+  type        = string
+  default     = "us-east-2"
+}
+
+variable "ses_identity" {
+  description = "Verified SES domain identity the API sends from."
+  type        = string
+  default     = "dapup.space"
+}
+
+variable "email_from" {
+  description = "From header for notification emails; the address must belong to var.ses_identity."
+  type        = string
+  default     = "DapUp <no-reply@dapup.space>"
+}
+
+variable "app_base_url" {
+  description = "Public site origin used for links inside emails."
+  type        = string
+  default     = "https://www.dapup.space"
+}

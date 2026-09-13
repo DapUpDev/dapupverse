@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { navItemsForIdentity } from "@/components/shell/navigation";
+import { UnreadBadge } from "@/components/shell/unread-badge";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,9 @@ export function SiteHeader() {
                     aria-current={isActive(item.href) ? "page" : undefined}
                   >
                     {item.label}
+                    {item.href === "/app/messages" && identity.dataUserId ? (
+                      <UnreadBadge userId={identity.dataUserId} />
+                    ) : null}
                   </Link>
                 </li>
               ))}
@@ -111,6 +115,9 @@ export function SiteHeader() {
                         aria-current={isActive(item.href) ? "page" : undefined}
                       >
                         {item.label}
+                        {item.href === "/app/messages" && identity.dataUserId ? (
+                          <UnreadBadge userId={identity.dataUserId} />
+                        ) : null}
                       </Link>
                     </li>
                   ))}

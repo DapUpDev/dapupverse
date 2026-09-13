@@ -24,6 +24,7 @@ for the infrastructure and the deploy pipeline.
 | `GET /threads`, `GET /threads/{id}` | token | My conversations; participants only. |
 | `GET`/`POST /threads/{id}/messages` | token; participants | History; send (`409 messaging_unavailable` once the connection has ended). |
 | `POST /threads/{id}/read`, `GET /threads/{id}/unread` | token; participants | Read receipt; unread count. |
+| `GET /me/unread` | token | Unread messages across all my conversations: the red number on the Messages link. |
 
 Who is a mentor or a student comes from the session token's `metadata`
 claim (see Authentication below), so the Clerk Dashboard session-token
@@ -43,6 +44,7 @@ Configuration is two environment variables, both non-secret:
 | --- | --- | --- |
 | `CLERK_ISSUER` | `https://clerk.dapup.space` | The instance's frontend API origin. Development instances look like `https://<slug>.clerk.accounts.dev`. Set by Terraform (`var.clerk_issuer`). |
 | `CLERK_AUTHORIZED_PARTIES` | defaults to `CORS_ALLOWED_ORIGINS` | Origins a browser token may come from. |
+| `EMAIL_FROM` | `DapUp <no-reply@dapup.space>` | Sender for notification emails (request sent → mentor, accepted → student). Unset = no emails, nothing else changes. `SES_REGION` (default `us-east-2`) and `APP_BASE_URL` (links in emails) go with it. Set by Terraform. |
 
 Rejections are always `401 Not authenticated` with `WWW-Authenticate: Bearer`.
 The reason (expired, wrong issuer, wrong origin, bad signature) is logged,
