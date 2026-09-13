@@ -152,7 +152,10 @@ jobs:
           IMAGE: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.sha }}
           VERSION: ${{ steps.tag.outputs.sha }}
         run: |
-          active=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$WORKER_SERVICE"             --query 'services[?status==`ACTIVE`].serviceName' --output text)
+          # Before the worker's Terraform is applied this call is also
+          # DENIED (the deploy role may only describe services that exist
+          # in Terraform), so any failure here means "not created yet".
+          active=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$WORKER_SERVICE"             --query 'services[?status==`ACTIVE`].serviceName' --output text 2>/dev/null || true)
           if [ "$active" != "$WORKER_SERVICE" ]; then
             echo "worker service not created yet (terraform apply pending); skipping"; exit 0
           fi
