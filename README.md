@@ -44,7 +44,7 @@ real, but profiles, requests, and messages live in each browser's
 localStorage — they do not sync between devices or users, and real
 multi-user messaging will not work until backend persistence exists. AWS is
 the intended later backend direction, but nothing has been selected or
-implemented. Supabase is not part of the new architecture.
+implemented. The WeWeb-era hosted database was retired on 2026-09-15 and plays no part in the new architecture.
 
 Still intentionally **not** included:
 
