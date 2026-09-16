@@ -77,7 +77,7 @@ message never causes a duplicate side effect.
 | Sync Clerk users into `users` | Clerk webhook `user.created/updated/deleted` hits the API | Webhook must answer fast and be retry-safe; enqueue, then apply | API endpoint + SQS |
 | Email notifications: new request → mentor, accepted → student (DONE 2026-09-12; new messages are NOT emailed, the app shows an unread badge instead) | The two routes in `connections.py` | Email latency and failures must not block the request | v1: the API sends through **Amazon SES** in a FastAPI background task after the response (`app/notifications.py`); move behind SQS once the worker exists. Identity `dapup.space` verified in us-east-2; production access still pending, sandbox delivers only to verified addresses. |
 | Avatar processing (resize, EXIF strip) | S3 `ObjectCreated` on `avatars/` | CPU work off the request path | S3 event → SQS → worker |
-| One-off: migrate the old Supabase records and files | Manual | ~7 active students today; run once, verify, cut over | ECS one-off task |
+| One-off migration of the WeWeb-era records | Skipped by decision (2026-09-12: start fresh); the old hosted project was retired on 2026-09-15 after a final export | n/a | n/a |
 | RAG ingestion: chunk, embed, store (Tier 2) | S3 upload or record change | Slow, retryable, model-bound | SQS → worker → Bedrock → pgvector |
 | Check-in triage: retrieve, reason, decide, schedule, brief (Tier 2) | Check-in submitted | Target under 10 s end-to-end but never in the HTTP request | SQS → LangGraph worker → Bedrock → RDS → scheduler |
 

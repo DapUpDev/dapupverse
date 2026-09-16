@@ -16,7 +16,7 @@ How auth worked before this milestone:
   enabled yet" notice on `/app/**` and `/admin`.
 - Route "protection" was preview UI gating (`RequireDemoAccount`,
   client-side `isAdmin` checks) — presentation, not security.
-- **Supabase was never installed or referenced** anywhere in the codebase
+- **The WeWeb-era hosted database was never installed or referenced** anywhere in the codebase
   (verified by grep); it existed only in the old WeWeb export, which is not
   part of this repository.
 - Product data was (and still is) deterministic mock data in a

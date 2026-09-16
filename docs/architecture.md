@@ -100,8 +100,8 @@ Every screen reads and writes through the API when the base URL is set.
 
 The Clerk session token travels as `Authorization: Bearer` and the API
 verifies it itself (`backend/README.md`); authorization decisions such as who
-may see a mentor's price live in the API, not in the frontend. Supabase is
-not part of the architecture.
+may see a mentor's price live in the API, not in the frontend. The WeWeb-era hosted database was retired on 2026-09-15
+and plays no part in the architecture.
 
 ## Notifications
 
