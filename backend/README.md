@@ -17,6 +17,44 @@ deploys (2026-09-13). The API itself never runs on Vercel.
   runs). Deployed as the `dapup-prod-worker` Fargate service; the deploy
   workflow rolls it onto the same image as the API.
 
+### Calling a model
+
+`app/llm.py` is one ask-the-model function with three providers behind an
+environment switch. Code calls `app.llm.complete(system=..., user=...)` and
+gets back a `Reply` (`text`, `provider`, `model`, `input_tokens`,
+`output_tokens`), or `None` when no provider is configured. Nothing else in
+the code knows which vendor answered.
+
+| Variable | Values | Notes |
+| --- | --- | --- |
+| `LLM_PROVIDER` | `deepseek`, `anthropic`, `bedrock` | Unset or empty = not configured; `complete()` returns `None` and the worker logs that it skipped. |
+| `LLM_MODEL` | any model id | Optional. Defaults per provider: `deepseek-v4-pro`, `claude-opus-5`, `us.anthropic.claude-opus-5`. |
+| `DEEPSEEK_API_KEY` | secret | Required for `deepseek`. Production: Secrets Manager `dapup/prod/deepseek-api-key`, injected by the worker task definition. |
+| `ANTHROPIC_API_KEY` | secret | Required for `anthropic`. Production: Secrets Manager `dapup/prod/anthropic-api-key`, injected only when the provider is `anthropic`. |
+| `AWS_REGION` | region | `bedrock` only, default `us-west-2`. No key: the worker's task role may invoke Anthropic models on Bedrock. |
+
+A missing key raises `LLMError` on the first call, naming the variable and
+never its value. Log lines never carry a key, and the worker logs at most
+the first 300 characters of a reply.
+
+To prove the switch works, send the worker an `llm-ping` job:
+
+```bash
+aws sqs send-message --queue-url "$(cd ../infra && terraform output -raw jobs_queue_url)" --message-body '{"job":"llm-ping"}'
+aws logs tail /ecs/dapup-prod-worker --since 5m
+```
+
+`prompt` is optional (`{"job":"llm-ping","prompt":"..."}`; the default is
+"Say hello to DapUp in one sentence."). The worker logs
+`llm-ping reply via <provider>/<model> (<in>/<out> tokens): <text>` and deletes
+the message. A failed ping logs a warning and is still deleted; pings are not
+retried.
+
+Privacy: DeepSeek stores data in the PRC and may train on inputs unless you
+opt out in the DeepSeek account settings. Do not send student personal data
+through it without that opt-out. Bedrock and Anthropic do not train on API
+data.
+
 ## Routes
 
 | Route | Auth | Purpose |

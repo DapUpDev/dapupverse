@@ -5,9 +5,11 @@ request wait (weekly check-ins, later the AI workflows). It long-polls the
 SQS queue, handles each message, and deletes it only once handled, so a
 crash mid-job means the message reappears and is retried instead of lost.
 
-For now "handle" means log the job. Real behaviour arrives with the AI
-workflows module; the plumbing (queue, schedule, permissions, deploy) is
-what this file proves.
+For now "handle" mostly means log the job. The one real job is "llm-ping":
+it asks the configured model (see app/llm.py) for a one-line reply and
+logs it, which proves the provider switch end to end. Real behaviour
+arrives with the AI workflows module; the plumbing (queue, schedule,
+permissions, deploy) is what this file proves.
 
 Stops cleanly: ECS sends SIGTERM before it removes a task (deploys, Spot
 reclaims). The loop finishes the batch in hand and exits 0.
@@ -22,12 +24,16 @@ import signal
 import sys
 import threading
 import time
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
+
+from app import llm
 
 log = logging.getLogger("dapup.worker")
 
 BATCH_SIZE = 10
 WAIT_SECONDS = 20
+PING_SYSTEM = "You are DapUp's assistant. Reply briefly."
+PING_PROMPT = "Say hello to DapUp in one sentence."
 
 
 class QueueClient(Protocol):
@@ -35,11 +41,41 @@ class QueueClient(Protocol):
     def delete_message(self, **kwargs) -> Any: ...
 
 
+def llm_ping(job: dict[str, Any], message_id: str) -> None:
+    """Ask the configured model for a one-liner and log the answer. A ping
+    is never retried: whatever happens, the message is deleted, so errors
+    are logged (class and message, never a key) rather than raised."""
+    prompt = job.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        prompt = PING_PROMPT
+    try:
+        reply = llm.complete(system=PING_SYSTEM, user=prompt)
+    except Exception as exc:  # noqa: BLE001 - a ping is not retried
+        log.warning("llm-ping failed: %s: %s (message %s)", type(exc).__name__, exc, message_id)
+        return
+    if reply is None:
+        log.info("llm-ping skipped: LLM_PROVIDER is not set (message %s)", message_id)
+        return
+    log.info(
+        "llm-ping reply via %s/%s (%s/%s tokens): %s",
+        reply.provider, reply.model, reply.input_tokens, reply.output_tokens, reply.text[:300],
+    )
+
+
+HANDLERS: dict[str, Callable[[dict[str, Any], str], None]] = {
+    "llm-ping": llm_ping,
+}
+
+
 def handle(job: dict[str, Any], message_id: str) -> None:
-    """One job. Today: log it. Unknown shapes are logged too, not dropped
+    """One job. The receipt line is logged for every job; known kinds then
+    go to their handler. Unknown shapes are logged too, not dropped
     silently, so a producer bug is visible in CloudWatch."""
     kind = job.get("job", "<unknown>")
     log.info("job %s received: %s (message %s)", kind, json.dumps(job, sort_keys=True)[:500], message_id)
+    handler = HANDLERS.get(kind) if isinstance(kind, str) else None
+    if handler is not None:
+        handler(job, message_id)
 
 
 def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool = False) -> int:

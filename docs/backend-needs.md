@@ -100,6 +100,11 @@ targeting an SQS queue or `ecs:RunTask`.
 (`bedrock:InvokeModel` on the chosen model ARNs). No API keys. Vectors live in
 pgvector on RDS, not a separate vector service.
 
+Note (2026-09): the provider is switchable. `backend/app/llm.py` picks
+DeepSeek, Anthropic, or Bedrock from `LLM_PROVIDER` (`infra/llm.tf`,
+`var.llm_provider`). DeepSeek is the default until AWS grants Bedrock model
+access; the "no API keys" line above applies to the Bedrock setting only.
+
 | Call | Status | Model shape | Guardrails |
 | --- | --- | --- | --- |
 | None | **Tier 1 code makes zero model calls.** | — | — |
@@ -126,7 +131,8 @@ out-of-band so it never lands in Terraform state.
 | Clerk JWKS / issuer URL | No | Env | FastAPI verifies the session JWT on every request; this is how the API knows who is calling |
 | `CLERK_SECRET_KEY` | Yes | Secrets Manager | Only if the API calls Clerk's Backend API (e.g. reading `publicMetadata` on webhook replay) |
 | Clerk webhook signing secret | Yes | Secrets Manager | Verify webhook signatures |
-| S3 bucket name, SQS queue URLs, SES sender address and region, Bedrock model IDs | No | Env from Terraform outputs | Wiring |
+| S3 bucket name, SQS queue URLs, SES sender address and region, Bedrock model IDs (`LLM_PROVIDER`, `LLM_MODEL`; provider is switchable, DeepSeek default until AWS grants Bedrock access) | No | Env from Terraform outputs | Wiring |
+| `DEEPSEEK_API_KEY` / `ANTHROPIC_API_KEY` | Yes | Secrets Manager (`dapup/prod/deepseek-api-key`, `dapup/prod/anthropic-api-key`) | Only for the matching `LLM_PROVIDER`; Bedrock uses the task role and needs none |
 | `CORS_ALLOWED_ORIGINS`, `APP_VERSION`, log level | No | Env (already in place) | Runtime behaviour |
 | Calendar integration credentials (Tier 2) | Yes | Secrets Manager | Creating meeting blocks |
 | Frontend: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_API_BASE_URL` | Mixed | Vercel environment variables | Unchanged |

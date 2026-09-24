@@ -93,20 +93,34 @@ resource "aws_ecs_task_definition" "worker" {
       { name = "AWS_REGION", value = var.aws_region },
       { name = "QUEUE_URL", value = aws_sqs_queue.jobs.url },
       { name = "STORAGE_BUCKET", value = data.aws_s3_bucket.student_files.bucket },
+      # Which model to call and under what name (see llm.tf).
+      { name = "LLM_PROVIDER", value = var.llm_provider },
+      { name = "LLM_MODEL", value = var.llm_model },
     ]
 
-    secrets = [
-      for env_name, json_key in {
-        DB_HOST     = "host"
-        DB_PORT     = "port"
-        DB_NAME     = "dbname"
-        DB_USER     = "username"
-        DB_PASSWORD = "password"
-        } : {
-        name      = env_name
-        valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
-      }
-    ]
+    # Database credentials as for the API (see ecs.tf), plus the model
+    # provider's API key: a plain string secret, so no `:key::` suffix. The
+    # Anthropic key is only wired in when that provider is selected; Bedrock
+    # needs none (the task role calls it directly).
+    secrets = concat(
+      [
+        for env_name, json_key in {
+          DB_HOST     = "host"
+          DB_PORT     = "port"
+          DB_NAME     = "dbname"
+          DB_USER     = "username"
+          DB_PASSWORD = "password"
+          } : {
+          name      = env_name
+          valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
+        }
+      ],
+      [{ name = "DEEPSEEK_API_KEY", valueFrom = data.aws_secretsmanager_secret.deepseek_api_key.arn }],
+      [
+        for secret in data.aws_secretsmanager_secret.anthropic_api_key :
+        { name = "ANTHROPIC_API_KEY", valueFrom = secret.arn }
+      ],
+    )
 
     logConfiguration = {
       logDriver = "awslogs"
@@ -151,5 +165,6 @@ resource "aws_ecs_service" "worker" {
   depends_on = [
     aws_iam_role_policy_attachment.task_execution_managed,
     aws_iam_role_policy.task_execution_secrets,
+    aws_iam_role_policy.task_execution_llm_secrets, # the agent must be able to read the key before a task launches
   ]
 }
