@@ -129,6 +129,22 @@ aws scheduler get-schedule --name dapup-prod-weekly --query "{state:State,when:S
 
 Park the worker (jobs wait on the queue) with `worker_desired_count = 0`.
 
+Model provider: `llm.tf` reads the `dapup/prod/deepseek-api-key` secret (created
+by hand in Secrets Manager, read by name like the database secret) and lets the
+execution role fetch it; when `llm_provider = "anthropic"` it also reads
+`dapup/prod/anthropic-api-key`. Two variables: `llm_provider` (`deepseek`,
+`anthropic`, or `bedrock`; default `deepseek`) and `llm_model` (default
+`deepseek-v4-pro`; empty string means the provider's own default). Both land
+on the worker task as `LLM_PROVIDER` and `LLM_MODEL`, and the matching key as
+`DEEPSEEK_API_KEY` or `ANTHROPIC_API_KEY`. Bedrock needs no secret. Proof:
+
+```bash
+aws sqs send-message --queue-url "$(terraform output -raw jobs_queue_url)" --message-body '{"job":"llm-ping"}'
+aws logs tail /ecs/dapup-prod-worker --since 5m
+```
+
+Look for `llm-ping reply via <provider>/<model>` in the log output.
+
 ## Verification
 
 ```bash

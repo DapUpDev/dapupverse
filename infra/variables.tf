@@ -178,3 +178,38 @@ variable "weekly_schedule_enabled" {
   type    = bool
   default = true
 }
+
+variable "llm_provider" {
+  description = "Which model provider the worker calls (see llm.tf): deepseek (default), anthropic, or bedrock."
+  type        = string
+  default     = "deepseek"
+
+  validation {
+    condition     = contains(["deepseek", "anthropic", "bedrock"], var.llm_provider)
+    error_message = "llm_provider must be one of: deepseek, anthropic, bedrock."
+  }
+}
+
+variable "llm_model" {
+  description = <<-EOT
+    Model name passed to the worker as LLM_MODEL, as-is. An empty string
+    means "use the provider's default": deepseek -> deepseek-v4-pro,
+    anthropic -> claude-opus-5, bedrock -> us.anthropic.claude-opus-5.
+    Change it together with llm_provider; a DeepSeek model name means
+    nothing to Bedrock and vice versa.
+  EOT
+  type        = string
+  default     = "deepseek-v4-pro"
+
+  # Catches the easy mistake: flipping llm_provider and leaving the DeepSeek
+  # model name behind. The worker would then fail every call with
+  # "model not found", and only as a warning in its log.
+  validation {
+    condition = var.llm_model == "" || (
+      var.llm_provider == "deepseek" ? startswith(var.llm_model, "deepseek") :
+      var.llm_provider == "anthropic" ? startswith(var.llm_model, "claude") :
+      can(regex("anthropic\\.", var.llm_model))
+    )
+    error_message = "llm_model does not look like a model for llm_provider; set it together with the provider, or to \"\" for the provider default."
+  }
+}

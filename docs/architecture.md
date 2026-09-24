@@ -145,6 +145,22 @@ queue every Monday 09:00 UTC. The worker has its own role: the queue, read-only
 student files, and Anthropic models on Bedrock (via inference profiles). It runs
 on Fargate Spot, one task, and the deploy pipeline rolls it onto every new image.
 
+## Model provider switch
+
+`backend/app/llm.py` is the only place that talks to a language model: one
+`complete(system, user)` function, three providers behind the `LLM_PROVIDER`
+environment variable (`deepseek`, `anthropic`, `bedrock`), an optional
+`LLM_MODEL` override with a default per provider (`deepseek-v4-pro`,
+`claude-opus-5`, `us.anthropic.claude-opus-5`). DeepSeek is the default until
+AWS grants Bedrock model access; Bedrock needs no key because the worker's task
+role may invoke the models. Keys live in Secrets Manager
+(`dapup/prod/deepseek-api-key`, `dapup/prod/anthropic-api-key`) and reach the
+worker through its task definition (`infra/llm.tf`). An `llm-ping` job on the
+queue exercises the whole path and logs the reply. Privacy: DeepSeek stores
+data in the PRC and may train on inputs unless opted out in the account
+settings, so no student personal data goes through it without that opt-out;
+Bedrock and Anthropic do not train on API data.
+
 ## WeWeb export
 
 The previous frontend's WeWeb code export is a read-only record of prior screens and behavior. It stays out of this repository (`.gitignore` guards common paths), and its generated runtime, compiled bundles, and any embedded service configuration must never be copied here.
