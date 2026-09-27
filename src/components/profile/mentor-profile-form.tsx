@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FieldError } from "@/components/ui/field-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -173,15 +174,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                 aria-invalid={Boolean(errors.name)}
                 aria-describedby={errors.name ? "mentor-name-error" : undefined}
               />
-              {errors.name ? (
-                <p
-                  id="mentor-name-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.name}
-                </p>
-              ) : null}
+              <FieldError id="mentor-name-error" message={errors.name} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -195,15 +188,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                   errors.university ? "mentor-university-error" : undefined
                 }
               />
-              {errors.university ? (
-                <p
-                  id="mentor-university-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.university}
-                </p>
-              ) : null}
+              <FieldError id="mentor-university-error" message={errors.university} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -217,15 +202,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                   errors.major ? "mentor-major-error" : undefined
                 }
               />
-              {errors.major ? (
-                <p
-                  id="mentor-major-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.major}
-                </p>
-              ) : null}
+              <FieldError id="mentor-major-error" message={errors.major} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -239,15 +216,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                   errors.countryRegion ? "mentor-country-error" : undefined
                 }
               />
-              {errors.countryRegion ? (
-                <p
-                  id="mentor-country-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.countryRegion}
-                </p>
-              ) : null}
+              <FieldError id="mentor-country-error" message={errors.countryRegion} />
             </div>
           </div>
 
@@ -324,15 +293,8 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                 errors.price ? "mentor-price-error" : "mentor-price-hint"
               }
             />
-            {errors.price ? (
-              <p
-                id="mentor-price-error"
-                role="alert"
-                className="text-sm text-destructive"
-              >
-                {errors.price}
-              </p>
-            ) : (
+            <FieldError id="mentor-price-error" message={errors.price} />
+            {!errors.price && (
               <p id="mentor-price-hint" className="text-xs text-muted-foreground">
                 Private — visible only to you, students you&rsquo;ve accepted,
                 and admins. Never shown publicly.

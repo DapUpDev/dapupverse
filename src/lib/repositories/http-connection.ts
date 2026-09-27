@@ -7,7 +7,7 @@
  * onto the error classes the UI already handles.
  */
 
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch, nullOn } from "@/lib/api/client";
 import type {
   Connection,
   ConnectionRequest,
@@ -74,8 +74,7 @@ export function createHttpConnectionRepository(): ConnectionRepository {
       try {
         return await apiFetch<ConnectionRequest>(`/connections/${encodeURIComponent(id)}`);
       } catch (error) {
-        if (error instanceof ApiError && [401, 403, 404].includes(error.status)) return null;
-        throw error;
+        return nullOn([401, 403, 404], error);
       }
     },
 
@@ -83,8 +82,7 @@ export function createHttpConnectionRepository(): ConnectionRepository {
       try {
         return await apiFetch<ConnectionRequest>("/connections/active", { query: { mentorId } });
       } catch (error) {
-        if (error instanceof ApiError && [401, 403, 404].includes(error.status)) return null;
-        throw error;
+        return nullOn([401, 403, 404], error);
       }
     },
   };

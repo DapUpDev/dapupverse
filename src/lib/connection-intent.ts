@@ -13,19 +13,12 @@ import type { ConnectionIntent } from "@/lib/domain/types";
 
 const INTENT_STORAGE_KEY = "dapup.connection-intent.v1";
 
-const intentListeners = new Set<() => void>();
-
-function notifyIntentListeners(): void {
-  for (const listener of intentListeners) listener();
-}
-
 export function saveConnectionIntent(intent: ConnectionIntent): void {
   try {
     window.sessionStorage.setItem(INTENT_STORAGE_KEY, JSON.stringify(intent));
   } catch {
     // Storage unavailable: the user can restart the flow from the mentor page.
   }
-  notifyIntentListeners();
 }
 
 export function loadConnectionIntent(): ConnectionIntent | null {
@@ -53,18 +46,12 @@ export function clearConnectionIntent(): void {
   } catch {
     // Ignore.
   }
-  notifyIntentListeners();
-}
-
-function subscribeIntent(listener: () => void): () => void {
-  intentListeners.add(listener);
-  return () => intentListeners.delete(listener);
 }
 
 /** Hydration-safe: false on the server, live value on the client. */
 export function useHasConnectionIntent(): boolean {
   return useSyncExternalStore(
-    subscribeIntent,
+    () => () => {},
     () => loadConnectionIntent() !== null,
     () => false,
   );

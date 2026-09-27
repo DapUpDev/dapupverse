@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TechLabel } from "@/components/brand/tech-label";
 
 export function SiteFooter() {
   return (
@@ -43,8 +42,8 @@ export function SiteFooter() {
           className="h-px w-full bg-gradient-to-r from-chrome/60 via-border to-transparent"
         />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <TechLabel aria-hidden="true">DAPUP — MENTORSHIP NETWORK</TechLabel>
-          <TechLabel aria-hidden="true">EST. 2024 / VER. M3</TechLabel>
+          <span aria-hidden="true" className="tech-label block">DAPUP — MENTORSHIP NETWORK</span>
+          <span aria-hidden="true" className="tech-label block">EST. 2024 / VER. M3</span>
         </div>
       </div>
     </footer>

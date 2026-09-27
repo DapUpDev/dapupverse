@@ -15,13 +15,9 @@ import type {
   Message,
   MessageThread,
 } from "@/lib/domain/types";
-import {
-  connectionRepository,
-  mentorRepository,
-  messageRepository,
-  studentProfileRepository,
-} from "@/lib/repositories";
+import { connectionRepository, messageRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
+import { otherPartyName } from "@/components/messages/thread-list";
 
 type ConversationData = {
   thread: MessageThread;
@@ -49,16 +45,12 @@ export function Conversation({
         connectionRepository.get(thread.connectionId),
         messageRepository.listMessages(threadId),
       ]);
-      let otherPartyName = thread.mentorId === userId ? "Student" : "Mentor";
-      if (thread.mentorId === userId) {
-        const student = await studentProfileRepository.get(thread.studentId);
-        if (student?.fullName.trim()) otherPartyName = student.fullName;
-      } else {
-        const mentors = await mentorRepository.list();
-        const mentor = mentors.find((m) => m.id === thread.mentorId);
-        if (mentor) otherPartyName = mentor.name;
-      }
-      return { thread, connection, messages, otherPartyName };
+      return {
+        thread,
+        connection,
+        messages,
+        otherPartyName: await otherPartyName(thread, userId),
+      };
     },
     [threadId, userId],
   );

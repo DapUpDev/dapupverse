@@ -24,3 +24,21 @@ resource "aws_iam_role_policy" "task_execution_secrets" {
   role   = aws_iam_role.task_execution.id
   policy = data.aws_iam_policy_document.task_execution_secrets.json
 }
+
+# Fetched by the ECS agent (execution role) at container start and injected
+# as plain environment inside the container only. The `:key::` suffix picks
+# one JSON field of the secret (current version, default stage).
+locals {
+  db_secrets = [
+    for env_name, json_key in {
+      DB_HOST     = "host"
+      DB_PORT     = "port"
+      DB_NAME     = "dbname"
+      DB_USER     = "username"
+      DB_PASSWORD = "password"
+      } : {
+      name      = env_name
+      valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
+    }
+  ]
+}

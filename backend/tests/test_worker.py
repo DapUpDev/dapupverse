@@ -41,7 +41,6 @@ def test_handles_and_deletes_each_message(caplog):
 
 
 def test_stops_when_asked_and_keeps_polling_otherwise():
-    queue = FakeQueue([json.dumps({"job": "a"})])
     stop = threading.Event()
 
     class StopAfterTwo(FakeQueue):

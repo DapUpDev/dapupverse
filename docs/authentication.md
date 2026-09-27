@@ -38,7 +38,6 @@ How auth worked before this milestone:
 ```ts
 type AuthIdentity = {
   isAuthenticated: boolean;
-  clerkUserId: string | null;   // authentication identity
   dataUserId: string | null;    // key into browser-local mock repositories
   accountType: "student" | "mentor" | null;
   capabilities: { isAdmin: boolean };
@@ -68,7 +67,7 @@ promote themselves; promotion happens in the Clerk Dashboard
 | `/`, `/mentors`, `/mentors/[slug]`, `/terms`, `/privacy` | Public | — |
 | `/sign-in/**`, `/sign-up/**` | Public | — |
 | `/app` | Authenticated; redirects student → `/mentors`, mentor → `/app/requests` | `requireAuth` (page) |
-| `/app/profile`, `/app/connections`, `/app/messages`, `/app/messages/[threadId]` | Any authenticated user | `requireAuth` (layout + page) |
+| `/app/profile`, `/app/connections`, `/app/messages`, `/app/messages/[threadId]` | Any authenticated user | `requireAuth` (page) |
 | `/app/requests` | Mentor account type only | `requireAccountType("mentor")` |
 | `/admin/**` | Explicit `isAdmin` capability only | `requireAdmin` (layout) |
 | `/forbidden` | The intentional not-authorized experience | — |

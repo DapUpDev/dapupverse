@@ -1,6 +1,5 @@
 import { ButtonLink } from "@/components/ui/button-link";
 import { SectionHeading } from "@/components/brand/section-heading";
-import { TechLabel } from "@/components/brand/tech-label";
 import { MentorCard } from "@/components/mentors/mentor-card";
 import { SEED_MENTOR_PROFILES } from "@/lib/data/seed";
 import { toPublicMentor } from "@/lib/repositories/mock";
@@ -40,13 +39,13 @@ export default function HomePage() {
         />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-20 sm:py-28">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <TechLabel aria-hidden="true">
+            <span aria-hidden="true" className="tech-label block">
               DAPUP / MENTORSHIP NETWORK
-            </TechLabel>
-            <TechLabel aria-hidden="true" className="hidden sm:block">
+            </span>
+            <span aria-hidden="true" className="tech-label hidden sm:block">
               FOR STUDENTS — BY STUDENTS
-            </TechLabel>
-            <TechLabel aria-hidden="true">[ 01 ]</TechLabel>
+            </span>
+            <span aria-hidden="true" className="tech-label block">[ 01 ]</span>
           </div>
 
           <h1
@@ -91,7 +90,7 @@ export default function HomePage() {
             className="flex items-center gap-4 pt-6"
           >
             <div className="h-px flex-1 bg-gradient-to-r from-chrome/70 via-border to-transparent" />
-            <TechLabel>SCROLL ↓</TechLabel>
+            <span className="tech-label block">SCROLL ↓</span>
           </div>
         </div>
       </section>
@@ -161,9 +160,9 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-16">
           <div className="flex flex-col gap-4 rounded-lg bg-primary p-8 text-primary-foreground sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2">
-              <TechLabel aria-hidden="true" className="text-fog">
+              <span aria-hidden="true" className="tech-label block text-fog">
                 SELECTED NETWORK
-              </TechLabel>
+              </span>
               <h2
                 id="network-heading"
                 className="font-display text-xl font-bold tracking-tight"
@@ -193,9 +192,9 @@ export default function HomePage() {
         className="grid-lines relative"
       >
         <div className="mx-auto w-full max-w-3xl px-4 py-20">
-          <TechLabel aria-hidden="true" className="mb-3">
+          <span aria-hidden="true" className="tech-label block mb-3">
             04 / ORIGIN
-          </TechLabel>
+          </span>
           <h2
             id="mission-heading"
             className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"

@@ -124,7 +124,7 @@ def send_message(
              "message": "This conversation is read-only because the connection has ended."},
         )
     upsert_user(session, user)
-    message = Message(thread_id=thread.id, sender_id=user.user_id, text=body.text.strip())
+    message = Message(thread_id=thread.id, sender_id=user.user_id, text=body.text)
     session.add(message)
     session.flush()
     _mark_read(session, thread, user.user_id)  # sending implies having read up to now

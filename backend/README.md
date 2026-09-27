@@ -60,8 +60,6 @@ data.
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET /health` | none | Liveness for Docker, ECS, and the load balancer. Reports the running build. |
-| `GET /ready` | none | Can this task reach the database? For operators; the load balancer keeps using `/health`. |
-| `GET /me` | Clerk session token | Upserts the caller into the `users` table and returns the row: `user_id`, `account_type`, `is_admin`, `email`, timestamps. |
 | `GET /mentors` | none | Public directory. Filters: `query`, `educationSystem`, `subject`, `countryRegion`, `university`, `serviceType`. Never carries the price. |
 | `GET /mentors/{slug}` | none | Public mentor detail. 404 for unknown or unfilled profiles. |
 | `GET /mentors/{id}/private` | token; the mentor themself or an admin | The private shape, including `privatePriceUsd`. 403 for anyone else, including for ids that do not exist. |
@@ -139,5 +137,5 @@ CLERK_ISSUER=... CORS_ALLOWED_ORIGINS=... DATABASE_URL=... uv run uvicorn app.ma
 ```
 
 Get a token from a signed-in browser tab on the frontend (`await window.Clerk.session.getToken()`)
-and call `curl -H "Authorization: Bearer <token>" http://localhost:8000/me`.
+and call `curl -H "Authorization: Bearer <token>" http://localhost:8000/me/unread`.
 Tokens expire after 60 seconds by default.

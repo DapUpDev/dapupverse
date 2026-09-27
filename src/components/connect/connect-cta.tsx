@@ -188,7 +188,6 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
           onOpenChange={setRequestOpen}
           mentor={mentor}
           studentId={studentId}
-          onSubmitted={() => {}}
         />
       ) : null}
     </>

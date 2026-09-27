@@ -10,12 +10,12 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import Field, field_validator
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
 from app.db import get_session
-from app.mentors import EDUCATION_SYSTEMS, _Camel, upsert_user
+from app.mentors import EducationSystem, Subjects, _Camel, upsert_user
 from app.models import StudentProfile
 from app.storage import avatar_url_for
 
@@ -39,31 +39,9 @@ class StudentProfileUpdate(_Camel):
     full_name: str | None = Field(default=None, max_length=120)
     school: str | None = Field(default=None, max_length=200)
     year_level: str | None = Field(default=None, max_length=60)
-    education_system: str | None = None
-    subjects: list[str] | None = Field(default=None, max_length=30)
+    education_system: EducationSystem | None = None
+    subjects: Subjects | None = None
     biography: str | None = Field(default=None, max_length=4000)
-
-    @field_validator("education_system")
-    @classmethod
-    def _system(cls, value: str | None) -> str | None:
-        if value is not None and value not in EDUCATION_SYSTEMS:
-            raise ValueError(f"unknown education system: {value}")
-        return value
-
-    @field_validator("subjects")
-    @classmethod
-    def _subjects(cls, value: list[str] | None) -> list[str] | None:
-        if value is None:
-            return None
-        cleaned = [s.strip() for s in value if s.strip()]
-        if any(len(s) > 60 for s in cleaned):
-            raise ValueError("subject too long")
-        return cleaned
-
-    @field_validator("full_name", "school", "year_level", "biography")
-    @classmethod
-    def _strip(cls, value: str | None) -> str | None:
-        return value.strip() if value is not None else None
 
 
 def to_out(row: StudentProfile) -> StudentProfileOut:

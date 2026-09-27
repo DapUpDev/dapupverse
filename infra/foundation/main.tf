@@ -1,5 +1,4 @@
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
 
 # Only zones that need no opt-in and are available today.
 data "aws_availability_zones" "available" {

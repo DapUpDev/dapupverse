@@ -91,23 +91,8 @@ resource "aws_ecs_task_definition" "api" {
       { name = "AWS_REGION", value = var.aws_region },
     ]
 
-    # Database credentials, fetched by the ECS agent (execution role) from
-    # the foundation's secret at container start and injected as plain
-    # environment inside the container only. The `:key::` suffix picks one
-    # JSON field of the secret (current version, default stage).
     secrets = concat(
-      [
-        for env_name, json_key in {
-          DB_HOST     = "host"
-          DB_PORT     = "port"
-          DB_NAME     = "dbname"
-          DB_USER     = "username"
-          DB_PASSWORD = "password"
-          } : {
-          name      = env_name
-          valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
-        }
-      ],
+      local.db_secrets,
       # Clerk's webhook signing secret (a plain string, no JSON key). See
       # clerk_webhook.tf for where the value comes from.
       [{ name = "CLERK_WEBHOOK_SECRET", valueFrom = aws_secretsmanager_secret.clerk_webhook.arn }],
@@ -130,7 +115,7 @@ resource "aws_ecs_task_definition" "api" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.api.name
-        "awslogs-region"        = data.aws_region.current.region
+        "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "api"
       }
     }

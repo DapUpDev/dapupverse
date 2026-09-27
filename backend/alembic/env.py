@@ -2,19 +2,11 @@
 
 from __future__ import annotations
 
-from logging.config import fileConfig
-
 from alembic import context
 from sqlalchemy import create_engine, pool
 
 from app.models import Base
 from app.settings import database_url
-
-config = context.config
-if config.config_file_name is not None:
-    # Keep the app's own loggers (dapup.*) alive when migrations run inside
-    # the same process, e.g. the test suite; the default would silence them.
-    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
@@ -26,12 +18,6 @@ def _url() -> str:
     return url
 
 
-def run_migrations_offline() -> None:
-    context.configure(url=_url(), target_metadata=target_metadata, literal_binds=True)
-    with context.begin_transaction():
-        context.run_migrations()
-
-
 def run_migrations_online() -> None:
     engine = create_engine(_url(), poolclass=pool.NullPool)
     with engine.connect() as connection:
@@ -40,7 +26,4 @@ def run_migrations_online() -> None:
             context.run_migrations()
 
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+run_migrations_online()

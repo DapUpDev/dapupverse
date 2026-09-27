@@ -21,11 +21,11 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import Field
-from sqlalchemy import exists, func, or_, select
+from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session
 
 from app.auth import Principal, current_user
@@ -37,7 +37,7 @@ from app.students import is_complete, require_student
 
 router = APIRouter()
 
-PURPOSES = ["Essay review", "Application advice", "Subject help", "General mentorship"]
+Purpose = Literal["Essay review", "Application advice", "Subject help", "General mentorship"]
 ACTIVE_STATES = ("pending", "accepted")
 
 
@@ -55,7 +55,7 @@ class ConnectionOut(_Camel):
 
 class CreateConnectionIn(_Camel):
     mentor_id: str = Field(max_length=64)
-    purpose: str
+    purpose: Purpose
     message: str = Field(min_length=5, max_length=500)
 
 
@@ -113,8 +113,6 @@ def create_request(
     mailer: Annotated[Mailer | None, Depends(get_mailer)],
     background: BackgroundTasks,
 ) -> ConnectionOut:
-    if body.purpose not in PURPOSES:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"unknown purpose: {body.purpose}")
     upsert_user(session, user)
     profile = session.get(StudentProfile, user.user_id)
     if profile is None or not is_complete(profile):
@@ -131,7 +129,7 @@ def create_request(
     if any(r.state in ACTIVE_STATES for r in existing):
         raise _error(status.HTTP_409_CONFLICT, "duplicate_request", "You already have an active request with this mentor.")
     row = ConnectionRequest(mentor_id=body.mentor_id, student_id=user.user_id, purpose=body.purpose,
-                            message=body.message.strip(), state="pending")
+                            message=body.message, state="pending")
     session.add(row)
     session.flush()
     session.refresh(row)
@@ -201,7 +199,6 @@ def accept(
         raise _error(status.HTTP_409_CONFLICT, "not_pending", "Only pending requests can be accepted.")
     row.state = "accepted"
     row.archived_by_mentor = False
-    row.updated_at = func.now()
     session.add(MessageThread(connection_id=row.id, mentor_id=row.mentor_id, student_id=row.student_id))
     session.flush()
     session.refresh(row)
@@ -247,7 +244,6 @@ def disconnect(
     if row.state != "accepted":
         raise _error(status.HTTP_409_CONFLICT, "not_accepted", "Only accepted connections can be disconnected.")
     row.state = "disconnected"
-    row.updated_at = func.now()
     session.flush()
     session.refresh(row)
     return to_out(row)
@@ -262,7 +258,6 @@ def block(
     row = _load(session, connection_id)
     _mentor_of(row, user)
     row.state = "blocked"
-    row.updated_at = func.now()
     session.flush()
     session.refresh(row)
     return to_out(row)

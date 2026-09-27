@@ -1,20 +1,11 @@
 import { clerk, setupClerkTestingToken } from "@clerk/testing/playwright";
-import { createClerkClient, type ClerkClient } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
 import { expect, type Page } from "@playwright/test";
 import { TEST_USERS } from "./global-setup";
 
 export type TestRole = keyof typeof TEST_USERS;
 
-let clerkClient: ClerkClient | null = null;
-
-function backend(): ClerkClient {
-  if (!clerkClient) {
-    clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY!,
-    });
-  }
-  return clerkClient;
-}
+const backend = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
 
 /**
  * Sign the page's session in as one of the synthetic e2e users.
@@ -24,14 +15,14 @@ function backend(): ClerkClient {
  * programmatic password sign-ins.
  */
 export async function signInAs(page: Page, role: TestRole): Promise<void> {
-  const users = await backend().users.getUserList({
+  const users = await backend.users.getUserList({
     emailAddress: [TEST_USERS[role].email],
   });
   const user = users.data[0];
   if (!user) {
     throw new Error(`e2e user missing for role "${role}" — global setup failed?`);
   }
-  const token = await backend().signInTokens.createSignInToken({
+  const token = await backend.signInTokens.createSignInToken({
     userId: user.id,
     expiresInSeconds: 300,
   });

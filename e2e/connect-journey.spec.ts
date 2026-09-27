@@ -109,9 +109,6 @@ test.describe("connect-with-mentor journey", () => {
     await expect(page.getByText("$40 USD")).toBeVisible();
     // The header badge counts the mentor's message until the thread is read.
     await expect(page.getByTestId("unread-badge").first()).toHaveText("1");
-    if (process.env.BADGE_SHOT) {
-      await page.screenshot({ path: process.env.BADGE_SHOT, clip: { x: 0, y: 0, width: 1280, height: 120 } });
-    }
 
     await page.goto("/app/messages");
     await page.getByRole("link", { name: /Jae Park/ }).click();

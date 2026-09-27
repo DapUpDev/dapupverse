@@ -3,19 +3,12 @@
 import boto3
 import pytest
 from botocore.stub import Stubber
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
 
-from app.db import get_engine
 from app.main import app
-from app.migrate import run_migrations
 from app.notifications import Email, SesMailer, deliver, get_mailer
-from tests.conftest import mint
+from tests.conftest import MENTOR, MENTOR_PROFILE, MESSAGE, STUDENT_PROFILE
 
-MENTOR = {"accountType": "mentor"}
-STUDENT_PROFILE = {"fullName": "Maya Lin", "school": "Lincoln High", "yearLevel": "Grade 12", "educationSystem": "AP"}
-MENTOR_PROFILE = {"name": "Jae Park", "university": "Stanford", "major": "CS", "countryRegion": "US"}
-MESSAGE = "I'm applying to CS programs this year and would love essay feedback."
+pytestmark = pytest.mark.usefixtures("configured_database")
 
 
 class FakeMailer:
@@ -26,21 +19,6 @@ class FakeMailer:
         self.sent.append(email)
 
 
-@pytest.fixture(autouse=True)
-def configured_database(database_url, monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", database_url)
-    get_engine.cache_clear()
-    run_migrations()
-    yield
-    engine = create_engine(database_url)
-    with engine.begin() as connection:
-        for table in ("thread_reads", "messages", "message_threads", "connection_requests",
-                      "student_profiles", "mentor_profiles", "users"):
-            connection.execute(text(f"DELETE FROM {table}"))
-    engine.dispose()
-    get_engine.cache_clear()
-
-
 @pytest.fixture
 def mailer():
     fake = FakeMailer()
@@ -49,30 +27,19 @@ def mailer():
     app.dependency_overrides.pop(get_mailer, None)
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
+student = lambda bearer, email="maya@example.com": bearer(sub="user_maya", email=email)  # noqa: E731
+mentor = lambda bearer, email="jae@example.com": bearer(sub="user_jae", metadata=MENTOR, email=email)  # noqa: E731
 
 
-def student(keys, email="maya@example.com"):
-    private, _ = keys
-    return {"Authorization": f"Bearer {mint(private, sub='user_maya', email=email)}"}
-
-
-def mentor(keys, email="jae@example.com"):
-    private, _ = keys
-    return {"Authorization": f"Bearer {mint(private, sub='user_jae', metadata=MENTOR, email=email)}"}
-
-
-def send_request(client, keys, **who):
-    client.put("/me/student-profile", json=STUDENT_PROFILE, headers=student(keys))
-    client.put("/me/mentor-profile", json=MENTOR_PROFILE, headers=mentor(keys, **who))
+def send_request(client, bearer, **who):
+    client.put("/me/student-profile", json=STUDENT_PROFILE, headers=student(bearer))
+    client.put("/me/mentor-profile", json=MENTOR_PROFILE, headers=mentor(bearer, **who))
     return client.post("/connections", json={"mentorId": "user_jae", "purpose": "Essay review", "message": MESSAGE},
-                       headers=student(keys))
+                       headers=student(bearer))
 
 
-def test_request_emails_the_mentor_and_acceptance_emails_the_student(client, keys, mailer):
-    response = send_request(client, keys)
+def test_request_emails_the_mentor_and_acceptance_emails_the_student(client, bearer, mailer):
+    response = send_request(client, bearer)
     assert response.status_code == 201, response.text
     assert len(mailer.sent) == 1
     first = mailer.sent[0]
@@ -82,7 +49,7 @@ def test_request_emails_the_mentor_and_acceptance_emails_the_student(client, key
     assert "https://www.dapup.space/app/requests" in first.text and "/app/requests" in first.html
     assert "<p>Hi Jae Park,</p>" in first.html
 
-    accepted = client.post(f"/connections/{response.json()['id']}/accept", headers=mentor(keys))
+    accepted = client.post(f"/connections/{response.json()['id']}/accept", headers=mentor(bearer))
     assert accepted.status_code == 200, accepted.text
     assert len(mailer.sent) == 2
     second = mailer.sent[1]
@@ -91,39 +58,39 @@ def test_request_emails_the_mentor_and_acceptance_emails_the_student(client, key
     assert "https://www.dapup.space/app/messages" in second.text
 
 
-def test_no_address_means_no_email_and_no_failure(client, keys, mailer):
+def test_no_address_means_no_email_and_no_failure(client, bearer, mailer):
     # The mentor's token carries no email claim: nothing to send to.
-    response = send_request(client, keys, email=None)
+    response = send_request(client, bearer, email=None)
     assert response.status_code == 201
     assert mailer.sent == []
 
 
-def test_unconfigured_mailer_changes_nothing(client, keys, monkeypatch):
+def test_unconfigured_mailer_changes_nothing(client, bearer, monkeypatch):
     monkeypatch.delenv("EMAIL_FROM", raising=False)
     get_mailer.cache_clear()
     assert get_mailer() is None
-    assert send_request(client, keys).status_code == 201
+    assert send_request(client, bearer).status_code == 201
 
 
-def test_html_escapes_what_the_student_typed(client, keys, mailer):
-    client.put("/me/student-profile", json={**STUDENT_PROFILE, "fullName": "<b>Maya</b>"}, headers=student(keys))
-    client.put("/me/mentor-profile", json=MENTOR_PROFILE, headers=mentor(keys))
+def test_html_escapes_what_the_student_typed(client, bearer, mailer):
+    client.put("/me/student-profile", json={**STUDENT_PROFILE, "fullName": "<b>Maya</b>"}, headers=student(bearer))
+    client.put("/me/mentor-profile", json=MENTOR_PROFILE, headers=mentor(bearer))
     client.post("/connections", json={"mentorId": "user_jae", "purpose": "Essay review", "message": MESSAGE},
-                headers=student(keys))
+                headers=student(bearer))
     assert "&lt;b&gt;Maya&lt;/b&gt;" in mailer.sent[0].html and "<b>Maya</b>" not in mailer.sent[0].html
 
 
-def test_unread_total_across_conversations(client, keys):
-    response = send_request(client, keys)
-    client.post(f"/connections/{response.json()['id']}/accept", headers=mentor(keys))
-    thread_id = client.get("/threads", headers=student(keys)).json()[0]["id"]
-    assert client.get("/me/unread", headers=mentor(keys)).json() == {"count": 0}
+def test_unread_total_across_conversations(client, bearer):
+    response = send_request(client, bearer)
+    client.post(f"/connections/{response.json()['id']}/accept", headers=mentor(bearer))
+    thread_id = client.get("/threads", headers=student(bearer)).json()[0]["id"]
+    assert client.get("/me/unread", headers=mentor(bearer)).json() == {"count": 0}
     for text_ in ("hi", "are you there?", "one more"):
-        client.post(f"/threads/{thread_id}/messages", json={"text": text_}, headers=student(keys))
-    assert client.get("/me/unread", headers=mentor(keys)).json() == {"count": 3}
-    assert client.get("/me/unread", headers=student(keys)).json() == {"count": 0}  # own messages
-    client.post(f"/threads/{thread_id}/read", headers=mentor(keys))
-    assert client.get("/me/unread", headers=mentor(keys)).json() == {"count": 0}
+        client.post(f"/threads/{thread_id}/messages", json={"text": text_}, headers=student(bearer))
+    assert client.get("/me/unread", headers=mentor(bearer)).json() == {"count": 3}
+    assert client.get("/me/unread", headers=student(bearer)).json() == {"count": 0}  # own messages
+    client.post(f"/threads/{thread_id}/read", headers=mentor(bearer))
+    assert client.get("/me/unread", headers=mentor(bearer)).json() == {"count": 0}
     assert client.get("/me/unread").status_code == 401
 
 

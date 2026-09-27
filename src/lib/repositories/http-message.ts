@@ -3,15 +3,10 @@
  * session token, so the user ids the UI passes are ignored.
  */
 
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch, nullOn } from "@/lib/api/client";
 import type { Message, MessageThread } from "@/lib/domain/types";
 import { notifyRepositoryChange } from "@/lib/repositories/change-signal";
 import { MessagingUnavailableError, type MessageRepository } from "@/lib/repositories/types";
-
-function nullOn(statuses: number[], error: unknown): null {
-  if (error instanceof ApiError && statuses.includes(error.status)) return null;
-  throw error;
-}
 
 export function createHttpMessageRepository(): MessageRepository {
   return {

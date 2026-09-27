@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FieldError } from "@/components/ui/field-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -156,15 +157,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
                   errors.fullName ? "student-name-error" : undefined
                 }
               />
-              {errors.fullName ? (
-                <p
-                  id="student-name-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.fullName}
-                </p>
-              ) : null}
+              <FieldError id="student-name-error" message={errors.fullName} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -178,15 +171,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
                   errors.school ? "student-school-error" : undefined
                 }
               />
-              {errors.school ? (
-                <p
-                  id="student-school-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.school}
-                </p>
-              ) : null}
+              <FieldError id="student-school-error" message={errors.school} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -201,15 +186,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
                   errors.yearLevel ? "student-year-error" : undefined
                 }
               />
-              {errors.yearLevel ? (
-                <p
-                  id="student-year-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.yearLevel}
-                </p>
-              ) : null}
+              <FieldError id="student-year-error" message={errors.yearLevel} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -241,15 +218,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.educationSystem ? (
-                <p
-                  id="student-system-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {errors.educationSystem}
-                </p>
-              ) : null}
+              <FieldError id="student-system-error" message={errors.educationSystem} />
             </div>
           </div>
 

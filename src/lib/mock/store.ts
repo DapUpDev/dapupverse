@@ -24,6 +24,7 @@ import {
   SEED_STUDENT_PROFILES,
   SEED_THREADS,
 } from "@/lib/data/seed";
+import { notifyRepositoryChange } from "@/lib/repositories/change-signal";
 
 export type MockData = {
   mentorProfiles: MentorProfile[];
@@ -47,17 +48,11 @@ function seedData(): MockData {
 
 export class MockDataStore {
   private data: MockData = seedData();
-  private listeners = new Set<() => void>();
   private hydrated = false;
   private idCounter = 0;
 
-  /** Stable snapshot for useSyncExternalStore; reference changes on every mutation. */
+  /** Current data; reference changes on every mutation. */
   getSnapshot = (): MockData => this.data;
-
-  subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
 
   /**
    * Load persisted demo state from localStorage. Safe to call repeatedly;
@@ -117,7 +112,7 @@ export class MockDataStore {
   }
 
   private notify(): void {
-    for (const listener of this.listeners) listener();
+    notifyRepositoryChange();
   }
 }
 

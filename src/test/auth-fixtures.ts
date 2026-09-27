@@ -20,7 +20,6 @@ export function identityForRole(role: TestRole): AuthIdentity {
     case "student":
       return {
         isAuthenticated: true,
-        clerkUserId: "user_test_student",
         dataUserId: DEMO_STUDENT_ID,
         accountType: "student",
         capabilities: { isAdmin: false },
@@ -28,7 +27,6 @@ export function identityForRole(role: TestRole): AuthIdentity {
     case "mentor":
       return {
         isAuthenticated: true,
-        clerkUserId: "user_test_mentor",
         dataUserId: DEMO_MENTOR_ID,
         accountType: "mentor",
         capabilities: { isAdmin: false },
@@ -36,7 +34,6 @@ export function identityForRole(role: TestRole): AuthIdentity {
     case "mentor-admin":
       return {
         isAuthenticated: true,
-        clerkUserId: "user_test_mentor_admin",
         dataUserId: DEMO_ADMIN_MENTOR_ID,
         accountType: "mentor",
         capabilities: { isAdmin: true },

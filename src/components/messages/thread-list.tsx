@@ -11,7 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
-import type { ConnectionState } from "@/lib/domain/types";
+import type { ConnectionState, MessageThread } from "@/lib/domain/types";
 import {
   connectionRepository,
   mentorRepository,
@@ -29,31 +29,34 @@ export type ThreadListItem = {
   connectionState: ConnectionState;
 };
 
+/** Display name of the other participant, seen from `userId`'s side. */
+export async function otherPartyName(
+  thread: MessageThread,
+  userId: string,
+): Promise<string> {
+  if (thread.mentorId === userId) {
+    const student = await studentProfileRepository.get(thread.studentId);
+    return student?.fullName.trim() ? student.fullName : "Student";
+  }
+  const mentors = await mentorRepository.list();
+  return mentors.find((m) => m.id === thread.mentorId)?.name ?? "Mentor";
+}
+
 export function useThreadList(userId: string | null) {
   return useRepositoryQuery<ThreadListItem[]>(async () => {
     if (!userId) return [];
     const threads = await messageRepository.listThreads(userId);
     const items = await Promise.all(
       threads.map(async (thread) => {
-        const isMentorSide = thread.mentorId === userId;
         const [connection, messages, unreadCount] = await Promise.all([
           connectionRepository.get(thread.connectionId),
           messageRepository.listMessages(thread.id),
           messageRepository.unreadCount(thread.id, userId),
         ]);
-        let otherPartyName = isMentorSide ? "Student" : "Mentor";
-        if (isMentorSide) {
-          const student = await studentProfileRepository.get(thread.studentId);
-          if (student?.fullName.trim()) otherPartyName = student.fullName;
-        } else {
-          const mentors = await mentorRepository.list();
-          const mentor = mentors.find((m) => m.id === thread.mentorId);
-          if (mentor) otherPartyName = mentor.name;
-        }
         const last = messages.at(-1) ?? null;
         return {
           threadId: thread.id,
-          otherPartyName,
+          otherPartyName: await otherPartyName(thread, userId),
           lastMessageText: last?.text ?? null,
           lastMessageAt: last?.sentAt ?? null,
           unreadCount,

@@ -28,7 +28,7 @@ and one backup.
 
 | Table | Columns (essentials) | Rules the code enforces today, now enforced by the database |
 | --- | --- | --- |
-| `users` | `id` (Clerk user id, PK), `email`, `account_type` enum(`student`,`mentor`), `is_admin` bool, `created_at`, `updated_at` | Mirror of Clerk. Roles are set in the Clerk Dashboard (`publicMetadata`) and synced by webhook. Admin is a capability column, never inferred from `account_type`. |
+| `users` | `id` (Clerk user id, PK), `email`, `account_type` enum(`student`,`mentor`), `is_admin` bool, `created_at`, `updated_at` | Mirror of Clerk. Roles are set in the Clerk Dashboard (`publicMetadata`), arrive in the session token's `metadata` claim, and are mirrored into this row whenever the caller hits a write route (profiles, requests, messages, avatars); the webhook only removes deleted accounts. Admin is a capability column, never inferred from `account_type`. |
 | `mentor_profiles` | `user_id` PK/FK, `slug` unique, `name`, `university`, `major`, `country_region`, `biography`, `services` enum[], `subjects` text[], `education_systems` enum[], `private_price_usd` numeric(8,2), `avatar_key` (S3), timestamps | Public listing excludes rows with empty `name`. `private_price_usd` is returned only to the mentor, a student with an **accepted** connection, or an admin. That check lives in the API, never the frontend. |
 | `student_profiles` | `user_id` PK/FK, `full_name`, `school`, `year_level`, `education_system` enum nullable, `subjects` text[], `biography`, `avatar_key`, timestamps | "Complete" = `full_name`, `school`, `year_level`, `education_system` all set. Required before a request can be sent. |
 | `connection_requests` | `id` uuid, `mentor_id` FK, `student_id` FK, `purpose` enum(4 values), `message` text (5–500 chars check), `state` enum(`pending`,`accepted`,`disconnected`,`blocked`), `archived_by_mentor` bool, `created_at`, `updated_at` | Partial unique index on (`student_id`,`mentor_id`) where `state in ('pending','accepted')` replaces `DuplicateRequestError`. A `blocked` row for the pair forbids new requests (`BlockedPairError`). No rejected state exists. Archive only flips `archived_by_mentor`; the student still sees `pending`. |
@@ -140,11 +140,11 @@ out-of-band so it never lands in Terraform state.
 
 ## Cross-cutting
 
-- **Authentication of API calls**: the frontend sends Clerk's session JWT; FastAPI verifies it against Clerk's JWKS and reads `account_type`/`is_admin` from `users`, not from the token, so role changes take effect immediately.
+- **Authentication of API calls**: the frontend sends Clerk's session JWT; FastAPI verifies it against Clerk's JWKS and reads `account_type`/`is_admin` from the token's `metadata` claim (`app/auth.py`, `principal_from_claims`); the `users` row is a mirror upserted from that claim, so a Dashboard role change takes effect once the session token refreshes (about a minute).
 - **Authorization lives in the API**: price visibility, thread membership, request state transitions. The frontend's guards remain presentation only, exactly as `docs/authentication.md` says.
 - **Networking**: RDS lives in the private subnets of the foundation VPC (`infra/foundation`), which is peered with the default VPC where the API runs. Peering is free, so the API stays put and the load balancer is never recreated. RDS's security group accepts 5432 only from the API task security group across the peering, the same group-to-group pattern the ALB uses.
 - **Observability**: CloudWatch logs (exists), plus alarms on ALB 5xx, task count, queue depth, and DLQ non-empty. Structured JSON logs with `request_id` and `user_id`.
-- **Rough incremental cost**: RDS `db.t4g.micro` ~$13/mo, Secrets Manager ~$0.40 per secret/mo, S3 and SQS and EventBridge under $1/mo at this scale, second Fargate service ~$9/mo, Bedrock per token.
+- **Rough incremental cost**: RDS `db.t4g.micro` ~$13/mo, Secrets Manager ~$0.40 per secret/mo, S3 and SQS and EventBridge under $1/mo at this scale, second Fargate service on Spot ~$6/mo including its public IP, Bedrock per token.
 
 ## Build order
 
@@ -200,9 +200,9 @@ Before the trim this was $59.52 (Cost Explorer showed about $1.75/day).
 | Bastion `t4g.nano`, kept stopped between sessions | $0.0042/h + 8 GB gp3 | ~10 h/month running | $0.75 |
 | S3 avatars | $0.023/GB-month + requests | 5 GB | $0.17 |
 | SQS, EventBridge | first million requests free; $1 per million events | tiny | $0.05 |
-| Secrets Manager | $0.40 per secret-month | 3 secrets | $1.25 |
-| Background worker | run as a second task only when needed; until then, jobs run in the API task on a schedule | 0 h | $0.00 |
-| **Subtotal** | | | **$16.20** |
+| Secrets Manager | $0.40 per secret-month | 3 secrets (postgres, clerk-webhook, deepseek-api-key) | $1.20 |
+| Background worker, Fargate Spot 0.25 vCPU + 0.5 GB (DONE 2026-09-13) | ~$0.01214/vCPU-h, ~$0.001334/GB-h (Spot, about 70% below on-demand; verify) + $0.005/h for its public IPv4 | 730 h | $6.35 |
+| **Subtotal** | | | **$22.50** |
 
 ### Tier 2 additions (proposal roadmap)
 

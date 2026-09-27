@@ -30,6 +30,11 @@ export class ApiError extends Error {
   }
 }
 
+export function nullOn(statuses: number[], error: unknown): null {
+  if (error instanceof ApiError && statuses.includes(error.status)) return null;
+  throw error;
+}
+
 type TokenGetter = () => Promise<string | null>;
 
 let tokenGetter: TokenGetter | null = null;

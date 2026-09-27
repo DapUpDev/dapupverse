@@ -42,12 +42,6 @@ export const TEST_USERS: Record<"student" | "mentor" | "admin", TestUserFixture>
   };
 
 export default async function globalSetup() {
-  try {
-    process.loadEnvFile(".env.local");
-  } catch {
-    // .env.local may be absent in CI; keys must then come from the env.
-  }
-
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) {
     throw new Error(

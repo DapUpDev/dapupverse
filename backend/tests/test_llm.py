@@ -2,6 +2,7 @@
 
 import json
 import logging
+from types import SimpleNamespace
 
 import boto3
 import httpx
@@ -83,20 +84,11 @@ def test_deepseek_error_mentions_the_status_but_never_the_key():
 
 
 # ---- Anthropic -----------------------------------------------------------
-class _Block:
-    def __init__(self, type, text=None):
-        self.type = type
-        self.text = text
-
-
-class _Usage:
-    input_tokens = 20
-    output_tokens = 7
-
-
-class _Response:
-    content = [_Block("text", "Hello "), _Block("thinking"), _Block("text", "from Claude.")]
-    usage = _Usage()
+_RESPONSE = SimpleNamespace(
+    content=[SimpleNamespace(type="text", text="Hello "), SimpleNamespace(type="thinking", text=None),
+             SimpleNamespace(type="text", text="from Claude.")],
+    usage=SimpleNamespace(input_tokens=20, output_tokens=7),
+)
 
 
 class FakeAnthropic:
@@ -106,7 +98,7 @@ class FakeAnthropic:
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
-        return _Response()
+        return _RESPONSE
 
 
 def test_anthropic_concatenates_text_blocks_and_passes_the_system_prompt():
