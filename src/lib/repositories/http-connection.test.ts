@@ -66,6 +66,14 @@ describe("http connection repository", () => {
     expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["https://api.test/connections", "https://api.test/connections"]);
   });
 
+  it("keeps only the side asked for: a promoted mentor must not see their own outgoing request", async () => {
+    const repo = createHttpConnectionRepository();
+    const sent = { ...pending, id: "22222222-2222-2222-2222-222222222222", mentorId: "user_other", studentId: "user_jae" };
+    fetchMock.mockResolvedValue(reply(200, [pending, sent]));
+    expect(await repo.listForMentor("user_jae")).toEqual([pending]);
+    expect(await repo.listForStudent("user_jae")).toEqual([sent]);
+  });
+
   it("posts lifecycle actions to their endpoints", async () => {
     const repo = createHttpConnectionRepository();
     fetchMock.mockResolvedValue(reply(200, { ...pending, state: "accepted" }));

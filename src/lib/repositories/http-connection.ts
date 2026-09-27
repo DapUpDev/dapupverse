@@ -1,10 +1,11 @@
 /**
  * ConnectionRepository over the DapUp API.
  *
- * The API identifies the caller from the session token, so the ids the UI
- * passes for "whose list" are ignored: `listForStudent` and
- * `listForMentor` are both "my connections". The API's error codes map
- * onto the error classes the UI already handles.
+ * The API identifies the caller from the session token and returns every
+ * request the caller is party to, on either side. `listForStudent` and
+ * `listForMentor` keep only the side the UI asked for, like the mock does:
+ * a user who is both must not see their own outgoing requests as a mentor.
+ * The API's error codes map onto the error classes the UI already handles.
  */
 
 import { ApiError, apiFetch, nullOn } from "@/lib/api/client";
@@ -62,12 +63,12 @@ export function createHttpConnectionRepository(): ConnectionRepository {
       await post(`/connections/${encodeURIComponent(connectionId)}/block`);
     },
 
-    async listForStudent(): Promise<ConnectionRequest[]> {
-      return apiFetch<ConnectionRequest[]>("/connections");
+    async listForStudent(studentId: string): Promise<ConnectionRequest[]> {
+      return (await apiFetch<ConnectionRequest[]>("/connections")).filter((r) => r.studentId === studentId);
     },
 
-    async listForMentor(): Promise<ConnectionRequest[]> {
-      return apiFetch<ConnectionRequest[]>("/connections");
+    async listForMentor(mentorId: string): Promise<ConnectionRequest[]> {
+      return (await apiFetch<ConnectionRequest[]>("/connections")).filter((r) => r.mentorId === mentorId);
     },
 
     async get(id: string): Promise<ConnectionRequest | null> {
