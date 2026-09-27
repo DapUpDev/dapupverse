@@ -25,8 +25,22 @@ type RequestWithStudent = {
   student: StudentProfile | null;
 };
 
-function studentName(student: StudentProfile | null): string {
+export function studentName(student: StudentProfile | null): string {
   return student?.fullName.trim() ? student.fullName : "Student";
+}
+
+/** Every request sent to this mentor, paired with the student's profile. */
+export function useMentorRequests(mentorId: string) {
+  return useRepositoryQuery<RequestWithStudent[]>(async () => {
+    const requests = await connectionRepository.listForMentor(mentorId);
+    const students = await Promise.all(
+      requests.map((r) => studentProfileRepository.get(r.studentId)),
+    );
+    return requests.map((request, index) => ({
+      request,
+      student: students[index],
+    }));
+  }, [mentorId]);
 }
 
 function RequestCard({
@@ -64,22 +78,17 @@ function RequestCard({
  * student, who continues to see the request as pending.
  */
 export function MentorRequestsInbox({ mentorId }: { mentorId: string }) {
-  const { data, ready } = useRepositoryQuery<RequestWithStudent[]>(async () => {
-    const requests = await connectionRepository.listForMentor(mentorId);
-    const students = await Promise.all(
-      requests.map((r) => studentProfileRepository.get(r.studentId)),
-    );
-    return requests
-      .map((request, index) => ({ request, student: students[index] }))
-      .sort((a, b) => b.request.createdAt.localeCompare(a.request.createdAt));
-  }, [mentorId]);
+  const { data, ready } = useMentorRequests(mentorId);
 
   if (!ready) return <Skeleton className="h-64 rounded-xl" />;
 
-  const pending = (data ?? []).filter(
+  const sorted = [...(data ?? [])].sort((a, b) =>
+    b.request.createdAt.localeCompare(a.request.createdAt),
+  );
+  const pending = sorted.filter(
     (r) => r.request.state === "pending" && !r.request.archivedByMentor,
   );
-  const archived = (data ?? []).filter(
+  const archived = sorted.filter(
     (r) => r.request.state === "pending" && r.request.archivedByMentor,
   );
 

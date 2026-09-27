@@ -73,14 +73,13 @@ export function createMockRepositories(store: MockDataStore): {
 
     async updateProfile(input: UpdateMentorProfileInput): Promise<MentorProfile> {
       const { mentorId, ...changes } = input;
-      let updated: MentorProfile | null = null;
+      let updated!: MentorProfile;
       store.mutate((draft) => {
         const profile = draft.mentorProfiles.find((m) => m.id === mentorId);
         if (!profile) throw new Error(`Unknown mentor: ${mentorId}`);
         Object.assign(profile, changes);
         updated = structuredClone(profile);
       });
-      if (!updated) throw new Error(`Unknown mentor: ${mentorId}`);
       return updated;
     },
 
@@ -120,14 +119,13 @@ export function createMockRepositories(store: MockDataStore): {
 
     async update(input: UpdateStudentProfileInput): Promise<StudentProfile> {
       const { studentId, ...changes } = input;
-      let updated: StudentProfile | null = null;
+      let updated!: StudentProfile;
       store.mutate((draft) => {
         const profile = draft.studentProfiles.find((s) => s.id === studentId);
         if (!profile) throw new Error(`Unknown student: ${studentId}`);
         Object.assign(profile, changes);
         updated = structuredClone(profile);
       });
-      if (!updated) throw new Error(`Unknown student: ${studentId}`);
       return updated;
     },
 
@@ -189,7 +187,7 @@ export function createMockRepositories(store: MockDataStore): {
     },
 
     async acceptRequest(id: string): Promise<Connection> {
-      let accepted: Connection | null = null;
+      let accepted!: Connection;
       store.mutate((draft) => {
         const request = draft.requests.find((r) => r.id === id);
         if (!request) throw new Error(`Unknown request: ${id}`);
@@ -208,7 +206,6 @@ export function createMockRepositories(store: MockDataStore): {
         });
         accepted = structuredClone(request) as Connection;
       });
-      if (!accepted) throw new Error(`Unknown request: ${id}`);
       return accepted;
     },
 

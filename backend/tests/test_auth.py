@@ -4,7 +4,6 @@ import time
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
-from fastapi.testclient import TestClient
 
 from app.auth import get_verifier, principal_from_claims
 from app.main import app
@@ -16,52 +15,39 @@ def other_private_key():
     return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 def test_no_header_is_rejected(client):
-    response = client.get("/me")
+    response = client.get("/me/unread")
     assert response.status_code == 401
     assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
 def test_wrong_scheme_is_rejected(client):
-    assert client.get("/me", headers={"Authorization": "Basic abc"}).status_code == 401
+    assert client.get("/me/unread", headers={"Authorization": "Basic abc"}).status_code == 401
 
 
-def test_expired_token_is_rejected(client, keys):
-    private, _ = keys
-    token = mint(private, exp=int(time.time()) - 60)
-    assert client.get("/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+def test_expired_token_is_rejected(client, bearer):
+    assert client.get("/me/unread", headers=bearer(exp=int(time.time()) - 60)).status_code == 401
 
 
-def test_wrong_issuer_is_rejected(client, keys):
-    private, _ = keys
-    token = mint(private, iss="https://someone-else.example")
-    assert client.get("/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+def test_wrong_issuer_is_rejected(client, bearer):
+    assert client.get("/me/unread", headers=bearer(iss="https://someone-else.example")).status_code == 401
 
 
-def test_token_for_another_site_is_rejected(client, keys):
-    private, _ = keys
-    token = mint(private, azp="https://evil.example")
-    assert client.get("/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+def test_token_for_another_site_is_rejected(client, bearer):
+    assert client.get("/me/unread", headers=bearer(azp="https://evil.example")).status_code == 401
 
 
 def test_token_signed_by_another_key_is_rejected(client, other_private_key):
     token = mint(other_private_key)
-    assert client.get("/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+    assert client.get("/me/unread", headers={"Authorization": f"Bearer {token}"}).status_code == 401
 
 
 def test_garbage_token_is_rejected(client):
-    assert client.get("/me", headers={"Authorization": "Bearer not.a.jwt"}).status_code == 401
+    assert client.get("/me/unread", headers={"Authorization": "Bearer not.a.jwt"}).status_code == 401
 
 
-def test_rejection_body_does_not_explain_why(client, keys):
-    private, _ = keys
-    token = mint(private, exp=int(time.time()) - 60)
-    response = client.get("/me", headers={"Authorization": f"Bearer {token}"})
+def test_rejection_body_does_not_explain_why(client, bearer):
+    response = client.get("/me/unread", headers=bearer(exp=int(time.time()) - 60))
     assert response.json() == {"detail": "Not authenticated"}
 
 
@@ -73,7 +59,7 @@ def test_unconfigured_issuer_is_a_503_not_a_crash(client, monkeypatch):
     app.dependency_overrides.clear()
     get_verifier.cache_clear()
     monkeypatch.delenv("CLERK_ISSUER", raising=False)
-    assert client.get("/me", headers={"Authorization": "Bearer x"}).status_code == 503
+    assert client.get("/me/unread", headers={"Authorization": "Bearer x"}).status_code == 503
     get_verifier.cache_clear()
 
 

@@ -11,8 +11,6 @@ import {
 
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 
-export { initialsOf as mentorInitials } from "@/lib/domain/initials";
-
 /**
  * Public mentor card. Receives the public `Mentor` type, which contains no
  * pricing — pricing must never appear here.

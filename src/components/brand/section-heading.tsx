@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { TechLabel } from "@/components/brand/tech-label";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,10 +23,10 @@ export function SectionHeading({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {label ? (
-        <TechLabel aria-hidden="true">
+        <span aria-hidden="true" className="tech-label block">
           {index ? `${index} / ` : ""}
           {label}
-        </TechLabel>
+        </span>
       ) : null}
       <h2
         id={id}

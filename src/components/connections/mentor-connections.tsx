@@ -14,39 +14,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate } from "@/lib/format";
-import type { ConnectionRequest, StudentProfile } from "@/lib/domain/types";
 import {
-  connectionRepository,
-  studentProfileRepository,
-} from "@/lib/repositories";
-import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
-
-type RequestWithStudent = {
-  request: ConnectionRequest;
-  student: StudentProfile | null;
-};
-
-function studentName(student: StudentProfile | null): string {
-  return student?.fullName.trim() ? student.fullName : "Student";
-}
+  studentName,
+  useMentorRequests,
+} from "@/components/connections/mentor-requests-inbox";
+import { formatDate } from "@/lib/format";
+import { connectionRepository } from "@/lib/repositories";
 
 /** Mentor view of accepted (and ended) connections. */
 export function MentorConnections({ mentorId }: { mentorId: string }) {
-  const { data, ready } = useRepositoryQuery<RequestWithStudent[]>(async () => {
-    const requests = await connectionRepository.listForMentor(mentorId);
-    const students = await Promise.all(
-      requests.map((r) => studentProfileRepository.get(r.studentId)),
-    );
-    return requests
-      .map((request, index) => ({ request, student: students[index] }))
-      .sort((a, b) => b.request.updatedAt.localeCompare(a.request.updatedAt));
-  }, [mentorId]);
+  const { data, ready } = useMentorRequests(mentorId);
 
   if (!ready) return <Skeleton className="h-64 rounded-xl" />;
 
-  const accepted = (data ?? []).filter((r) => r.request.state === "accepted");
-  const ended = (data ?? []).filter(
+  const sorted = [...(data ?? [])].sort((a, b) =>
+    b.request.updatedAt.localeCompare(a.request.updatedAt),
+  );
+  const accepted = sorted.filter((r) => r.request.state === "accepted");
+  const ended = sorted.filter(
     (r) => r.request.state === "disconnected" || r.request.state === "blocked",
   );
 

@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button-link";
-import { TechLabel } from "@/components/brand/tech-label";
 
 export const metadata: Metadata = {
   title: "Not authorized",
@@ -19,9 +18,9 @@ export default function ForbiddenPage() {
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-md text-center">
         <CardHeader>
-          <TechLabel aria-hidden="true" className="mx-auto">
+          <span aria-hidden="true" className="tech-label block mx-auto">
             403 / NOT AUTHORIZED
-          </TechLabel>
+          </span>
           <CardTitle className="font-display">
             You don&rsquo;t have access to that page
           </CardTitle>

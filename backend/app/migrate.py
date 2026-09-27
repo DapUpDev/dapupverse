@@ -19,7 +19,6 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 
@@ -37,19 +36,13 @@ def run_migrations() -> str | None:
         return None
 
     config = Config(str(API_ROOT / "alembic.ini"))
-    config.set_main_option("script_location", str(API_ROOT / "alembic"))
     head = ScriptDirectory.from_config(config).get_current_head()
 
     engine = create_engine(url)
     with engine.connect() as connection:
         connection.execute(text("SELECT pg_advisory_lock(:key)"), {"key": LOCK_KEY})
         try:
-            current = MigrationContext.configure(connection).get_current_revision()
-            if current == head:
-                log.info("migrations: already at %s", head)
-            else:
-                log.info("migrations: upgrading %s -> %s", current, head)
-                command.upgrade(config, "head")
+            command.upgrade(config, "head")
         finally:
             connection.execute(text("SELECT pg_advisory_unlock(:key)"), {"key": LOCK_KEY})
             connection.commit()

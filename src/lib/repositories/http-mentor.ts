@@ -7,7 +7,7 @@
  * rather than errors: the UI treats both as "nothing to show".
  */
 
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch, nullOn } from "@/lib/api/client";
 import type {
   Mentor,
   MentorFilters,
@@ -24,11 +24,6 @@ type MentorPrivateWire = Omit<MentorProfile, "privatePriceUsd"> & {
 
 function toProfile(wire: MentorPrivateWire): MentorProfile {
   return { ...wire, privatePriceUsd: Number(wire.privatePriceUsd) };
-}
-
-function nullOn(statuses: number[], error: unknown): null {
-  if (error instanceof ApiError && statuses.includes(error.status)) return null;
-  throw error;
 }
 
 export function createHttpMentorRepository(): MentorRepository {

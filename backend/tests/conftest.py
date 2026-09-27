@@ -16,35 +16,38 @@ import socket
 import subprocess
 import tempfile
 import time
-from dataclasses import dataclass
 from pathlib import Path
+from types import SimpleNamespace
 
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, text
 
 from app.auth import ClerkVerifier, get_verifier
+from app.db import get_engine
 from app.main import app
+from app.migrate import run_migrations
 from app.storage import ObjectInfo, get_storage
 
 ISSUER = "https://clerk.example.test"
 APP_ORIGIN = "https://www.dapup.space"
 
+# ---- test data -----------------------------------------------------------
+MENTOR = {"accountType": "mentor"}
+ADMIN = {"accountType": "mentor", "capabilities": {"isAdmin": True}}
+STUDENT_PROFILE = {"fullName": "Maya Lin", "school": "Lincoln High", "yearLevel": "Grade 12", "educationSystem": "AP"}
+MENTOR_PROFILE = {"name": "Jae Park", "university": "Stanford", "major": "CS", "countryRegion": "US", "privatePriceUsd": 40}
+MESSAGE = "I'm applying to CS programs this year and would love essay feedback."
+
+
+@pytest.fixture
+def client():
+    return TestClient(app)
+
 
 # ---- auth ----------------------------------------------------------------
-@dataclass
-class _Key:
-    key: object
-
-
-class FakeJWKS:
-    def __init__(self, public_key) -> None:
-        self.public_key = public_key
-
-    def get_signing_key_from_jwt(self, token: str) -> _Key:
-        return _Key(self.public_key)
-
-
 @pytest.fixture(scope="session")
 def keys():
     private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -55,7 +58,8 @@ def keys():
 def verifier(keys):
     _, public = keys
     app.dependency_overrides[get_verifier] = lambda: ClerkVerifier(
-        issuer=ISSUER, authorized_parties=[APP_ORIGIN], key_source=FakeJWKS(public)
+        issuer=ISSUER, authorized_parties=[APP_ORIGIN],
+        key_source=SimpleNamespace(get_signing_key_from_jwt=lambda token: SimpleNamespace(key=public)),
     )
     yield
     app.dependency_overrides.clear()
@@ -75,6 +79,12 @@ def mint(private_key, **overrides) -> str:
     claims.update(overrides)
     claims = {k: v for k, v in claims.items() if v is not None}
     return jwt.encode(claims, private_key, algorithm="RS256")
+
+
+@pytest.fixture(scope="session")
+def bearer(keys):
+    private, _ = keys
+    return lambda **claims: {"Authorization": f"Bearer {mint(private, **claims)}"}
 
 
 # ---- storage -------------------------------------------------------------
@@ -169,3 +179,24 @@ def database_url():
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         shutil.rmtree(data_dir, ignore_errors=True)
+
+
+@pytest.fixture
+def configured_database(database_url, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", database_url)
+    get_engine.cache_clear()
+    head = run_migrations()
+    yield head
+    engine = create_engine(database_url)
+    with engine.begin() as connection:
+        connection.execute(text("DELETE FROM users"))
+    engine.dispose()
+    get_engine.cache_clear()
+
+
+@pytest.fixture
+def db(database_url):
+    engine = create_engine(database_url)
+    with engine.connect() as connection:
+        yield connection
+    engine.dispose()

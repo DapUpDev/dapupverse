@@ -20,9 +20,6 @@ test.describe("profile photo", () => {
     const picture = page.locator('img[data-slot="avatar-image"]').first();
     await expect(picture).toHaveAttribute("src", /^data:image\/png/);
     await expect(page.getByRole("button", { name: "Change photo" })).toBeVisible();
-    if (process.env.PHOTO_SHOT) {
-      await page.screenshot({ path: process.env.PHOTO_SHOT, fullPage: false });
-    }
 
     await page.getByRole("button", { name: "Remove" }).click();
     await expect(page.getByText("Photo removed")).toBeVisible();

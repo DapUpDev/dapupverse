@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -37,13 +38,11 @@ export function ConnectRequestDialog({
   onOpenChange,
   mentor,
   studentId,
-  onSubmitted,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mentor: Mentor;
   studentId: string;
-  onSubmitted: () => void;
 }) {
   const [purpose, setPurpose] = useState<ConnectionPurpose | null>(null);
   const [message, setMessage] = useState("");
@@ -83,7 +82,6 @@ export function ConnectRequestDialog({
       toast.success("Request sent", {
         description: `Your request to ${mentor.name} is pending. Track it in Connections.`,
       });
-      onSubmitted();
     } catch (error) {
       if (error instanceof DuplicateRequestError) {
         toast.error("Request already active", {
@@ -139,15 +137,7 @@ export function ConnectRequestDialog({
                 ))}
               </SelectContent>
             </Select>
-            {errors.purpose ? (
-              <p
-                id="request-purpose-error"
-                role="alert"
-                className="text-sm text-destructive"
-              >
-                {errors.purpose}
-              </p>
-            ) : null}
+            <FieldError id="request-purpose-error" message={errors.purpose} />
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -167,15 +157,8 @@ export function ConnectRequestDialog({
                 errors.message ? "request-message-error" : "request-message-hint"
               }
             />
-            {errors.message ? (
-              <p
-                id="request-message-error"
-                role="alert"
-                className="text-sm text-destructive"
-              >
-                {errors.message}
-              </p>
-            ) : (
+            <FieldError id="request-message-error" message={errors.message} />
+            {!errors.message && (
               <p
                 id="request-message-hint"
                 className="text-xs text-muted-foreground"

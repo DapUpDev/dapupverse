@@ -63,14 +63,6 @@ export type StudentProfile = {
   avatarUrl: string | null;
 };
 
-/** Fields a student must fill in before sending connection requests. */
-export const STUDENT_PROFILE_REQUIRED_FIELDS = [
-  "fullName",
-  "school",
-  "yearLevel",
-  "educationSystem",
-] as const;
-
 export function isStudentProfileComplete(profile: StudentProfile): boolean {
   return (
     profile.fullName.trim().length > 0 &&
@@ -89,11 +81,6 @@ export type ConnectionState =
   | "accepted"
   | "disconnected"
   | "blocked";
-
-/** Mentor-side view state. Archiving is not part of the lifecycle and is never shown to the student. */
-export type MentorRequestViewState = {
-  archivedByMentor: boolean;
-};
 
 export type ConnectionPurpose =
   | "Essay review"

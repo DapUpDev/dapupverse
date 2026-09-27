@@ -7,15 +7,10 @@
  * looking at a requester; "not allowed" and "not found" both become null.
  */
 
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch, nullOn } from "@/lib/api/client";
 import type { StudentProfile, UpdateStudentProfileInput } from "@/lib/domain/types";
 import { notifyRepositoryChange } from "@/lib/repositories/change-signal";
 import type { StudentProfileRepository } from "@/lib/repositories/types";
-
-function nullOn(statuses: number[], error: unknown): null {
-  if (error instanceof ApiError && statuses.includes(error.status)) return null;
-  throw error;
-}
 
 export function createHttpStudentProfileRepository(): StudentProfileRepository {
   return {

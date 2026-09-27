@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import re
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 from pydantic.alias_generators import to_camel
 from sqlalchemy import func, or_, select
 from sqlalchemy.dialects.postgresql import insert
@@ -33,12 +33,15 @@ from app.storage import avatar_url_for
 router = APIRouter()
 
 # The closed vocabularies from src/lib/domain/types.ts.
-SERVICE_TYPES = ["Essay review", "Application strategy", "Subject tutoring", "Interview prep", "Portfolio review"]
-EDUCATION_SYSTEMS = ["AP", "IB", "A Levels"]
+ServiceType = Literal["Essay review", "Application strategy", "Subject tutoring", "Interview prep", "Portfolio review"]
+EducationSystem = Literal["AP", "IB", "A Levels"]
+Subjects = Annotated[list[Annotated[str, StringConstraints(max_length=60)]],
+                     AfterValidator(lambda v: [s for s in v if s]), Field(max_length=30)]
 
 
 class _Camel(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True,
+                              str_strip_whitespace=True)
 
 
 class MentorPublic(_Camel):
@@ -68,39 +71,10 @@ class MentorProfileUpdate(_Camel):
     major: str | None = Field(default=None, max_length=200)
     country_region: str | None = Field(default=None, max_length=120)
     biography: str | None = Field(default=None, max_length=4000)
-    services: list[str] | None = None
-    subjects: list[str] | None = Field(default=None, max_length=30)
-    education_systems: list[str] | None = None
+    services: list[ServiceType] | None = None
+    subjects: Subjects | None = None
+    education_systems: list[EducationSystem] | None = None
     private_price_usd: Decimal | None = Field(default=None, ge=0, le=100000, decimal_places=2)
-
-    @field_validator("services")
-    @classmethod
-    def _services(cls, value: list[str] | None) -> list[str] | None:
-        if value is not None and (bad := [v for v in value if v not in SERVICE_TYPES]):
-            raise ValueError(f"unknown service type(s): {bad}")
-        return value
-
-    @field_validator("education_systems")
-    @classmethod
-    def _systems(cls, value: list[str] | None) -> list[str] | None:
-        if value is not None and (bad := [v for v in value if v not in EDUCATION_SYSTEMS]):
-            raise ValueError(f"unknown education system(s): {bad}")
-        return value
-
-    @field_validator("subjects")
-    @classmethod
-    def _subjects(cls, value: list[str] | None) -> list[str] | None:
-        if value is None:
-            return None
-        cleaned = [s.strip() for s in value if s.strip()]
-        if any(len(s) > 60 for s in cleaned):
-            raise ValueError("subject too long")
-        return cleaned
-
-    @field_validator("name", "university", "major", "country_region", "biography")
-    @classmethod
-    def _strip(cls, value: str | None) -> str | None:
-        return value.strip() if value is not None else None
 
 
 def _to_public(row: MentorProfile) -> MentorPublic:

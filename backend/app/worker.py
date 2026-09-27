@@ -24,7 +24,7 @@ import signal
 import sys
 import threading
 import time
-from typing import Any, Callable, Protocol
+from typing import Any, Protocol
 
 from app import llm
 
@@ -62,20 +62,14 @@ def llm_ping(job: dict[str, Any], message_id: str) -> None:
     )
 
 
-HANDLERS: dict[str, Callable[[dict[str, Any], str], None]] = {
-    "llm-ping": llm_ping,
-}
-
-
 def handle(job: dict[str, Any], message_id: str) -> None:
     """One job. The receipt line is logged for every job; known kinds then
     go to their handler. Unknown shapes are logged too, not dropped
     silently, so a producer bug is visible in CloudWatch."""
     kind = job.get("job", "<unknown>")
     log.info("job %s received: %s (message %s)", kind, json.dumps(job, sort_keys=True)[:500], message_id)
-    handler = HANDLERS.get(kind) if isinstance(kind, str) else None
-    if handler is not None:
-        handler(job, message_id)
+    if kind == "llm-ping":
+        llm_ping(job, message_id)
 
 
 def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool = False) -> int:
@@ -85,7 +79,6 @@ def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool =
     while not stop.is_set():
         response = client.receive_message(
             QueueUrl=queue_url, MaxNumberOfMessages=BATCH_SIZE, WaitTimeSeconds=WAIT_SECONDS,
-            AttributeNames=["ApproximateReceiveCount"],
         )
         for message in response.get("Messages", []):
             try:

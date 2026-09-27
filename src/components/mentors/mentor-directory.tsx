@@ -94,7 +94,7 @@ export function MentorDirectory() {
             Filters
             {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
           </SheetTrigger>
-          <SheetContent side="right" className="w-80 overflow-y-auto">
+          <SheetContent className="w-80 overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
