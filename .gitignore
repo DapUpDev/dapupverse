@@ -66,3 +66,6 @@ __pycache__/
 DapUp-main*.zip
 /weweb-export/
 /DapUp-main/
+
+# graphify knowledge graph (rebuild with /graphify .)
+graphify-out/

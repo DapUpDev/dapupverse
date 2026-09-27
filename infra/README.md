@@ -39,7 +39,7 @@ Every apply has one purpose. Always run `terraform fmt -check`,
 SHA=$(git rev-parse --short=12 HEAD)
 REPO=$(terraform -chdir=infra output -raw ecr_repository_url)
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin "${REPO%%/*}"
-docker build --platform linux/amd64 -t "$REPO:$SHA" ./api
+docker build --platform linux/amd64 -t "$REPO:$SHA" ./backend
 docker push "$REPO:$SHA"
 ```
 
