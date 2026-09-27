@@ -80,34 +80,15 @@ variable "enable_https" {
   default     = true
 }
 
-variable "github_repo" {
-  description = "GitHub repository (owner/name) allowed to assume the deploy role."
-  type        = string
-  default     = "DapUpDev/dapupverse"
-}
-
 # GitHub's "immutable subject" OIDC setting (on for this repo) embeds the
-# numeric owner and repository IDs in the token's `sub` claim, e.g.
-#   repo:DapUpDev@257909192/dapupverse@1346767279:ref:refs/heads/main
-# IDs survive renames and transfers, so a trust policy keyed on them cannot
-# be hijacked by someone re-creating a deleted repo under the same name.
+# numeric owner and repository IDs in the token's `sub` claim. IDs survive
+# renames and transfers, so a trust policy keyed on them cannot be hijacked
+# by someone re-creating a deleted repo under the same name.
 # Read them with: gh api repos/DapUpDev/dapupverse --jq '{owner:.owner.id,repo:.id}'
-variable "github_owner_id" {
-  description = "Numeric GitHub ID of the repository owner (org/user)."
-  type        = number
-  default     = 257909192
-}
-
-variable "github_repo_id" {
-  description = "Numeric GitHub ID of the repository."
-  type        = number
-  default     = 1346767279
-}
-
-variable "github_branch" {
-  description = "The only branch whose workflow runs may deploy."
+variable "github_oidc_subject" {
+  description = "The only OIDC `sub` claim allowed to assume the deploy role: this repo (by immutable IDs), this branch."
   type        = string
-  default     = "main"
+  default     = "repo:DapUpDev@257909192/dapupverse@1346767279:ref:refs/heads/main"
 }
 
 variable "az_count" {

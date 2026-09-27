@@ -98,23 +98,12 @@ resource "aws_ecs_task_definition" "worker" {
       { name = "LLM_MODEL", value = var.llm_model },
     ]
 
-    # Database credentials as for the API (see ecs.tf), plus the model
+    # Database credentials as for the API (see database.tf), plus the model
     # provider's API key: a plain string secret, so no `:key::` suffix. The
     # Anthropic key is only wired in when that provider is selected; Bedrock
     # needs none (the task role calls it directly).
     secrets = concat(
-      [
-        for env_name, json_key in {
-          DB_HOST     = "host"
-          DB_PORT     = "port"
-          DB_NAME     = "dbname"
-          DB_USER     = "username"
-          DB_PASSWORD = "password"
-          } : {
-          name      = env_name
-          valueFrom = "${data.aws_secretsmanager_secret.db.arn}:${json_key}::"
-        }
-      ],
+      local.db_secrets,
       [{ name = "DEEPSEEK_API_KEY", valueFrom = data.aws_secretsmanager_secret.deepseek_api_key.arn }],
       [
         for secret in data.aws_secretsmanager_secret.anthropic_api_key :
@@ -126,7 +115,7 @@ resource "aws_ecs_task_definition" "worker" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.worker.name
-        "awslogs-region"        = data.aws_region.current.region
+        "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "worker"
       }
     }

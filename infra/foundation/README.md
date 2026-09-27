@@ -10,8 +10,8 @@ administrative way in. Region `us-west-2`, account `645674817735`.
 `infra/foundation/` have different lifecycles and different blast radii. A
 mistake in a service stack should never be able to destroy the database.
 Keeping them as separate root modules with separate state keys makes that
-a property of the tooling, not of care. Service stacks read what they need
-from the foundation's outputs.
+a property of the tooling, not of care. Service stacks look up what they need
+by name through data sources.
 
 ## What it creates
 
@@ -21,7 +21,7 @@ from the foundation's outputs.
 | RDS PostgreSQL 18, `db.t4g.micro`, 20 GB gp3, single-AZ, encrypted, 7-day backups | The one database. Not publicly accessible; only named security groups may reach 5432. | $14 |
 | Secrets Manager secret `dapup/prod/postgres` | Master credentials as JSON (`host`, `port`, `dbname`, `username`, `password`). | $0.40 |
 | S3 bucket `dapup-prod-student-files-<account>` | Avatars and student documents. Versioned, encrypted, public access blocked, TLS-only, CORS for presigned uploads. | under $1 |
-| ECR repository `dapup-api` (adopted, see below) | The registry the API pipeline pushes to. | under $1 |
+| ECR repository `dapup-api` (adopted from `infra/` on 2026-09-12) | The registry the API pipeline pushes to. | under $1 |
 | VPC peering to the default VPC | The running API reaches the database without moving; its task security group is allowed in by reference. | $0 |
 | Bastion: `t4g.nano` Amazon Linux 2023, no inbound rules, no SSH key, Session Manager only, **stopped by default** | Reach the private database from a laptop through an SSM tunnel. | $0.64 stopped; $6.70 while running |
 
@@ -45,35 +45,6 @@ this VPC, set `peer_with_default_vpc = false` and pass its subnets instead.
 ```bash
 winget install --id Amazon.SessionManagerPlugin
 ```
-
-## Apply order (first time)
-
-The registry `dapup-api` is currently tracked by the API stack. Adoption is
-two declarative, no-destroy steps.
-
-1. **API stack first.** `infra/ecr.tf` now contains `removed` blocks and a
-   data source. The plan says the two ECR resources "will no longer be
-   managed"; nothing is destroyed.
-
-   ```bash
-   terraform -chdir=infra plan
-   terraform -chdir=infra apply
-   ```
-
-2. **Foundation.** The plan shows 2 to import and roughly 30 to add.
-
-   ```bash
-   terraform -chdir=infra/foundation init
-   terraform -chdir=infra/foundation plan
-   terraform -chdir=infra/foundation apply
-   ```
-
-   RDS takes 5 to 10 minutes to create.
-
-3. **Delete `import-ecr.tf`** and commit (done 2026-09-12). The adoption is
-   complete; leaving the file would break a future destroy-and-re-apply.
-   Steps 1 and 2 are history now: a fresh checkout applies with plain
-   `terraform apply` and owns the registry outright.
 
 ## Connecting to the database
 

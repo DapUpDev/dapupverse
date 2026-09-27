@@ -26,7 +26,7 @@ Every apply has one purpose. Always run `terraform fmt -check`,
 
 | # | Purpose | Command |
 | --- | --- | --- |
-| 1 | Registry `dapup-api` — now owned by `infra/foundation` (adopted via import/removed blocks; this stack reads it through a data source) | `terraform -chdir=infra/foundation apply` |
+| 1 | Registry `dapup-api` — owned by `infra/foundation`; this stack reads it through a data source | `terraform -chdir=infra/foundation apply` |
 | — | Build + push the image tagged with the Git SHA (see below) | `docker build/push` |
 | 2 | Create everything else and deploy that exact image | `terraform apply -var image_tag=<sha>` |
 | 3a | (Stage 3) ALB over plain HTTP + request the ACM certificate; then add the two records from `terraform output dns_records_to_add` in Vercel DNS | `terraform apply` |
@@ -66,7 +66,7 @@ above. Leave Vercel's own CAA records alone; they cover the frontend.
 bastion) under its own state key. This stack reads the registry through
 `data.aws_ecr_repository.api`; when the ECS service moves into the
 foundation VPC it will read subnets, the database secret ARN, and the RDS
-security group from the foundation's outputs the same way.
+security group by name through data sources the same way.
 
 ## Image ownership contract (Terraform vs. GitHub Actions)
 

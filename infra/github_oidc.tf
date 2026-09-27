@@ -32,18 +32,9 @@ data "aws_iam_policy_document" "github_assume" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [local.github_oidc_subject]
+      values   = [var.github_oidc_subject]
     }
   }
-}
-
-locals {
-  github_owner = split("/", var.github_repo)[0]
-  github_name  = split("/", var.github_repo)[1]
-  github_oidc_subject = format(
-    "repo:%s@%d/%s@%d:ref:refs/heads/%s",
-    local.github_owner, var.github_owner_id, local.github_name, var.github_repo_id, var.github_branch,
-  )
 }
 
 resource "aws_iam_role" "github_deploy" {
