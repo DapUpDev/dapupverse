@@ -41,7 +41,7 @@ test("public pages — mobile", async ({ page }) => {
   await page.goto("/mentors");
   await expect(page.getByText(/8 mentors found/i)).toBeVisible();
   await shoot(page, "mentors-mobile");
-  await page.getByRole("button", { name: /^Filters/ }).click();
+  await page.getByRole("button", { name: "Filter", exact: true }).click();
   await shoot(page, "mentors-mobile-filters-open", false);
   await page.keyboard.press("Escape");
   await page.goto("/mentors/jae-park");

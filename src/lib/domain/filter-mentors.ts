@@ -39,14 +39,3 @@ export function filterMentors<M extends Mentor>(
     return true;
   });
 }
-
-export function countActiveFilters(filters: MentorFilters): number {
-  let count = 0;
-  if (filters.query?.trim()) count += 1;
-  if (filters.educationSystem) count += 1;
-  if (filters.subject) count += 1;
-  if (filters.countryRegion) count += 1;
-  if (filters.university) count += 1;
-  if (filters.serviceType) count += 1;
-  return count;
-}

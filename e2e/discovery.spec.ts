@@ -3,7 +3,6 @@ import { expect, test } from "@playwright/test";
 test.describe("mentor discovery", () => {
   test("searches, filters, clears, and never shows pricing", async ({
     page,
-    isMobile,
   }) => {
     await page.goto("/mentors");
 
@@ -15,34 +14,23 @@ test.describe("mentor discovery", () => {
     await expect(page.getByText("Mira Chen")).toBeVisible();
     await page.getByLabel("Search").fill("");
 
-    // Filter by education system (mobile uses the filter sheet).
-    if (isMobile) {
-      await page.getByRole("button", { name: /^Filters/ }).click();
-      const sheet = page.getByRole("dialog");
-      await sheet.getByLabel("Education system").click();
-      await page.getByRole("option", { name: "AP", exact: true }).click();
-      await sheet.getByRole("button", { name: "Show results" }).click();
-    } else {
-      await page.getByLabel("Education system").click();
-      await page.getByRole("option", { name: "AP", exact: true }).click();
-    }
+    // Filter by education system through the filter bar.
+    await page.getByRole("button", { name: "Filter", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Education system" }).click();
+    await page.getByRole("menuitemradio", { name: "AP", exact: true }).click();
     await expect(page.getByText(/4 mentors found/)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Education system is AP" }),
+    ).toBeVisible();
 
-    // Clear all restores the full list.
-    if (isMobile) {
-      await page.getByRole("button", { name: /^Filters/ }).click();
-      const sheet = page.getByRole("dialog");
-      await sheet.getByRole("button", { name: "Clear all filters" }).click();
-      await sheet.getByRole("button", { name: "Show results" }).click();
-    } else {
-      await page.getByRole("button", { name: "Clear all filters" }).click();
-    }
+    // Clear restores the full list.
+    await page.getByRole("button", { name: "Clear", exact: true }).click();
     await expect(page.getByText(/8 mentors found/)).toBeVisible();
 
     // An impossible combination produces the empty state.
     await page.getByLabel("Search").fill("zzz-no-such-mentor");
     await expect(page.getByText(/no mentors match your search/i)).toBeVisible();
-    await page.getByRole("button", { name: "Clear all filters" }).last().click();
+    await page.getByRole("button", { name: "Clear all filters" }).click();
     await expect(page.getByText(/8 mentors found/)).toBeVisible();
 
     // Public pages carry no pricing.
