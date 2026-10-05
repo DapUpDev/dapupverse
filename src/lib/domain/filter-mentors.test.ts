@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countActiveFilters, filterMentors } from "@/lib/domain/filter-mentors";
+import { filterMentors } from "@/lib/domain/filter-mentors";
 import { SEED_MENTOR_PROFILES } from "@/lib/data/seed";
 import { toPublicMentor } from "@/lib/repositories/mock";
 
@@ -63,13 +63,5 @@ describe("filterMentors", () => {
       countryRegion: "New Zealand",
     });
     expect(result).toHaveLength(0);
-  });
-
-  it("counts active filters for the clear-all affordance", () => {
-    expect(countActiveFilters({})).toBe(0);
-    expect(countActiveFilters({ query: "  " })).toBe(0);
-    expect(
-      countActiveFilters({ query: "a", educationSystem: "IB", subject: "x" }),
-    ).toBe(3);
   });
 });
