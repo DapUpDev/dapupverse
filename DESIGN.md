@@ -169,7 +169,7 @@ components:
     backgroundColor: "{colors.mark}"
     textColor: "{colors.ink}"
     rounded: "{rounded.photo}"
-    padding: "0 1.5em 0 0.3em"
+    padding: "0 0.3em"
   id-photo:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.ink}"
@@ -331,7 +331,7 @@ Quiet, flat and exact; they answer the press, not the release.
 A dialog is a sheet laid over the dimmed desk: 6px radius, 24 to 32px padding, 28rem maximum, Pop shadow, a Section-style title and a ghost close button. It is used only where the task needs an interruption (sending a request, being asked to sign in first). Toasts are paper with the Pop shadow; success carries a highlighter-filled tick and an error a red mark.
 
 ### The Fill-In Sentence
-The landing page's signature: a sentence in the display face whose choices are native selects drawn as highlighted text (highlighter fill, 4px radius, a small ink chevron, sized to their content). Hover draws a 2px ink outline; press scales to 0.98. Changing a blank re-deals the fan beside it to the mentors who match, and the facts that matched are highlighted on each card. The status line under the sentence links to the directory with the sentence's choices as its starting filters.
+The landing page's signature: a sentence in the display face whose choices are selects drawn as highlighted text, opening the same paper menu as every other select (highlighter fill, 4px radius, a small ink chevron, sized to their content). Hover draws a 2px ink outline; press scales to 0.98. Changing a blank re-deals the fan beside it to the mentors who match, and the facts that matched are highlighted on each card. The status line under the sentence links to the directory with the sentence's choices as its starting filters.
 
 ### The Mentor Card
 A 20px-padded sheet: an 80px square ID photo, the name as a Title, major and university in ink-2, then a short definition list ("Studied", "Helps with", "Knows") with ink-3 terms in a fixed 5.25rem column. It ends with an "Ask <first name>" affordance and an arrow: primary on the card that leads, outline on the rest. A mentor's price never appears on it.

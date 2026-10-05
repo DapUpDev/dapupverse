@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { MentorCard } from "@/components/mentors/mentor-card";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterMentors } from "@/lib/domain/filter-mentors";
 import {
@@ -37,6 +44,47 @@ const slot =
 
 const plural = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
+
+/**
+ * A fill-in blank inside the sentence: a select drawn as highlighted text.
+ * The list is our own paper menu; a native select's list is drawn by the
+ * browser in a box the page cannot style.
+ */
+function Blank<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: readonly (readonly [T, string])[];
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as T)}>
+      <SelectTrigger
+        aria-label={label}
+        className="mx-[0.05em] inline-flex h-auto cursor-pointer gap-[0.2em] rounded-[4px] border-0 bg-mark py-0 pr-[0.3em] pl-[0.3em] align-baseline text-[length:inherit] leading-[1.3] transition-[scale] hover:shadow-[0_0_0_2px_var(--foreground)] active:scale-[0.98] md:text-[length:inherit] data-placeholder:text-foreground [&_svg]:text-foreground"
+      >
+        <SelectValue>
+          {(v: T) => options.find(([option]) => option === v)?.[1]}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent
+        align="start"
+        alignItemWithTrigger={false}
+        className="w-auto font-sans tracking-normal"
+      >
+        {options.map(([option, text]) => (
+          <SelectItem key={option} value={option}>
+            {text}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 /**
  * The top of the landing page: a request slip whose sentence filters the
@@ -113,45 +161,26 @@ export function HomeDesk() {
           >
             <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.75] font-medium tracking-[-0.015em]">
               I&rsquo;m on{" "}
-              <select
-                className="blank"
-                aria-label="Your exam system"
+              <Blank
+                label="Your exam system"
                 value={chosenSystem}
-                onChange={(e) =>
-                  choose(setSystem)(e.target.value as EducationSystem)
-                }
-              >
-                {EDUCATION_SYSTEMS.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>{" "}
+                onChange={choose(setSystem)}
+                options={EDUCATION_SYSTEMS.map((s) => [s, s])}
+              />{" "}
               and want{" "}
-              <select
-                className="blank"
-                aria-label="What you want help with"
+              <Blank
+                label="What you want help with"
                 value={service}
-                onChange={(e) =>
-                  choose(setService)(e.target.value as ServiceType)
-                }
-              >
-                {SERVICE_TYPES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.toLowerCase()}
-                  </option>
-                ))}
-              </select>{" "}
+                onChange={choose(setService)}
+                options={SERVICE_TYPES.map((s) => [s, s.toLowerCase()])}
+              />{" "}
               from a student at{" "}
-              <select
-                className="blank"
-                aria-label="University"
+              <Blank
+                label="University"
                 value={university}
-                onChange={(e) => choose(setUniversity)(e.target.value)}
-              >
-                <option value="">any university</option>
-                {universities.map((u) => (
-                  <option key={u}>{u}</option>
-                ))}
-              </select>
+                onChange={choose(setUniversity)}
+                options={[["", "any university"], ...universities.map((u) => [u, u] as const)]}
+              />
               .
             </p>
             <p
