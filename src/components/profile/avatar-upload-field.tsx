@@ -10,6 +10,38 @@ import { cn } from "@/lib/utils";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024;
+// Twice the largest size a photo is drawn at, with room for sharp screens.
+const MAX_SIDE = 512;
+
+/**
+ * Scale a photo down so its shorter side is MAX_SIDE. A small file scales
+ * to avatar size far more cleanly than a full camera photo, and loads
+ * faster. Anything that goes wrong returns the original file.
+ */
+async function shrink(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file, {
+      imageOrientation: "from-image",
+    });
+    const scale = MAX_SIDE / Math.min(bitmap.width, bitmap.height);
+    if (scale >= 1) return file;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    // WebP keeps transparency; a browser that cannot write it gives PNG.
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", 0.9),
+    );
+    if (!blob || !ACCEPTED_TYPES.includes(blob.type)) return file;
+    return new File([blob], file.name, { type: blob.type });
+  } catch {
+    return file;
+  }
+}
 
 /**
  * Profile picture chooser. The picture saves the moment a file is picked,
@@ -44,7 +76,7 @@ export function AvatarUploadField({
     }
     setBusy("upload");
     try {
-      await avatarRepository.upload(userId, file);
+      await avatarRepository.upload(userId, await shrink(file));
       toast.success("Photo updated");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed.");
