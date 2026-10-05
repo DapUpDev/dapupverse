@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft, CircleOff } from "lucide-react";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Label } from "@/components/ui/label";
@@ -10,21 +10,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
-import type {
-  ConnectionRequest,
-  Message,
-  MessageThread,
-} from "@/lib/domain/types";
+import type { ConnectionRequest, Message } from "@/lib/domain/types";
 import { connectionRepository, messageRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
-import { otherPartyName } from "@/components/messages/thread-list";
+import { otherParty } from "@/components/messages/thread-list";
 
 type ConversationData = {
-  thread: MessageThread;
   connection: ConnectionRequest | null;
   messages: Message[];
-  otherPartyName: string;
+  other: { name: string; avatarUrl: string | null };
 };
+
+// One sheet that fills the window under the site header, so the messages
+// scroll inside it and the composer stays at its foot.
+const frame =
+  "sheet flex h-[calc(100dvh-7rem)] min-h-[26rem] flex-col overflow-hidden sm:h-[calc(100dvh-9rem)]";
 
 export function Conversation({
   threadId,
@@ -35,22 +35,18 @@ export function Conversation({
 }) {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
 
   const { data, ready } = useRepositoryQuery<ConversationData | null>(
     async () => {
       const thread = await messageRepository.getThread(threadId);
       if (!thread) return null;
-      const [connection, messages] = await Promise.all([
+      const [connection, messages, other] = await Promise.all([
         connectionRepository.get(thread.connectionId),
         messageRepository.listMessages(threadId),
+        otherParty(thread, userId),
       ]);
-      return {
-        thread,
-        connection,
-        messages,
-        otherPartyName: await otherPartyName(thread, userId),
-      };
+      return { connection, messages, other };
     },
     [threadId, userId],
   );
@@ -60,16 +56,28 @@ export function Conversation({
     messageRepository.markThreadRead(threadId, userId);
   }, [threadId, userId]);
 
+  // Keep the newest message in view.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    const log = logRef.current;
+    if (log) log.scrollTop = log.scrollHeight;
   }, [data?.messages.length]);
 
-  if (!ready) return <Skeleton className="h-96 rounded-xl" />;
+  if (!ready) {
+    return (
+      <div aria-busy="true" className={cn(frame, "gap-3 p-6")}>
+        <Skeleton className="h-7 w-44" />
+        <Skeleton className="mt-6 h-10 w-3/5 rounded-2xl" />
+        <Skeleton className="h-10 w-2/5 self-end rounded-2xl" />
+      </div>
+    );
+  }
 
   if (!data) {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed p-8">
-        <p className="font-medium">Conversation not found</p>
+      <div className="sheet flex flex-col items-start gap-4 p-6 sm:p-8">
+        <h1 className="font-display text-xl font-semibold tracking-tight">
+          Conversation not found
+        </h1>
         <ButtonLink variant="outline" href="/app/messages">
           Back to messages
         </ButtonLink>
@@ -77,6 +85,7 @@ export function Conversation({
     );
   }
 
+  const { other } = data;
   const readOnly = data.connection?.state !== "accepted";
 
   const handleSend = async (event: React.FormEvent) => {
@@ -93,79 +102,111 @@ export function Conversation({
   };
 
   return (
-    <div className="flex h-full min-h-96 flex-col">
-      <div className="flex items-center gap-3 border-b pb-3">
+    <div className={frame}>
+      <div className="flex items-center gap-3 border-b px-4 py-3 sm:px-6">
         <ButtonLink
           variant="ghost"
           size="icon"
-          className="lg:hidden"
+          className="-ml-2 lg:hidden"
           aria-label="Back to conversations"
           href="/app/messages"
         >
-          <ArrowLeft aria-hidden="true" />
+          <ArrowLeft aria-hidden="true" strokeWidth={1.75} />
         </ButtonLink>
-        <h2 className="text-lg font-semibold">{data.otherPartyName}</h2>
+        <ProfileAvatar
+          name={other.name}
+          avatarUrl={other.avatarUrl}
+          className="size-9"
+        />
+        <h1 className="min-w-0 truncate font-display text-xl font-semibold tracking-tight">
+          {other.name}
+        </h1>
       </div>
 
       <div
-        className="flex flex-1 flex-col gap-3 overflow-y-auto py-4"
-        aria-label={`Conversation with ${data.otherPartyName}`}
+        ref={logRef}
+        role="log"
+        tabIndex={0}
+        aria-label={`Conversation with ${other.name}`}
+        className="flex flex-1 flex-col overflow-y-auto px-4 py-5 outline-none [scrollbar-color:--alpha(var(--foreground)/25%)_transparent] [scrollbar-width:thin] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:px-6"
       >
         {data.messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="m-auto text-sm text-muted-foreground">
             No messages yet — say hello!
           </p>
         ) : (
-          data.messages.map((message) => {
-            const mine = message.senderId === userId;
-            return (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex max-w-[85%] flex-col gap-0.5 sm:max-w-[70%]",
-                  mine ? "self-end items-end" : "self-start items-start",
-                )}
-              >
+          // mt-auto rests a short conversation on the composer, the way
+          // justify-end would, without breaking the scroll.
+          <div className="mt-auto flex flex-col gap-3">
+            {data.messages.map((message) => {
+              const mine = message.senderId === userId;
+              return (
                 <div
+                  key={message.id}
                   className={cn(
-                    "rounded-lg px-3 py-2 text-sm",
-                    mine
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground",
+                    "flex max-w-[85%] flex-col gap-1 sm:max-w-[min(70%,36rem)]",
+                    mine ? "items-end self-end" : "items-start self-start",
                   )}
                 >
-                  {message.text}
+                  <p
+                    className={cn(
+                      "relative rounded-2xl px-3.5 py-2 break-words whitespace-pre-wrap",
+                      mine
+                        ? "rounded-br-sm bg-secondary"
+                        : "rounded-bl-sm border bg-card",
+                    )}
+                  >
+                    <span className="sr-only">
+                      {mine ? "You" : other.name}:{" "}
+                    </span>
+                    {message.text}
+                  </p>
+                  <time
+                    dateTime={message.sentAt}
+                    className="px-1 text-xs text-subtle tabular-nums"
+                  >
+                    {formatDateTime(message.sentAt)}
+                  </time>
                 </div>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {formatDateTime(message.sentAt)}
-                </span>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
-        <div ref={endRef} />
       </div>
 
       {readOnly ? (
-        <Alert>
-          <AlertTitle>This conversation is read-only</AlertTitle>
-          <AlertDescription>
-            The connection has ended, so new messages can&rsquo;t be sent.
-          </AlertDescription>
-        </Alert>
+        <div
+          role="alert"
+          className="flex items-start gap-2 border-t px-4 py-4 text-sm text-muted-foreground sm:px-6"
+        >
+          <CircleOff
+            aria-hidden="true"
+            strokeWidth={1.75}
+            className="mt-0.5 size-4 shrink-0"
+          />
+          <div>
+            <p className="font-medium text-foreground">
+              This conversation is read-only
+            </p>
+            <p>
+              The connection has ended, so new messages can&rsquo;t be sent.
+            </p>
+          </div>
+        </div>
       ) : (
         <form
           onSubmit={handleSend}
-          className="flex items-end gap-2 border-t pt-3"
+          className="flex items-end gap-2 border-t px-4 py-3 sm:px-6"
         >
-          <div className="flex-1">
+          <div className="relative flex-1">
             <Label htmlFor="message-composer" className="sr-only">
-              Message {data.otherPartyName}
+              Message {other.name}
             </Label>
             <Textarea
               id="message-composer"
               rows={2}
-              placeholder={`Message ${data.otherPartyName}`}
+              className="max-h-40 min-h-11 resize-none py-2 md:text-base"
+              placeholder={`Message ${other.name}`}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
@@ -176,7 +217,11 @@ export function Conversation({
               }}
             />
           </div>
-          <Button type="submit" disabled={sending || draft.trim() === ""}>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={sending || draft.trim() === ""}
+          >
             Send
           </Button>
         </form>

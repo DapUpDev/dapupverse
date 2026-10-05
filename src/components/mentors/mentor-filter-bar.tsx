@@ -71,8 +71,10 @@ const FIELDS: {
   },
 ];
 
+// A segment of a chip you can press. Feedback is a fill on the press itself;
+// the chip clips its children, so the focus ring is drawn inside.
 const chipButton =
-  "px-2 outline-none transition duration-150 ease-out hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:scale-[0.97] data-popup-open:bg-muted";
+  "outline-none transition-colors duration-150 ease-out hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-secondary data-popup-open:bg-muted";
 
 function ValueItems({
   value,
@@ -83,7 +85,12 @@ function ValueItems({
   values: string[];
   onPick: (value: string) => void;
 }) {
-  if (values.length === 0) return <MenuItem disabled>No options yet</MenuItem>;
+  if (values.length === 0)
+    return (
+      <MenuItem disabled className="text-subtle data-disabled:opacity-100">
+        No options yet
+      </MenuItem>
+    );
   // ponytail: menu typeahead only, no search box. Swap the value list for Base UI Combobox when a field passes ~15 options.
   return (
     <MenuRadioGroup value={value ?? null} onValueChange={onPick}>
@@ -96,7 +103,11 @@ function ValueItems({
   );
 }
 
-/** Linear-style filter bar: one chip per active filter, plus a Filter menu. */
+/**
+ * Linear-style filter bar: the Filter menu, then one chip per active filter.
+ * Filter stays put so its menu always opens from the same place; a chip is the
+ * same height as the buttons beside it and its chosen value is highlighted.
+ */
 export function MentorFilterBar({
   filters,
   options,
@@ -120,24 +131,54 @@ export function MentorFilterBar({
       aria-label="Mentor filters"
       className="flex flex-wrap items-center gap-2"
     >
+      <Menu>
+        <MenuTrigger
+          ref={filterRef}
+          render={<Button variant="outline" size="sm" />}
+        >
+          <ListFilter aria-hidden="true" />
+          Filter
+        </MenuTrigger>
+        <MenuContent>
+          {FIELDS.map(({ key, label, icon: Icon, values }) => (
+            <MenuSub key={key}>
+              <MenuSubTrigger>
+                <Icon aria-hidden="true" className="text-muted-foreground" />
+                {label}
+              </MenuSubTrigger>
+              {/* Offsets are measured from the row, which sits 4px inside its
+                  menu: this leaves a 4px gap and lines the first rows up. */}
+              <MenuContent sideOffset={8} alignOffset={-4}>
+                <ValueItems
+                  value={filters[key]}
+                  values={values(options)}
+                  onPick={(value) => set(key, value)}
+                />
+              </MenuContent>
+            </MenuSub>
+          ))}
+        </MenuContent>
+      </Menu>
       {active.map(({ key, label, icon: Icon, values }) => (
         <div
           key={key}
-          className="flex h-7 max-w-full items-stretch divide-x divide-border overflow-hidden rounded-lg border border-border bg-muted/50 text-[0.8rem]"
+          className="flex h-8 max-w-full items-stretch overflow-hidden rounded-lg border border-foreground/25 bg-card text-[0.8125rem]"
         >
-          <span className="flex shrink-0 items-center gap-1.5 px-2 text-muted-foreground">
+          <span className="flex shrink-0 items-center gap-1.5 pr-1 pl-2.5 text-muted-foreground">
             <Icon aria-hidden="true" className="size-3.5" />
             {label}
           </span>
-          <span className="flex shrink-0 items-center px-2 text-muted-foreground">
+          <span className="flex shrink-0 items-center px-1 text-subtle">
             is
           </span>
           <Menu>
             <MenuTrigger
               aria-label={`${label} is ${filters[key]}`}
-              className={`${chipButton} min-w-0 truncate font-medium`}
+              className={`${chipButton} flex min-w-0 items-center px-1.5`}
             >
-              {filters[key]}
+              <span className="truncate rounded-[3px] bg-mark px-1.5 py-0.5 leading-tight font-medium">
+                {filters[key]}
+              </span>
             </MenuTrigger>
             <MenuContent>
               <ValueItems
@@ -150,7 +191,7 @@ export function MentorFilterBar({
           <button
             type="button"
             aria-label={`Remove ${label} filter`}
-            className={`${chipButton} shrink-0 text-muted-foreground hover:text-foreground`}
+            className={`${chipButton} flex w-8 shrink-0 items-center justify-center border-l border-border text-muted-foreground hover:text-foreground`}
             onClick={() => {
               set(key, undefined);
               filterRef.current?.focus();
@@ -162,9 +203,10 @@ export function MentorFilterBar({
       ))}
       {active.length > 0 && (
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="active:scale-[0.97]"
+          // The ghost hover fill is the desk's own colour; go one step darker.
+          className="hover:bg-secondary"
           onClick={() => {
             onClear();
             filterRef.current?.focus();
@@ -173,38 +215,6 @@ export function MentorFilterBar({
           Clear
         </Button>
       )}
-      <Menu>
-        <MenuTrigger
-          ref={filterRef}
-          render={
-            <Button
-              variant="outline"
-              size="sm"
-              className="active:scale-[0.97]"
-            />
-          }
-        >
-          <ListFilter aria-hidden="true" />
-          Filter
-        </MenuTrigger>
-        <MenuContent>
-          {FIELDS.map(({ key, label, icon: Icon, values }) => (
-            <MenuSub key={key}>
-              <MenuSubTrigger>
-                <Icon aria-hidden="true" />
-                {label}
-              </MenuSubTrigger>
-              <MenuContent>
-                <ValueItems
-                  value={filters[key]}
-                  values={values(options)}
-                  onPick={(value) => set(key, value)}
-                />
-              </MenuContent>
-            </MenuSub>
-          ))}
-        </MenuContent>
-      </Menu>
     </div>
   );
 }

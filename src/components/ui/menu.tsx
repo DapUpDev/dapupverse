@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 const itemClass =
-  "relative flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+  "relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none not-data-checked:data-highlighted:bg-accent data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
 
 const Menu = MenuPrimitive.Root
 
@@ -18,18 +18,26 @@ function MenuTrigger(props: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="menu-trigger" {...props} />
 }
 
-function MenuContent({ className, ...props }: MenuPrimitive.Popup.Props) {
+function MenuContent({
+  className,
+  sideOffset = 4,
+  alignOffset,
+  ...props
+}: MenuPrimitive.Popup.Props &
+  Pick<MenuPrimitive.Positioner.Props, "sideOffset" | "alignOffset">) {
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         align="start"
-        sideOffset={4}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
         className="isolate z-50"
       >
         <MenuPrimitive.Popup
           data-slot="menu-content"
           className={cn(
-            "max-h-(--available-height) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-150 ease-out data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            // Paper that grows from its trigger and shrinks back into it.
+            "max-h-(--available-height) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-pop ring-1 ring-foreground/10 outline-hidden transition-[scale,opacity] duration-150 ease-desk data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
             className
           )}
           {...props}
@@ -57,7 +65,12 @@ function MenuRadioItem({
   return (
     <MenuPrimitive.RadioItem
       data-slot="menu-radio-item"
-      className={cn(itemClass, "pr-8", className)}
+      className={cn(
+        itemClass,
+        // The chosen value keeps the highlighter; pointing at it adds an ink outline.
+        "pr-8 inset-ring-foreground data-checked:bg-mark data-checked:data-highlighted:inset-ring-[1.5px]",
+        className
+      )}
       {...props}
     >
       {children}
@@ -80,15 +93,11 @@ function MenuSubTrigger({
   return (
     <MenuPrimitive.SubmenuTrigger
       data-slot="menu-sub-trigger"
-      className={cn(
-        itemClass,
-        "data-popup-open:bg-accent data-popup-open:text-accent-foreground",
-        className
-      )}
+      className={cn(itemClass, "data-popup-open:bg-accent", className)}
       {...props}
     >
       {children}
-      <ChevronRightIcon className="ml-auto text-muted-foreground" />
+      <ChevronRightIcon className="ml-auto text-subtle" />
     </MenuPrimitive.SubmenuTrigger>
   )
 }

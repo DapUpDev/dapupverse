@@ -51,8 +51,14 @@ export class MockDataStore {
   private hydrated = false;
   private idCounter = 0;
 
-  /** Current data; reference changes on every mutation. */
-  getSnapshot = (): MockData => this.data;
+  /**
+   * Current data; reference changes on every mutation. Persisted state loads
+   * on first use, so no reader ever gets the seed in its place.
+   */
+  getSnapshot = (): MockData => {
+    this.hydrateFromLocalStorage();
+    return this.data;
+  };
 
   /**
    * Load persisted demo state from localStorage. Safe to call repeatedly;
@@ -67,7 +73,6 @@ export class MockDataStore {
       const parsed = JSON.parse(raw) as MockData;
       if (parsed && Array.isArray(parsed.mentorProfiles)) {
         this.data = parsed;
-        this.notify();
       }
     } catch {
       // Corrupt or unavailable storage: keep the seed state.
@@ -76,7 +81,7 @@ export class MockDataStore {
 
   /** Apply a mutation to a draft copy, persist it, and notify subscribers. */
   mutate(mutator: (draft: MockData) => void): void {
-    const draft = structuredClone(this.data);
+    const draft = structuredClone(this.getSnapshot());
     mutator(draft);
     this.data = draft;
     this.persist();

@@ -1,21 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, CircleOff, Link2 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
+  RequestGroup,
+  RequestSheet,
+  SheetsSkeleton,
+  StateChip,
   studentName,
+  studentOf,
   useMentorRequests,
 } from "@/components/connections/mentor-requests-inbox";
 import { formatDate } from "@/lib/format";
@@ -25,7 +20,7 @@ import { connectionRepository } from "@/lib/repositories";
 export function MentorConnections({ mentorId }: { mentorId: string }) {
   const { data, ready } = useMentorRequests(mentorId);
 
-  if (!ready) return <Skeleton className="h-64 rounded-xl" />;
+  if (!ready) return <SheetsSkeleton />;
 
   const sorted = [...(data ?? [])].sort((a, b) =>
     b.request.updatedAt.localeCompare(a.request.updatedAt),
@@ -50,54 +45,37 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="mentor-connected-heading">
-        <h2 id="mentor-connected-heading" className="text-lg font-semibold">
-          Connected students
-        </h2>
+    <div className="flex flex-col gap-14">
+      <RequestGroup id="mentor-connected-heading" title="Connected students">
         {accepted.length === 0 ? (
-          <Card className="mt-3">
-            <CardHeader>
-              <CardTitle className="text-base">No connections yet</CardTitle>
-              <CardDescription>
-                Accept a request from your{" "}
-                <Link
-                  href="/app/requests"
-                  className="underline underline-offset-4"
-                >
-                  Requests inbox
-                </Link>{" "}
-                to start a connection.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="sheet p-6 sm:p-8">
+            <h3 className="font-display text-xl font-semibold tracking-tight">
+              No connections yet
+            </h3>
+            <p className="mt-1.5 text-muted-foreground">
+              Accept a request from your{" "}
+              <Link href="/app/requests" className="text-foreground underline">
+                Requests inbox
+              </Link>{" "}
+              to start a connection.
+            </p>
+          </div>
         ) : (
-          <ul className="mt-3 flex flex-col gap-3">
+          <ul className="flex flex-col gap-3">
             {accepted.map(({ request, student }) => (
-              <li key={request.id}>
-                <Card>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{studentName(student)}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {request.purpose} · Connected{" "}
-                        {formatDate(request.updatedAt)}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge>
-                        <Link2 aria-hidden="true" /> Connected
-                      </Badge>
-                      <ButtonLink
-                        size="sm"
-                        variant="outline"
-                        href="/app/messages"
-                      >
-                        Message
-                      </ButtonLink>
+              <RequestSheet
+                key={request.id}
+                {...studentOf(student)}
+                chip={<StateChip state="accepted">Connected</StateChip>}
+                request={request}
+                when={`Connected ${formatDate(request.updatedAt)}`}
+                actions={
+                  <>
+                    <ButtonLink href="/app/messages">Message</ButtonLink>
+                    {/* Kept apart from Message: neither asks to be confirmed. */}
+                    <div className="ml-auto flex gap-2">
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        variant="destructive"
                         onClick={() =>
                           handleDisconnect(request.id, studentName(student))
                         }
@@ -105,7 +83,6 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
                         Disconnect
                       </Button>
                       <Button
-                        size="sm"
                         variant="destructive"
                         onClick={() =>
                           handleBlock(request.id, studentName(student))
@@ -114,44 +91,32 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
                         Block
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </li>
+                  </>
+                }
+              />
             ))}
           </ul>
         )}
-      </section>
+      </RequestGroup>
 
       {ended.length > 0 ? (
-        <section aria-labelledby="mentor-ended-heading">
-          <h2 id="mentor-ended-heading" className="text-lg font-semibold">
-            Past connections
-          </h2>
-          <ul className="mt-3 flex flex-col gap-3">
+        <RequestGroup id="mentor-ended-heading" title="Past connections">
+          <ul className="flex flex-col gap-3">
             {ended.map(({ request, student }) => (
-              <li key={request.id}>
-                <Card>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-medium text-muted-foreground">
-                      {studentName(student)}
-                    </p>
-                    <Badge variant="outline">
-                      {request.state === "blocked" ? (
-                        <>
-                          <Ban aria-hidden="true" /> Blocked
-                        </>
-                      ) : (
-                        <>
-                          <CircleOff aria-hidden="true" /> Disconnected
-                        </>
-                      )}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </li>
+              <RequestSheet
+                key={request.id}
+                name={studentName(student)}
+                avatarUrl={student?.avatarUrl}
+                chip={
+                  <StateChip state={request.state}>
+                    {request.state === "blocked" ? "Blocked" : "Disconnected"}
+                  </StateChip>
+                }
+                request={request}
+              />
             ))}
           </ul>
-        </section>
+        </RequestGroup>
       ) : null}
     </div>
   );

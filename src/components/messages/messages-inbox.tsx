@@ -25,13 +25,14 @@ export function MessagesInbox({
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid items-start gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
       <ThreadList
         items={items}
         ready={ready}
         hasPendingRequests={hasPendingRequests}
       />
-      <div className="hidden items-center justify-center rounded-lg border border-dashed p-8 lg:flex">
+      {/* The outline of where the open conversation will lie. */}
+      <div className="hidden min-h-[26rem] items-center justify-center rounded-[6px] border border-dashed border-foreground/25 p-8 lg:flex">
         <p className="text-sm text-muted-foreground">
           {items && items.length > 0
             ? "Select a conversation to start reading."

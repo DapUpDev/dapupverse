@@ -49,7 +49,9 @@ test.describe("route access", () => {
     await signInAs(page, "student");
     await page.goto("/app/requests");
     await expect(page).toHaveURL(/\/forbidden/);
-    await expect(page.getByText(/not authorized/i)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /don.t have access to that page/i }),
+    ).toBeVisible();
   });
 
   test("a plain mentor has no Admin nav and is denied from /admin", async ({

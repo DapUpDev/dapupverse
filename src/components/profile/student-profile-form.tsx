@@ -2,16 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CircleDashed } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { FieldError } from "@/components/ui/field-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { StateChip } from "@/components/connections/mentor-requests-inbox";
 import { AvatarUploadField } from "@/components/profile/avatar-upload-field";
-import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { facts, idPhoto, ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   loadConnectionIntent,
   useHasConnectionIntent,
@@ -117,17 +112,21 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">Your profile</h1>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <h1 className="page-title">
+          Your profile
+        </h1>
         {complete ? (
-          <Badge>Profile complete</Badge>
+          <StateChip state="accepted">Profile complete</StateChip>
         ) : (
-          <Badge variant="secondary">Profile incomplete</Badge>
+          <StateChip state="pending">Profile incomplete</StateChip>
         )}
       </div>
 
       {pendingIntent && !complete ? (
-        <Alert>
+        // A slip waiting on the desk, dashed like every pending thing.
+        <Alert className="rounded-[6px] border-dashed border-foreground/40 bg-transparent px-4 py-3.5">
+          <CircleDashed strokeWidth={1.75} aria-hidden="true" />
           <AlertTitle>Finish your profile to send your request</AlertTitle>
           <AlertDescription>
             Complete the required fields below and we&rsquo;ll take you back to
@@ -137,7 +136,11 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
       ) : null}
 
       {editing ? (
-        <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
+        <form
+          onSubmit={handleSave}
+          noValidate
+          className="sheet flex flex-col gap-5 p-6 shadow-sheet sm:p-8"
+        >
           <AvatarUploadField
             name={form.fullName}
             idPrefix="student"
@@ -146,7 +149,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="student-name">Full name</Label>
               <Input
                 id="student-name"
@@ -160,7 +163,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
               <FieldError id="student-name-error" message={errors.fullName} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="student-school">School</Label>
               <Input
                 id="student-school"
@@ -174,7 +177,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
               <FieldError id="student-school-error" message={errors.school} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="student-year">Year level</Label>
               <Input
                 id="student-year"
@@ -189,7 +192,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
               <FieldError id="student-year-error" message={errors.yearLevel} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="student-system">Education system</Label>
               <Select
                 value={form.educationSystem}
@@ -222,7 +225,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="student-subjects">Subjects &amp; interests</Label>
             <Input
               id="student-subjects"
@@ -231,15 +234,12 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
               onChange={(e) => set("subjects", e.target.value)}
               aria-describedby="student-subjects-hint"
             />
-            <p
-              id="student-subjects-hint"
-              className="text-xs text-muted-foreground"
-            >
+            <p id="student-subjects-hint" className="text-sm text-subtle">
               Separate with commas.
             </p>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="student-bio">Short biography</Label>
             <Textarea
               id="student-bio"
@@ -249,7 +249,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3 pt-1">
             <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : "Save profile"}
             </Button>
@@ -269,51 +269,49 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
           </div>
         </form>
       ) : (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="sheet p-6 shadow-sheet sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
               <ProfileAvatar
                 name={profile.fullName}
                 avatarUrl={profile.avatarUrl}
-                className="size-12 border border-chrome/30"
+                className={idPhoto}
               />
-              <CardTitle className="text-lg">{profile.fullName}</CardTitle>
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                {profile.fullName}
+              </h2>
             </div>
             <Button variant="outline" onClick={() => setEditing(true)}>
               Edit profile
             </Button>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+          </div>
+          <dl className={facts}>
             <div>
-              <p className="font-medium">School</p>
-              <p className="text-muted-foreground">{profile.school}</p>
+              <dt>School</dt>
+              <dd>{profile.school}</dd>
             </div>
             <div>
-              <p className="font-medium">Year level</p>
-              <p className="text-muted-foreground">{profile.yearLevel}</p>
+              <dt>Year level</dt>
+              <dd>{profile.yearLevel}</dd>
             </div>
             <div>
-              <p className="font-medium">Education system</p>
-              <p className="text-muted-foreground">
-                {profile.educationSystem ?? "—"}
-              </p>
+              <dt>Education system</dt>
+              <dd>{profile.educationSystem ?? "—"}</dd>
             </div>
             <div>
-              <p className="font-medium">Subjects &amp; interests</p>
-              <p className="text-muted-foreground">
+              <dt>Subjects &amp; interests</dt>
+              <dd>
                 {profile.subjects.length > 0
                   ? profile.subjects.join(", ")
                   : "—"}
-              </p>
+              </dd>
             </div>
-            <div className="sm:col-span-2">
-              <p className="font-medium">Biography</p>
-              <p className="text-muted-foreground">
-                {profile.biography || "—"}
-              </p>
+            <div>
+              <dt>Biography</dt>
+              <dd className="text-pretty">{profile.biography || "—"}</dd>
             </div>
-          </CardContent>
-        </Card>
+          </dl>
+        </div>
       )}
     </div>
   );

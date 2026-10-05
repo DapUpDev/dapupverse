@@ -109,7 +109,7 @@ export function ConnectRequestDialog({
             your profile alongside this request.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="request-purpose">Purpose</Label>
             <Select
@@ -127,7 +127,7 @@ export function ConnectRequestDialog({
                 }
                 className="w-full"
               >
-                <SelectValue placeholder="What do you need help with?" className="data-placeholder:text-muted-foreground" />
+                <SelectValue placeholder="What do you need help with?" />
               </SelectTrigger>
               <SelectContent>
                 {CONNECTION_PURPOSES.map((option) => (
@@ -159,10 +159,7 @@ export function ConnectRequestDialog({
             />
             <FieldError id="request-message-error" message={errors.message} />
             {!errors.message && (
-              <p
-                id="request-message-hint"
-                className="text-xs text-muted-foreground"
-              >
+              <p id="request-message-hint" className="text-sm text-subtle">
                 {MESSAGE_MIN_LENGTH}–{MESSAGE_MAX_LENGTH} characters.
               </p>
             )}

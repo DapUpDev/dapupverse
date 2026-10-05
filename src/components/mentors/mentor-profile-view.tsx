@@ -1,15 +1,8 @@
 "use client";
 
+import { CircleCheck } from "lucide-react";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
-import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectCta } from "@/components/connect/connect-cta";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
@@ -38,34 +31,53 @@ export function ConnectedStudentPanel({
   if (!profile) return null;
 
   return (
-    <Card data-testid="connected-panel" className="metal-border">
-      <CardHeader>
-        <span aria-hidden="true" className="tech-label">
-          CONNECTED
+    <div data-testid="connected-panel" className="flex flex-col gap-4">
+      <p className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
+        <CircleCheck
+          aria-hidden="true"
+          strokeWidth={1.75}
+          className="size-6 shrink-0 fill-mark"
+        />
+        You&rsquo;re connected
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {mentorName} accepted your request. You can message them any time.
+      </p>
+      <p className="text-sm">
+        <span className="font-medium">Session rate:</span>{" "}
+        <span className="tabular-nums">{`$${profile.privatePriceUsd} USD`}</span>
+        <span className="block text-subtle">
+          Shared with connected students only.
         </span>
-        <CardTitle className="font-display text-lg">
-          You&rsquo;re connected
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">
-          {mentorName} accepted your request. You can message them any time.
-        </p>
-        <p className="text-sm">
-          <span className="font-medium">Session rate:</span>{" "}
-          {`$${profile.privatePriceUsd} USD`}
-          <span className="block text-xs text-muted-foreground">
-            Shared with connected students only.
-          </span>
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <ButtonLink href="/app/messages">Message {mentorName}</ButtonLink>
-          <span className="text-xs text-muted-foreground">
-            Scheduling — coming soon
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+      </p>
+      <div className="flex flex-col items-start gap-2.5">
+        <ButtonLink href="/app/messages" size="lg" className="w-full">
+          Message {mentorName}
+        </ButtonLink>
+        <span className="text-sm text-subtle">Scheduling — coming soon</span>
+      </div>
+    </div>
+  );
+}
+
+// One line of the mentor's sheet: a quiet term and what the mentor filled in.
+function Fact({
+  id,
+  term,
+  values,
+}: {
+  id: string;
+  term: string;
+  values: string[];
+}) {
+  if (values.length === 0) return null;
+  return (
+    <section aria-labelledby={id}>
+      <h2 id={id} className="text-sm text-subtle">
+        {term}
+      </h2>
+      <p className="mt-1 leading-snug">{values.join(", ")}</p>
+    </section>
   );
 }
 
@@ -88,20 +100,30 @@ export function MentorProfileView({ slug }: { slug: string }) {
 
   if (!ready) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        <Skeleton className="h-64 rounded-xl" />
+      <div className="page">
+        <div className="sheet p-6 shadow-sheet sm:p-10 lg:p-14">
+          <Skeleton className="size-24 rounded-[4px] sm:size-28" />
+          <Skeleton className="mt-6 h-10 w-64 max-w-full" />
+          <Skeleton className="mt-3 h-5 w-80 max-w-full" />
+          <Skeleton className="mt-10 h-28 w-full max-w-xl" />
+        </div>
       </div>
     );
   }
 
   if (!mentor) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-semibold">Mentor not found</h1>
-        <p className="mt-2 text-muted-foreground">
+      <div className="page">
+        <h1 className="page-title">Mentor not found</h1>
+        <p className="mt-3 text-lg text-muted-foreground">
           This mentor may no longer be available.
         </p>
-        <ButtonLink variant="outline" className="mt-6" href="/mentors">
+        <ButtonLink
+          variant="outline"
+          size="lg"
+          className="mt-7"
+          href="/mentors"
+        >
           Back to all mentors
         </ButtonLink>
       </div>
@@ -110,100 +132,72 @@ export function MentorProfileView({ slug }: { slug: string }) {
 
   const isConnected = activeRequest?.state === "accepted";
 
+  // The mentor's own sheet. Past the perforation is the part a student acts
+  // on: the request, and what this mentor can be asked for. On a narrow
+  // screen that part sits between the name and the biography.
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10">
-      <div className="flex flex-col gap-8 md:flex-row md:items-start">
-        <div className="flex flex-1 flex-col gap-6">
-          <div className="flex items-center gap-5">
-            <ProfileAvatar
-              name={mentor.name}
-              avatarUrl={mentor.avatarUrl}
-              className="size-24 border-2 border-chrome/40"
-              fallbackClassName="text-2xl font-semibold"
-            />
-            <div className="flex flex-col gap-1">
-              <span aria-hidden="true" className="tech-label">
-                MENTOR PROFILE
-              </span>
-              <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {mentor.name}
-              </h1>
-              <p className="text-muted-foreground">
-                {mentor.major} · {mentor.university}
-              </p>
-              <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-                {mentor.countryRegion}
-              </p>
-            </div>
+    <div className="page">
+      <article className="sheet grid shadow-sheet lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[auto_1fr]">
+        <header className="flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:gap-6 sm:p-10 lg:p-14 lg:pb-10">
+          <ProfileAvatar
+            name={mentor.name}
+            avatarUrl={mentor.avatarUrl}
+            className="size-24 rounded-[4px] sm:size-28 [&_[data-slot=avatar-fallback]]:text-3xl"
+          />
+          <div className="min-w-0">
+            <h1 className="page-title wrap-anywhere">{mentor.name}</h1>
+            <p className="mt-3 text-lg leading-snug text-muted-foreground">
+              {mentor.major} · {mentor.university}
+            </p>
+            <p className="mt-1 text-sm text-subtle">{mentor.countryRegion}</p>
           </div>
+        </header>
 
-          <section aria-labelledby="mentor-about">
-            <h2 id="mentor-about" className="font-display text-lg font-bold">
-              About
-            </h2>
-            <p className="mt-2 text-muted-foreground">{mentor.biography}</p>
-          </section>
-
-          <Separator />
-
-          <section aria-labelledby="mentor-services">
-            <h2 id="mentor-services" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
-              Services
-            </h2>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {mentor.services.map((service) => (
-                <Badge key={service} variant="secondary">
-                  {service}
-                </Badge>
-              ))}
-            </div>
-          </section>
-
-          <section aria-labelledby="mentor-subjects">
-            <h2 id="mentor-subjects" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
-              Subjects &amp; specialties
-            </h2>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {mentor.subjects.map((subject) => (
-                <Badge key={subject} variant="outline">
-                  {subject}
-                </Badge>
-              ))}
-            </div>
-          </section>
-
-          <section aria-labelledby="mentor-systems">
-            <h2 id="mentor-systems" className="font-mono text-xs font-medium tracking-widest text-muted-foreground uppercase">
-              Education systems
-            </h2>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {mentor.educationSystems.map((system) => (
-                <Badge key={system} variant="secondary">
-                  {system}
-                </Badge>
-              ))}
-            </div>
-          </section>
+        <div className="border-dashed border-foreground/25 p-6 max-lg:border-y sm:p-10 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:border-l lg:px-8 lg:py-14">
+          <aside className="sm:max-lg:max-w-xs">
+            {isConnected ? (
+              <ConnectedStudentPanel
+                mentorId={mentor.id}
+                mentorName={mentor.name}
+              />
+            ) : (
+              <ConnectCta mentor={mentor} />
+            )}
+          </aside>
+          <div className="mt-8 grid gap-5 sm:max-lg:grid-cols-3">
+            <Fact
+              id="mentor-services"
+              term="Services"
+              values={mentor.services}
+            />
+            <Fact
+              id="mentor-subjects"
+              term="Subjects & specialties"
+              values={mentor.subjects}
+            />
+            <Fact
+              id="mentor-systems"
+              term="Education systems"
+              values={mentor.educationSystems}
+            />
+          </div>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 md:w-72">
-          {isConnected ? (
-            <ConnectedStudentPanel
-              mentorId={mentor.id}
-              mentorName={mentor.name}
-            />
-          ) : (
-            <Card className="metal-border">
-              <CardContent className="flex flex-col gap-3 pt-2">
-                <span aria-hidden="true" className="tech-label">
-                  START HERE
-                </span>
-                <ConnectCta mentor={mentor} />
-              </CardContent>
-            </Card>
-          )}
-        </aside>
-      </div>
+        <section
+          aria-labelledby="mentor-about"
+          className="p-6 sm:p-10 lg:px-14 lg:pt-0 lg:pb-14"
+        >
+          <h2
+            id="mentor-about"
+            className="font-display text-2xl font-semibold tracking-tight"
+          >
+            About
+          </h2>
+          <p className="mt-3 max-w-xl text-lg text-pretty whitespace-pre-line text-muted-foreground">
+            {mentor.biography}
+          </p>
+        </section>
+      </article>
     </div>
   );
 }

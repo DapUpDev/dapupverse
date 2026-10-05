@@ -1,0 +1,489 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-05T01:36:27.511Z",
+  "title": "Design System: DapUp",
+  "extensions": {
+    "colorMeta": {
+      "desk": {
+        "role": "neutral",
+        "displayName": "Desk",
+        "canonical": "#eceef2",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Graphite Ink",
+        "canonical": "#16181d",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "canonical": "#454a54",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink 3",
+        "canonical": "#5e6470",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "mark": {
+        "role": "secondary",
+        "displayName": "Highlighter",
+        "canonical": "#d8f04a",
+        "tonalRamp": [
+          "oklch(15% 0.17 118)",
+          "oklch(27% 0.17 118)",
+          "oklch(39% 0.17 118)",
+          "oklch(51% 0.17 118)",
+          "oklch(63% 0.17 118)",
+          "oklch(75% 0.17 118)",
+          "oklch(87% 0.17 118)",
+          "oklch(95% 0.17 118)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Red",
+        "canonical": "#b42318",
+        "tonalRamp": [
+          "oklch(15% 0.17 29)",
+          "oklch(27% 0.17 29)",
+          "oklch(39% 0.17 29)",
+          "oklch(51% 0.17 29)",
+          "oklch(63% 0.17 29)",
+          "oklch(75% 0.17 29)",
+          "oklch(87% 0.17 29)",
+          "oklch(95% 0.17 29)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Quiet Fill (deep)",
+        "canonical": "#e2e5ea",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Quiet Fill (mid)",
+        "canonical": "#e9ebef",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Quiet Fill (pale)",
+        "canonical": "#f2f3f6",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgb(22 24 29 / 0.12)",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Control Edge",
+        "canonical": "rgb(22 24 29 / 0.42)",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "perforation": {
+        "role": "neutral",
+        "displayName": "Perforation",
+        "canonical": "rgb(22 24 29 / 0.25)",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      },
+      "overlay": {
+        "role": "neutral",
+        "displayName": "Overlay",
+        "canonical": "rgb(22 24 29 / 0.38)",
+        "tonalRamp": [
+          "oklch(15% 0.01 265)",
+          "oklch(27% 0.01 265)",
+          "oklch(39% 0.01 265)",
+          "oklch(51% 0.01 265)",
+          "oklch(63% 0.01 265)",
+          "oklch(75% 0.01 265)",
+          "oklch(87% 0.01 265)",
+          "oklch(95% 0.01 265)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The landing headline only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The one title of a page; 2.25rem below 640px."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "A heading over a group of sheets; a dialog title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "A person's name on a sheet, an empty-state heading, the wordmark."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "The paragraph under a headline, in ink-2."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading text, capped at 65ch; 0.875rem for secondary copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, field labels, nav links. Sentence case."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Timestamps, counts, helper text, chip labels, in ink-3."
+      }
+    },
+    "shadows": [
+      {
+        "name": "paper",
+        "value": "0 1px 0 rgb(22 24 29 / 0.04), 0 1px 3px rgb(22 24 29 / 0.09)",
+        "purpose": "A sheet at rest. The default for every sheet."
+      },
+      {
+        "name": "sheet",
+        "value": "0 1px 0 rgb(22 24 29 / 0.04), 0 2px 4px -1px rgb(22 24 29 / 0.06), 0 22px 44px -22px rgb(22 24 29 / 0.28)",
+        "purpose": "The one lead sheet of a page, and a clickable sheet under hover or focus."
+      },
+      {
+        "name": "pop",
+        "value": "0 1px 2px rgb(22 24 29 / 0.08), 0 16px 32px -12px rgb(22 24 29 / 0.28)",
+        "purpose": "Menus, select lists, dialogs, the drawer and toasts, with a 1px ring of ink at 10%."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-desk",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The one critically damped ease for anything that travels or opens."
+      },
+      {
+        "name": "press",
+        "value": "scale 0.97, 150ms ease-out",
+        "purpose": "Button feedback on press, not release."
+      },
+      {
+        "name": "feedback",
+        "value": "150ms ease-out",
+        "purpose": "Colour and focus-ring changes on controls."
+      },
+      {
+        "name": "popup",
+        "value": "scale 0.95 to 1 and opacity, 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Menus and selects grow from their trigger and leave the way they came."
+      },
+      {
+        "name": "dialog",
+        "value": "scale 0.97 to 1 and opacity, 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "A dialog laid over the dimmed desk."
+      },
+      {
+        "name": "drawer",
+        "value": "translate from the right, 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The mobile navigation drawer."
+      },
+      {
+        "name": "travel",
+        "value": "translate, rotate, scale and opacity, 600ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "A sheet that moves, such as a mentor card coming to the front of the fan."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all transitions and animations 0.01ms",
+        "purpose": "Applied globally under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one ink action of a view.",
+      "html": "<button class=\"ds-btn-primary\">Send request</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 10px; font: 500 14px/1 var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; outline: none; background: var(--ink); color: #fff; } .ds-btn-primary:hover { background: rgb(22 24 29 / 0.85); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(22 24 29 / 0.3); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "The secondary action: paper with a perforation-strength edge.",
+      "html": "<button class=\"ds-btn-outline\">Archive</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 10px; font: 500 14px/1 var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; outline: none; background: var(--sheet); color: var(--ink); border-color: rgb(22 24 29 / 0.25); } .ds-btn-outline:hover { background: var(--muted); } .ds-btn-outline:active { transform: scale(0.97); } .ds-btn-outline:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(22 24 29 / 0.3); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Tertiary actions and icon buttons.",
+      "html": "<button class=\"ds-btn-ghost\">Sign in</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 10px; font: 500 14px/1 var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; outline: none; background: transparent; color: var(--ink); } .ds-btn-ghost:hover { background: rgb(22 24 29 / 0.06); } .ds-btn-ghost:active { transform: scale(0.97); } .ds-btn-ghost:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(22 24 29 / 0.3); }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Block, disconnect, remove: red on paper that fills red on hover.",
+      "html": "<button class=\"ds-btn-destructive\">Disconnect</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 10px; font: 500 14px/1 var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; outline: none; background: var(--sheet); color: var(--destructive); border-color: rgb(180 35 24 / 0.4); } .ds-btn-destructive:hover { background: var(--destructive); color: #fff; } .ds-btn-destructive:active { transform: scale(0.97); } .ds-btn-destructive:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(22 24 29 / 0.3); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Label above, paper field with a control edge, helper text below.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">School</span><input class=\"ds-input\" placeholder=\"Where you study\" /><span class=\"ds-field-help\">Shown to mentors you contact.</span></label>",
+      "css": ".ds-field { display: grid; gap: 6px; max-width: 320px; font-family: var(--font-sans), sans-serif; color: var(--ink); } .ds-field-label { font-size: 14px; font-weight: 500; } .ds-field-help { font-size: 14px; color: var(--ink-3); } .ds-input { height: 40px; padding: 8px 12px; border: 1px solid var(--input); border-radius: 10px; background: var(--sheet); color: var(--ink); font: inherit; font-size: 16px; outline: none; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-input::placeholder { color: var(--ink-3); } .ds-input:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(22 24 29 / 0.15); } .ds-input[aria-invalid='true'] { border-color: var(--destructive); box-shadow: 0 0 0 3px rgb(180 35 24 / 0.2); }"
+    },
+    {
+      "name": "State Chips",
+      "kind": "chip",
+      "refersTo": "chip-connected",
+      "description": "A request's state: always a drawn mark and a label, never colour alone.",
+      "html": "<span class=\"ds-chips\"><span class=\"ds-chip ds-chip-pending\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10.1 2.182a10 10 0 0 1 3.8 0\"/><path d=\"M13.9 21.818a10 10 0 0 1-3.8 0\"/><path d=\"M17.609 3.721a10 10 0 0 1 2.69 2.7\"/><path d=\"M2.182 13.9a10 10 0 0 1 0-3.8\"/><path d=\"M20.279 17.609a10 10 0 0 1-2.7 2.69\"/><path d=\"M21.818 10.1a10 10 0 0 1 0 3.8\"/><path d=\"M3.721 6.391a10 10 0 0 1 2.7-2.69\"/><path d=\"M6.391 20.279a10 10 0 0 1-2.69-2.7\"/></svg>Pending</span><span class=\"ds-chip ds-chip-connected\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Connected</span><span class=\"ds-chip ds-chip-ended\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m2 2 20 20\"/><path d=\"M8.35 2.69A10 10 0 0 1 21.3 15.65\"/><path d=\"M19.08 19.08A10 10 0 1 1 4.92 4.92\"/></svg>Disconnected</span><span class=\"ds-chip ds-chip-blocked\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m4.9 4.9 14.2 14.2\"/></svg>Blocked</span></span>",
+      "css": ".ds-chips { display: inline-flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border: 1px solid transparent; border-radius: 6px; font: 500 12px/1 var(--font-sans), sans-serif; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ink); } .ds-chip-pending { border: 1px dashed rgb(22 24 29 / 0.4); color: var(--ink-2); } .ds-chip-connected { background: var(--mark); } .ds-chip-ended { background: var(--secondary); color: var(--ink-2); } .ds-chip-blocked { border-color: rgb(180 35 24 / 0.4); color: var(--destructive); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "description": "An active directory filter: field name, 'is', the chosen value highlighted, and remove.",
+      "html": "<div class=\"ds-filter\"><span class=\"ds-filter-name\">Education system</span><span class=\"ds-filter-is\">is</span><button class=\"ds-filter-seg\"><span class=\"ds-filter-value\">IB</span></button><button class=\"ds-filter-seg ds-filter-x\" aria-label=\"Remove Education system filter\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></button></div>",
+      "css": ".ds-filter { display: inline-flex; align-items: stretch; height: 32px; overflow: hidden; border: 1px solid rgb(22 24 29 / 0.25); border-radius: 10px; background: var(--sheet); font: 400 13px/1 var(--font-sans), sans-serif; } .ds-filter-name { display: flex; align-items: center; padding: 0 4px 0 10px; color: var(--ink-2); } .ds-filter-is { display: flex; align-items: center; padding: 0 4px; color: var(--ink-3); } .ds-filter-seg { display: flex; align-items: center; padding: 0 6px; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; outline: none; transition: background-color 150ms ease-out; } .ds-filter-seg:hover { background: var(--muted); } .ds-filter-seg:active { background: var(--secondary); } .ds-filter-seg:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); } .ds-filter-value { padding: 2px 6px; border-radius: 3px; background: var(--mark); font-weight: 500; line-height: 1.25; } .ds-filter-x { width: 32px; justify-content: center; border-left: 1px solid var(--border); color: var(--ink-2); } .ds-filter-x:hover { color: var(--ink); }"
+    },
+    {
+      "name": "Mentor Card",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "A sheet that is one link: square ID photo, name, facts, and the Ask affordance.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-head\"><span class=\"ds-card-photo\" aria-hidden=\"true\">AK</span><div><h2 class=\"ds-card-name\"><a href=\"#\">Amara Kim</a></h2><p class=\"ds-card-sub\">Economics · <mark class=\"ds-mark\">LSE</mark></p></div></div><dl class=\"ds-card-facts\"><div><dt>Studied</dt><dd><mark class=\"ds-mark\">IB</mark>, A Levels</dd></div><div><dt>Helps with</dt><dd>Essay review, Application advice</dd></div></dl><span class=\"ds-card-ask\" aria-hidden=\"true\">Ask Amara <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></span></article>",
+      "css": ".ds-card { position: relative; display: flex; flex-direction: column; width: 320px; padding: 20px; border-radius: 6px; background: var(--card); color: var(--ink); font-family: var(--font-sans), sans-serif; box-shadow: 0 1px 0 rgb(22 24 29 / 0.04), 0 1px 3px rgb(22 24 29 / 0.09); } .ds-card:hover, .ds-card:has(:focus-visible) { box-shadow: 0 1px 0 rgb(22 24 29 / 0.04), 0 2px 4px -1px rgb(22 24 29 / 0.06), 0 22px 44px -22px rgb(22 24 29 / 0.28); } .ds-card:has(:focus-visible) { outline: 2px solid var(--ink); } .ds-card-head { display: flex; align-items: flex-start; gap: 16px; } .ds-card-photo { display: flex; flex: none; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 4px; background: var(--secondary); box-shadow: inset 0 0 0 1px var(--border); font-size: 20px; font-weight: 500; } .ds-card-name { margin: 2px 0 0; font: 600 20px/1.25 var(--font-display), sans-serif; letter-spacing: -0.025em; } .ds-card-name a { color: inherit; text-decoration: none; outline: none; } .ds-card-name a::after { content: ''; position: absolute; inset: 0; } .ds-card-sub { margin: 4px 0 0; font-size: 14px; line-height: 1.375; color: var(--ink-2); } .ds-card-facts { display: grid; gap: 8px; margin: 16px 0 20px; font-size: 14px; line-height: 1.375; } .ds-card-facts div { display: grid; grid-template-columns: 5.25rem 1fr; gap: 8px; } .ds-card-facts dt { color: var(--ink-3); } .ds-card-facts dd { margin: 0; } .ds-mark { background: var(--mark); color: inherit; padding-inline: 0.12em; margin-inline: -0.12em; border-radius: 0.09em; } .ds-card-ask { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }"
+    },
+    {
+      "name": "Fill-In Sentence",
+      "kind": "custom",
+      "refersTo": "blank",
+      "description": "The landing page's signature: native selects drawn as highlighted text inside a display-face sentence.",
+      "html": "<p class=\"ds-sentence\">I&rsquo;m on <select class=\"ds-blank\" aria-label=\"Your exam system\"><option>IB</option><option>AP</option><option>A Levels</option></select> and want <select class=\"ds-blank\" aria-label=\"What you want help with\"><option>essay review</option><option>application advice</option><option>subject help</option></select>.</p>",
+      "css": ".ds-sentence { margin: 0; color: var(--ink); font: 500 24px/1.75 var(--font-display), sans-serif; letter-spacing: -0.015em; } .ds-blank { appearance: none; field-sizing: content; cursor: pointer; margin-inline: 0.05em; padding: 0 1.5em 0 0.3em; border: 0; border-radius: 4px; color: var(--ink); font: inherit; letter-spacing: inherit; background: var(--mark) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2316181d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\") no-repeat right 0.4em center; transition: scale 150ms ease-out; } .ds-blank:hover { box-shadow: 0 0 0 2px var(--ink); } .ds-blank:active { scale: 0.98; }"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "unread-count",
+      "description": "Sticky translucent header: wordmark, links, a highlighter underline on the current page, the red unread count.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary\"><a class=\"ds-nav-brand\" href=\"#\">DapUp</a><a class=\"ds-nav-link\" href=\"#\" aria-current=\"page\">Mentors</a><a class=\"ds-nav-link\" href=\"#\">Connections</a><a class=\"ds-nav-link\" href=\"#\">Messages<span class=\"ds-nav-count\" aria-label=\"3 unread messages\">3</span></a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 4px; height: 64px; padding: 0 16px; background: rgb(236 238 242 / 0.8); backdrop-filter: blur(16px) saturate(1.5); font-family: var(--font-sans), sans-serif; } .ds-nav-brand { margin-right: 20px; color: var(--ink); font: 600 20px/1 var(--font-display), sans-serif; letter-spacing: -0.025em; text-decoration: none; } .ds-nav-link { position: relative; padding: 8px 12px; border-radius: 8px; color: var(--ink-2); font-size: 14px; text-decoration: none; transition: color 150ms; } .ds-nav-link:hover { color: var(--ink); } .ds-nav-link:focus-visible { outline: 2px solid var(--ink); } .ds-nav-link[aria-current='page'] { color: var(--ink); font-weight: 500; } .ds-nav-link[aria-current='page']::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 4px; height: 3px; border-radius: 9999px; background: var(--mark); } .ds-nav-count { display: inline-flex; align-items: center; justify-content: center; height: 20px; min-width: 20px; margin-left: 6px; padding: 0 6px; border-radius: 9999px; background: var(--destructive); color: #fff; font-size: 12px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; vertical-align: middle; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Desk",
+    "overview": "DapUp is the desk a mentor sits down at. The page is the desk surface, a cool pale grey. Everything a person reads or operates lies on white paper sheets with a small radius and a soft shadow. The ink is graphite. There is one highlighter, and it only marks what is chosen, matched or done. The result is calm, soft and precise: a companion to the essays open in the next tab, never corporate software and never a show.\n\nThe system is light only by design; there is no dark theme, and `dark:` styles are tied to a class that is never set. Density is moderate: generous space between groups, tight space inside them, and reading text held to a 65 to 75 character measure. Type does the structural work. Bricolage Grotesque sets headlines and names; Geist sets everything that is read or operated. Colour is almost absent, which is what lets the highlighter and the single red mean something.\n\nMotion is physical and brief. Things move by transform and opacity only, from where they already are, on one critically damped ease (`cubic-bezier(0.16, 1, 0.3, 1)`). A control answers on press, not on release (buttons scale to 0.97 in 150ms). Popups grow from their trigger (scale 0.95 to 1, 150ms) and leave the way they came; the dialog does the same from 0.97 in 200ms; the mobile drawer slides in from the right in 300ms; a sheet that travels, like a mentor card coming to the front of the fan, takes 600ms. Nothing animates in on load and nothing reveals on scroll. A control's colour and focus ring may ease over 150ms; a sheet's shadow changes at once. `prefers-reduced-motion` collapses every transition and animation globally, and `prefers-reduced-transparency` makes the header opaque.",
+    "keyCharacteristics": [
+      "One desk, one level of paper, one highlighter, one red.",
+      "Graphite ink on white sheets; state carried by a text label and a drawn mark.",
+      "Headlines in Bricolage Grotesque with the optical-size axis; everything else in Geist.",
+      "Square ID photos for people who are credentials; round pictures only inside messaging.",
+      "Press feedback and travel from the current position; no entrance animation."
+    ],
+    "rules": [
+      {
+        "name": "The One Highlighter Rule",
+        "body": "The highlighter means exactly one of: this is chosen, this matched, this is done or connected. It is never a count, never decoration, never a hover colour, never a large background, and its text is always ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Red Rule",
+        "body": "Red means an error, a destructive action, or an unread count, wherever that count appears. If something is merely important, it is ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Label And Mark Rule",
+        "body": "State is never colour alone. Every state carries a text label and a drawn mark: a dashed ring for pending, a ticked ring for connected, a struck ring for ended or read-only, a barred circle for blocked.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Bricolage Grotesque is for headlines, names and the sentence the visitor completes. Everything else is Geist. No third face, and no monospace for looks.",
+        "section": "typography"
+      },
+      {
+        "name": "The Steady Numbers Rule",
+        "body": "A number that can change (counts, dates, prices, unread totals) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plain Label Rule",
+        "body": "Labels are sentence case at normal tracking. No uppercase tracked labels, and the heaviest weight is 600 (640 for the landing headline alone).",
+        "section": "typography"
+      },
+      {
+        "name": "The One Level Of Paper Rule",
+        "body": "A sheet never sits inside a sheet. Inside a sheet, separate with space, a hairline, or a dashed perforation. A message bubble, a filter chip and a field are flat shapes on paper, not paper: they carry no shadow.",
+        "section": "layout"
+      },
+      {
+        "name": "The Lead Sheet Rule",
+        "body": "At most one sheet per page is lifted at rest; the landing page's fan of cards, stacked over its lead sheet, is the single exception. Everything else rests, and lifts only in answer to hover or focus.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Blur Rule",
+        "body": "The sticky header is the only translucent, blurred surface (desk at 80%, 16px blur), so the page scrolls under it without a divider. Blur is never decoration.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put everything a person reads or operates on a white sheet (6px radius, Paper shadow) on the desk, and keep the desk itself empty of anything but headings, short ledes and the footer.",
+      "Do use the highlighter only for chosen, matched or done, with ink text on it.",
+      "Do give every state a text label and a drawn mark (Lucide outline, 1.75 stroke): dashed ring pending, ticked ring connected, struck ring ended, barred circle blocked.",
+      "Do keep one primary (ink) button per view; outline for the second action, ghost for the third, destructive for block, disconnect and remove.",
+      "Do set headlines, names and the completed sentence in Bricolage Grotesque at 600; set everything else in Geist; keep meta text at ink-3 or darker.",
+      "Do separate parts of one sheet with space, a hairline, or a dashed perforation (1px dashed, ink at 25%).",
+      "Do move things with transform and opacity only, from where they already are; give press feedback on the press; let popups grow from their trigger and leave the way they came.",
+      "Do honour `prefers-reduced-motion` and `prefers-reduced-transparency`; both are handled globally and new work must not bypass them.",
+      "Do use tabular figures for any number that can change, and cap reading text at 65 to 75 characters."
+    ],
+    "donts": [
+      "Don't put a small label, kicker, eyebrow or index above a heading. The heading stands alone. (Field labels and the terms in a definition list are not kickers.)",
+      "Don't use monospace for looks, uppercase tracked labels, or gradient text.",
+      "Don't number sections or add decorative arrows, slashes or \"scroll\" prompts.",
+      "Don't put a sheet inside a sheet, or build a page from a row of identical icon cards or metric tiles.",
+      "Don't use the highlighter as decoration, as a hover colour or as a large background, and don't use red for emphasis.",
+      "Don't show state by colour alone.",
+      "Don't animate anything in on load, reveal on scroll, or loop motion; the loading skeleton's pulse and a toast's spinner are the only repeating motion.",
+      "Don't use hard offset shadows, a coloured side border thicker than 1px, or blur and glass anywhere but the sticky header.",
+      "Don't use emoji or unicode glyphs as icons.",
+      "Don't open a dialog where the task needs no interruption.",
+      "Don't add a dark theme or `dark:` styles, a second accent colour, or a third typeface."
+    ]
+  }
+}

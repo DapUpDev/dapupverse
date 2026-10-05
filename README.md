@@ -25,8 +25,8 @@ journeys, running entirely on **typed, browser-local mock data**:
 - Student and mentor profile view/edit; the mentor's price is private
   (visible only to the mentor, connected students, and admins)
 
-Milestone 3 added the seven-color Y2K/chrome visual system
-([docs/design.md](docs/design.md)), and **milestone 4 added real
+Milestone 3 added a visual system, since replaced by The Desk
+([DESIGN.md](DESIGN.md)), and **milestone 4 added real
 authentication with [Clerk](https://clerk.com)**
 ([docs/authentication.md](docs/authentication.md)):
 
@@ -104,4 +104,4 @@ Never commit the local `.vercel/` directory (it is ignored).
 
 See [docs/architecture.md](docs/architecture.md) for the planned route structure, the role model (student/mentor account types vs. admin capability), and the planned auth and data-access boundaries.
 
-See [docs/design.md](docs/design.md) for the milestone 3 visual design system: the seven-color palette, semantic token mapping, three-level typography (Syne / Geist / Geist Mono), and page-by-page intensity rules. The temporary text wordmark will be replaced by an owner-supplied logo.
+See [DESIGN.md](DESIGN.md) for the visual system, The Desk: a pale desk, white paper sheets, graphite ink and one highlighter, with the tokens, type, state marks and motion rules every surface follows. [PRODUCT.md](PRODUCT.md) records who the product is for. The text wordmark will be replaced by an owner-supplied logo.

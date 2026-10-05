@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { idPhoto, ProfileAvatar } from "@/components/profile/profile-avatar";
 import { avatarRepository } from "@/lib/repositories";
+import { cn } from "@/lib/utils";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -67,25 +68,31 @@ export function AvatarUploadField({
   const inputId = `${idPrefix}-image`;
 
   return (
-    <div className="flex items-center gap-4">
+    // Perforated off from the fields below: the photo saves on its own.
+    <div className="flex items-start gap-5 border-b border-dashed border-foreground/25 pb-5">
       <ProfileAvatar
         name={name}
         avatarUrl={avatarUrl}
-        className="size-16"
-        fallbackClassName="text-lg font-semibold"
+        className={cn(
+          idPhoto,
+          "transition-opacity duration-200",
+          busy && "opacity-50",
+        )}
       />
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-2 pt-0.5">
         <Label htmlFor={inputId}>Profile photo</Label>
+        {/* The button below opens this picker, so it is not a second tab stop. */}
         <input
           ref={inputRef}
           id={inputId}
           type="file"
           accept={ACCEPTED_TYPES.join(",")}
           className="sr-only"
+          tabIndex={-1}
           disabled={busy !== null}
           onChange={handleFile}
         />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="outline"
@@ -98,7 +105,7 @@ export function AvatarUploadField({
           {avatarUrl ? (
             <Button
               type="button"
-              variant="ghost"
+              variant="destructive"
               size="sm"
               disabled={busy !== null}
               onClick={handleRemove}
@@ -107,7 +114,7 @@ export function AvatarUploadField({
             </Button>
           ) : null}
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-subtle">
           JPEG, PNG, or WebP up to 5 MB. Saves right away.
         </p>
       </div>

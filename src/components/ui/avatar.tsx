@@ -9,7 +9,9 @@ function Avatar({ className, ...props }: AvatarPrimitive.Root.Props) {
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten",
+        // The picture, the initials and the hairline all take the root's radius,
+        // so a square ID photo is one class on the root.
+        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-border after:mix-blend-darken",
         className
       )}
       {...props}
@@ -22,7 +24,7 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn(
-        "aspect-square size-full rounded-full object-cover",
+        "aspect-square size-full rounded-[inherit] object-cover",
         className
       )}
       {...props}
@@ -38,7 +40,7 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground",
+        "flex size-full items-center justify-center rounded-[inherit] bg-secondary text-sm text-foreground",
         className
       )}
       {...props}

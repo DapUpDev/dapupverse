@@ -7,7 +7,7 @@ export default async function ConversationPage({
   const { threadId } = await params;
   const identity = await requireAuth(`/app/messages/${threadId}`);
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10">
+    <main className="page">
       <ConversationView threadId={threadId} userId={identity.dataUserId!} />
     </main>
   );

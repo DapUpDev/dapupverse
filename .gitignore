@@ -69,3 +69,11 @@ DapUp-main*.zip
 
 # graphify knowledge graph (rebuild with /graphify .)
 graphify-out/
+
+# impeccable: scratch from decision rounds and reviews (the surface briefs, design.json and config are kept)
+.impeccable/questions/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/decision/
+.impeccable/ref/
+.impeccable/hook.cache.json

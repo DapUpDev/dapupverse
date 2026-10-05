@@ -1,22 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldError } from "@/components/ui/field-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarUploadField } from "@/components/profile/avatar-upload-field";
-import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { facts, idPhoto, ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   EDUCATION_SYSTEMS,
   SERVICE_TYPES,
@@ -70,21 +65,32 @@ function CheckboxGroup<T extends string>({
   idPrefix: string;
 }) {
   return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-sm font-medium">{legend}</legend>
-      <div className="flex flex-wrap gap-x-6 gap-y-2">
+    <fieldset>
+      <legend className="mb-1 text-sm leading-none font-medium">
+        {legend}
+      </legend>
+      <div className="grid gap-x-4 sm:grid-cols-2 md:grid-cols-3">
         {options.map((option) => {
           const id = `${idPrefix}-${option.replace(/\s+/g, "-").toLowerCase()}`;
           return (
-            <div key={option} className="flex items-center gap-2">
+            // The whole row toggles (the label covers it); a chosen option
+            // gets a highlighter stroke over its words.
+            <div
+              key={option}
+              className="group relative flex min-h-10 items-center gap-1.5"
+            >
               <Checkbox
                 id={id}
+                className="group-hover:border-foreground"
                 checked={selected.includes(option)}
                 onCheckedChange={(checked) =>
                   onToggle(option, checked === true)
                 }
               />
-              <Label htmlFor={id} className="font-normal">
+              <Label
+                htmlFor={id}
+                className="cursor-pointer rounded-[3px] px-1 py-0.5 leading-snug font-normal transition-colors duration-150 peer-data-checked:bg-mark after:absolute after:inset-0"
+              >
                 {option}
               </Label>
             </div>
@@ -150,13 +156,19 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">Your profile</h1>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <h1 className="page-title">
+          Your profile
+        </h1>
         <Badge variant="secondary">Mentor</Badge>
       </div>
 
       {editing ? (
-        <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
+        <form
+          onSubmit={handleSave}
+          noValidate
+          className="sheet flex flex-col gap-5 p-6 shadow-sheet sm:p-8"
+        >
           <AvatarUploadField
             name={form.name}
             idPrefix="mentor"
@@ -165,7 +177,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="mentor-name">Full name</Label>
               <Input
                 id="mentor-name"
@@ -177,7 +189,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
               <FieldError id="mentor-name-error" message={errors.name} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="mentor-university">University / school</Label>
               <Input
                 id="mentor-university"
@@ -191,7 +203,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
               <FieldError id="mentor-university-error" message={errors.university} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="mentor-major">Major or expertise</Label>
               <Input
                 id="mentor-major"
@@ -205,7 +217,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
               <FieldError id="mentor-major-error" message={errors.major} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="mentor-country">Country / region</Label>
               <Input
                 id="mentor-country"
@@ -220,7 +232,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="mentor-bio">Biography</Label>
             <Textarea
               id="mentor-bio"
@@ -245,7 +257,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
             }
           />
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="mentor-subjects">Subjects &amp; specialties</Label>
             <Input
               id="mentor-subjects"
@@ -253,10 +265,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
               onChange={(e) => set("subjects", e.target.value)}
               aria-describedby="mentor-subjects-hint"
             />
-            <p
-              id="mentor-subjects-hint"
-              className="text-xs text-muted-foreground"
-            >
+            <p id="mentor-subjects-hint" className="text-sm text-subtle">
               Separate with commas.
             </p>
           </div>
@@ -276,16 +285,15 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
             }
           />
 
-          <div className="flex max-w-xs flex-col gap-1.5 rounded-lg border border-dashed border-fog/50 p-3">
-            <span aria-hidden="true" className="tech-label">
-              PRIVATE FIELD
-            </span>
+          {/* Perforated off: everything above is public, this part is not. */}
+          <div className="flex flex-col gap-2 border-t border-dashed border-foreground/25 pt-5">
             <Label htmlFor="mentor-price">Session rate (USD)</Label>
             <Input
               id="mentor-price"
               type="number"
               min={0}
               inputMode="decimal"
+              className="max-w-40 tabular-nums"
               value={form.price}
               onChange={(e) => set("price", e.target.value)}
               aria-invalid={Boolean(errors.price)}
@@ -295,14 +303,24 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
             />
             <FieldError id="mentor-price-error" message={errors.price} />
             {!errors.price && (
-              <p id="mentor-price-hint" className="text-xs text-muted-foreground">
-                Private — visible only to you, students you&rsquo;ve accepted,
-                and admins. Never shown publicly.
+              <p
+                id="mentor-price-hint"
+                className="flex items-start gap-1.5 text-sm text-subtle"
+              >
+                <Lock
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                  className="mt-0.5 size-4 shrink-0"
+                />
+                <span>
+                  Private — visible only to you, students you&rsquo;ve
+                  accepted, and admins. Never shown publicly.
+                </span>
               </p>
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3 pt-1">
             <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : "Save profile"}
             </Button>
@@ -320,64 +338,68 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
           </div>
         </form>
       ) : (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="sheet p-6 shadow-sheet sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
               <ProfileAvatar
                 name={profile.name}
                 avatarUrl={profile.avatarUrl}
-                className="size-12 border border-chrome/30"
+                className={idPhoto}
               />
-              <CardTitle className="text-lg">{profile.name}</CardTitle>
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                {profile.name}
+              </h2>
             </div>
             <Button variant="outline" onClick={() => setEditing(true)}>
               Edit profile
             </Button>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+          </div>
+          <dl className={facts}>
             <div>
-              <p className="font-medium">University / school</p>
-              <p className="text-muted-foreground">{profile.university}</p>
-            </div>
-            <div>
-              <p className="font-medium">Major or expertise</p>
-              <p className="text-muted-foreground">{profile.major}</p>
+              <dt>University / school</dt>
+              <dd>{profile.university}</dd>
             </div>
             <div>
-              <p className="font-medium">Country / region</p>
-              <p className="text-muted-foreground">{profile.countryRegion}</p>
+              <dt>Major or expertise</dt>
+              <dd>{profile.major}</dd>
             </div>
             <div>
-              <p className="font-medium">Education systems</p>
-              <p className="text-muted-foreground">
-                {profile.educationSystems.join(", ")}
-              </p>
+              <dt>Country / region</dt>
+              <dd>{profile.countryRegion}</dd>
             </div>
             <div>
-              <p className="font-medium">Services</p>
-              <p className="text-muted-foreground">
-                {profile.services.join(", ")}
-              </p>
+              <dt>Education systems</dt>
+              <dd>{profile.educationSystems.join(", ")}</dd>
             </div>
             <div>
-              <p className="font-medium">Subjects &amp; specialties</p>
-              <p className="text-muted-foreground">
-                {profile.subjects.join(", ")}
-              </p>
+              <dt>Services</dt>
+              <dd>{profile.services.join(", ")}</dd>
             </div>
-            <div className="sm:col-span-2">
-              <p className="font-medium">Biography</p>
-              <p className="text-muted-foreground">{profile.biography}</p>
+            <div>
+              <dt>Subjects &amp; specialties</dt>
+              <dd>{profile.subjects.join(", ")}</dd>
             </div>
-            <div className="sm:col-span-2">
-              <p className="font-medium">Session rate (private)</p>
-              <p className="text-muted-foreground">
+            <div>
+              <dt>Biography</dt>
+              <dd className="text-pretty">{profile.biography}</dd>
+            </div>
+            {/* Perforated off, as in the form: this part is not public. */}
+            <div className="mt-1 border-t border-dashed border-foreground/25 pt-4">
+              <dt className="flex items-center gap-1.5 self-start">
+                <Lock
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                  className="size-4 shrink-0"
+                />
+                Session rate (private)
+              </dt>
+              <dd className="tabular-nums">
                 ${profile.privatePriceUsd} USD — visible only to you, connected
                 students, and admins.
-              </p>
+              </dd>
             </div>
-          </CardContent>
-        </Card>
+          </dl>
+        </div>
       )}
     </div>
   );

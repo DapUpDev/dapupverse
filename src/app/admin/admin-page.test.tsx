@@ -13,8 +13,6 @@ describe("AdminPage", () => {
     renderWithProviders(<AdminPage />, { role: "mentor-admin" });
     expect(await screen.findByText(/mentor roster/i)).toBeInTheDocument();
     expect(await screen.findByText("$40 USD")).toBeInTheDocument();
-    expect(
-      screen.getByText(/distinct from account type/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Admin capability")).toBeInTheDocument();
   });
 });

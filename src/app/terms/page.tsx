@@ -13,18 +13,14 @@ export const metadata: Metadata = {
  */
 export default function TermsPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <article className="space-y-8">
-        <header className="space-y-3 border-b border-border pb-6">
-          <p aria-hidden="true" className="tech-label">
-            LEGAL / 01
-          </p>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+    <main className="page">
+      {/* One sheet; its padding leaves the text a 65 to 75 character line. */}
+      <article className="sheet mx-auto max-w-[40rem] space-y-10 p-7 leading-7 text-pretty shadow-sheet sm:p-12 md:p-16">
+        <header className="space-y-4 border-b pb-8">
+          <h1 className="page-title">
             Terms and Conditions
           </h1>
-          <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-            Effective Date: 01 July 2025
-          </p>
+          <p className="text-sm text-subtle">Effective Date: 01 July 2025</p>
         </header>
 
         <section className="space-y-4">
@@ -37,7 +33,7 @@ export default function TermsPage() {
             (&ldquo;Terms of Use&rdquo;) apply to the DapUp website located at{" "}
             <a
               href="https://www.dapupverse.com"
-              className="font-medium text-foreground underline underline-offset-4"
+              className="font-medium text-foreground underline"
             >
               www.dapupverse.com
             </a>
@@ -196,14 +192,14 @@ export default function TermsPage() {
             Email:{" "}
             <a
               href="mailto:dapup.dev@gmail.com"
-              className="font-medium text-foreground underline underline-offset-4"
+              className="font-medium text-foreground underline"
             >
               dapup.dev@gmail.com
             </a>
           </p>
         </section>
 
-        <p className="border-t pt-6 text-sm text-muted-foreground">
+        <p className="border-t pt-8 text-sm text-subtle">
           © 2024 DapUp. All rights reserved.
         </p>
       </article>
