@@ -16,9 +16,10 @@ test.describe("profile photo", () => {
     const input = page.locator("#mentor-image");
     await expect(page.getByRole("button", { name: "Choose photo" })).toBeVisible();
     await input.setInputFiles({ name: "me.png", mimeType: "image/png", buffer: PNG });
+    await page.getByRole("button", { name: "Save photo" }).click();
     await expect(page.getByText("Photo updated")).toBeVisible();
     const picture = page.locator('img[data-slot="avatar-image"]').first();
-    await expect(picture).toHaveAttribute("src", /^data:image\/png/);
+    await expect(picture).toHaveAttribute("src", /^data:image\/jpeg/);
     await expect(page.getByRole("button", { name: "Change photo" })).toBeVisible();
 
     await page.getByRole("button", { name: "Remove" }).click();
