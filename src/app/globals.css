@@ -150,6 +150,13 @@
   &:active {
     scale: 0.98;
   }
+  /* The open list is drawn by the browser in its own box, which we cannot
+     size. Rows would inherit the highlighter and leave that box showing
+     around them, so the rows are plain paper instead. */
+  & option {
+    background: var(--sheet);
+    color: var(--foreground);
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
