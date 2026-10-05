@@ -5,17 +5,17 @@ import { apiBaseUrl } from "@/lib/api/client";
 export default async function MessagesPage() {
   const identity = await requireAuth("/app/messages");
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10">
-      <h1 className="font-display text-3xl font-extrabold tracking-tight">
+    <main className="page">
+      <h1 className="page-title">
         Messages
       </h1>
       {apiBaseUrl() ? null : (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-sm text-pretty text-subtle">
           Demo data: conversations are stored in this browser only and
           don&rsquo;t sync between devices or accounts yet.
         </p>
       )}
-      <div className="mt-6">
+      <div className="mt-8">
         <MessagesInbox
           userId={identity.dataUserId!}
           accountType={identity.accountType ?? "student"}

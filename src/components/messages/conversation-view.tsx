@@ -18,7 +18,7 @@ export function ConversationView({
   const { data: items, ready } = useThreadList(userId);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid items-start gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
       <div className="hidden lg:block">
         <ThreadList
           items={items}

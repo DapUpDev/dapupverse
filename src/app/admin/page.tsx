@@ -13,47 +13,60 @@ function AdminMentorTable() {
     return Promise.all(mentors.map((m) => mentorRepository.getPrivateProfile(m.id)));
   }, []);
 
-  if (!ready) return <Skeleton className="h-48 rounded-xl" />;
+  if (!ready) {
+    return (
+      <div className="sheet p-5">
+        <Skeleton className="h-5 w-1/3" />
+        <Skeleton className="mt-5 h-5 w-full" />
+        <Skeleton className="mt-3 h-5 w-full" />
+      </div>
+    );
+  }
+
+  const rows = (profiles ?? []).filter((profile) => profile !== null);
+  // Tighter gutters on a phone so three columns fit without scrolling.
+  const cell = "px-2.5 py-3 first:pl-5 last:pr-5 sm:px-5";
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-sm">
+    <div className="sheet overflow-x-auto">
+      <table className="w-full text-left text-sm sm:text-base">
         <caption className="sr-only">
           Mentor roster with private session rates
         </caption>
         <thead>
-          <tr className="border-b bg-muted/50 text-left">
-            <th
-              scope="col"
-              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
-            >
+          <tr className="text-sm text-muted-foreground">
+            <th scope="col" className={`${cell} font-medium`}>
               Mentor
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
-            >
+            <th scope="col" className={`${cell} font-medium`}>
               University
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 font-mono text-xs font-medium tracking-widest uppercase"
-            >
+            <th scope="col" className={`${cell} text-right font-medium`}>
               Session rate (private)
             </th>
           </tr>
         </thead>
         <tbody>
-          {(profiles ?? []).map((profile) =>
-            profile ? (
-              <tr key={profile.id} className="border-b last:border-0">
-                <td className="px-4 py-2">{profile.name}</td>
-                <td className="px-4 py-2 text-muted-foreground">
+          {rows.length === 0 ? (
+            <tr className="border-t">
+              <td colSpan={3} className="px-5 py-6 text-muted-foreground">
+                No mentors yet.
+              </td>
+            </tr>
+          ) : (
+            rows.map((profile) => (
+              <tr key={profile.id} className="border-t">
+                <td className={`${cell} font-medium whitespace-nowrap`}>
+                  {profile.name}
+                </td>
+                <td className={`${cell} text-muted-foreground`}>
                   {profile.university}
                 </td>
-                <td className="px-4 py-2">${profile.privatePriceUsd} USD</td>
+                <td className={`${cell} text-right whitespace-nowrap tabular-nums`}>
+                  ${profile.privatePriceUsd} USD
+                </td>
               </tr>
-            ) : null,
+            ))
           )}
         </tbody>
       </table>
@@ -67,34 +80,34 @@ function AdminMentorTable() {
  */
 export default function AdminPage() {
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10">
-      <span aria-hidden="true" className="tech-label">
-        CAPABILITY / ADMIN — DISTINCT FROM ACCOUNT TYPE
-      </span>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">
-          Admin
-        </h1>
-        <Badge variant="secondary" className="border border-chrome/50">
-          Admin capability
-        </Badge>
-      </div>
-      <p className="mt-1 text-muted-foreground">
-        Placeholder for future admin tooling — mentor approval, reports, and
-        moderation will live here.
-      </p>
-      <section aria-labelledby="admin-mentors-heading" className="mt-8">
-        <h2 id="admin-mentors-heading" className="text-lg font-semibold">
-          Mentor roster
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Includes private session rates, visible here through admin
-          capability.
-        </p>
-        <div className="mt-3">
-          <AdminMentorTable />
+    <main className="page">
+      <div className="max-w-4xl">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="page-title">
+            Admin
+          </h1>
+          <Badge variant="secondary">Admin capability</Badge>
         </div>
-      </section>
+        <p className="mt-4 max-w-xl text-lg text-pretty text-muted-foreground">
+          Placeholder for future admin tooling — mentor approval, reports, and
+          moderation will live here.
+        </p>
+        <section aria-labelledby="admin-mentors-heading" className="mt-14">
+          <h2
+            id="admin-mentors-heading"
+            className="font-display text-2xl font-semibold tracking-tight"
+          >
+            Mentor roster
+          </h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Includes private session rates, visible here through admin
+            capability.
+          </p>
+          <div className="mt-4">
+            <AdminMentorTable />
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

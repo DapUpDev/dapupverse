@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const metadata: Metadata = {
@@ -13,23 +14,22 @@ export const metadata: Metadata = {
  */
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <article className="space-y-6">
-        <p aria-hidden="true" className="tech-label">
-          LEGAL / 02
-        </p>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+    <main className="page">
+      <article className="sheet mx-auto max-w-[40rem] p-7 shadow-sheet sm:p-12 md:p-16">
+        <h1 className="page-title">
           Privacy Policy
         </h1>
-        <Alert>
+        {/* A quiet fill, not a second sheet: paper never sits on paper. */}
+        <Alert className="mt-8 gap-1 border-0 p-5 text-base has-[>svg]:gap-x-3">
+          <Info className="size-5" strokeWidth={1.75} aria-hidden="true" />
           <AlertTitle>Privacy Policy coming soon</AlertTitle>
-          <AlertDescription>
+          <AlertDescription className="text-base leading-7">
             DapUp&rsquo;s full Privacy Policy is being prepared and will be
             published here before launch. Until then, no statements about data
             handling are made on this page. For questions, contact{" "}
             <a
               href="mailto:dapup.dev@gmail.com"
-              className="font-medium underline underline-offset-4"
+              className="font-medium text-foreground underline"
             >
               dapup.dev@gmail.com
             </a>

@@ -31,17 +31,18 @@ export function SiteHeader() {
       : pathname === "/" && href === "/";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
+    // Translucent so the page scrolls under it; no hard divider.
+    <header
+      data-slot="site-header"
+      className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg backdrop-saturate-150"
+    >
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
         <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="font-display text-lg font-extrabold tracking-tight"
+            className="font-display text-xl font-semibold tracking-tight"
           >
             DapUp
-            <span aria-hidden="true" className="text-fog">
-              *
-            </span>
           </Link>
           <nav aria-label="Primary" className="hidden md:block">
             <ul className="flex items-center gap-1">
@@ -50,9 +51,9 @@ export function SiteHeader() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "relative rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                      "relative rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
                       isActive(item.href) &&
-                        "text-foreground after:absolute after:inset-x-3 after:bottom-0.5 after:h-px after:bg-gradient-to-r after:from-chrome after:to-transparent",
+                        "font-medium text-foreground after:absolute after:inset-x-3 after:bottom-1 after:h-[3px] after:rounded-full after:bg-mark",
                     )}
                     aria-current={isActive(item.href) ? "page" : undefined}
                   >
@@ -109,8 +110,8 @@ export function SiteHeader() {
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
-                          "block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
-                          isActive(item.href) && "text-foreground",
+                          "block rounded-md px-3 py-2.5 text-base text-muted-foreground hover:bg-accent hover:text-foreground",
+                          isActive(item.href) && "font-medium text-foreground",
                         )}
                         aria-current={isActive(item.href) ? "page" : undefined}
                       >
@@ -126,7 +127,7 @@ export function SiteHeader() {
                       <Link
                         href="/sign-in"
                         onClick={() => setMobileOpen(false)}
-                        className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                        className="block rounded-md px-3 py-2.5 text-base text-muted-foreground hover:bg-accent hover:text-foreground"
                       >
                         Sign in
                       </Link>

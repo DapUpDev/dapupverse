@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CircleDashed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Badge } from "@/components/ui/badge";
 import { AuthRequiredDialog } from "@/components/connect/auth-required-dialog";
 import { ConnectRequestDialog } from "@/components/connect/connect-request-dialog";
+import { StateChip } from "@/components/connections/mentor-requests-inbox";
 import {
   clearConnectionIntent,
   loadConnectionIntent,
@@ -43,13 +45,6 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
     identity.accountType === "student" ? identity.dataUserId : null;
   const returnTo = `/mentors/${mentor.slug}`;
 
-  const { data: studentProfile } = useRepositoryQuery(
-    () =>
-      studentId
-        ? studentProfileRepository.get(studentId)
-        : Promise.resolve(null),
-    [studentId],
-  );
   const { data: studentRequests } = useRepositoryQuery(
     () =>
       studentId
@@ -65,11 +60,13 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
   const accepted = requestsForMentor.find((r) => r.state === "accepted");
   const blocked = requestsForMentor.find((r) => r.state === "blocked");
 
-  const profileComplete =
-    studentProfile != null && isStudentProfileComplete(studentProfile);
-
-  const startStudentFlow = () => {
-    if (!profileComplete) {
+  const startStudentFlow = async () => {
+    // Read the profile now. A lookup held in state can still be the answer
+    // for the signed-out render that came before this student was known.
+    const profile = studentId
+      ? await studentProfileRepository.get(studentId)
+      : null;
+    if (!profile || !isStudentProfileComplete(profile)) {
       saveConnectionIntent({
         kind: "connect-with-mentor",
         mentorSlug: mentor.slug,
@@ -89,18 +86,23 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
   // returning from sign-in or profile setup): open the request form when the
   // profile is complete, or detour through profile setup keeping the intent.
   useEffect(() => {
-    if (!studentId || studentProfile === undefined) return;
+    if (!studentId) return;
     const intent = loadConnectionIntent();
     if (!intent || intent.mentorSlug !== mentor.slug) return;
-    if (studentProfile && isStudentProfileComplete(studentProfile)) {
-      clearConnectionIntent();
-      // Deferred so the dialog opens as a follow-up task, not during the
-      // effect itself (react-hooks/set-state-in-effect).
-      const timer = setTimeout(() => setRequestOpen(true), 0);
-      return () => clearTimeout(timer);
-    }
-    router.push("/app/profile?setup=connect");
-  }, [studentId, studentProfile, mentor.slug, router]);
+    let cancelled = false;
+    studentProfileRepository.get(studentId).then((profile) => {
+      if (cancelled) return;
+      if (profile && isStudentProfileComplete(profile)) {
+        clearConnectionIntent();
+        setRequestOpen(true);
+      } else {
+        router.push("/app/profile?setup=connect");
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [studentId, mentor.slug, router]);
 
   // Mentors don't send student connection requests.
   if (identity.accountType === "mentor") {
@@ -108,7 +110,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
       <p className="text-sm text-muted-foreground">
         You&rsquo;re signed in as a mentor. Students send connection requests;
         yours arrive in{" "}
-        <Link href="/app/requests" className="underline underline-offset-4">
+        <Link href="/app/requests" className="text-foreground underline">
           Requests
         </Link>
         .
@@ -121,6 +123,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
       <>
         <Button
           size="lg"
+          className="w-full"
           onClick={() => {
             saveConnectionIntent({
               kind: "connect-with-mentor",
@@ -153,8 +156,8 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
 
   if (accepted) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <Badge>Connected</Badge>
+      <div className="flex flex-col items-start gap-3">
+        <StateChip state="accepted">Connected</StateChip>
         <ButtonLink variant="outline" href="/app/messages">
           Message {mentor.name}
         </ButtonLink>
@@ -164,11 +167,14 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
 
   if (pending) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <Badge variant="secondary">Request pending</Badge>
+      <div className="flex flex-col items-start gap-3">
+        <Badge variant="outline" className="border-dashed border-foreground/40">
+          <CircleDashed aria-hidden="true" strokeWidth={1.75} />
+          Request pending
+        </Badge>
         <p className="text-sm text-muted-foreground">
           {mentor.name} hasn&rsquo;t responded yet. Track it in{" "}
-          <Link href="/app/connections" className="underline underline-offset-4">
+          <Link href="/app/connections" className="text-foreground underline">
             Connections
           </Link>
           .
@@ -179,7 +185,7 @@ export function ConnectCta({ mentor }: { mentor: Mentor }) {
 
   return (
     <>
-      <Button size="lg" onClick={startStudentFlow}>
+      <Button size="lg" className="w-full" onClick={startStudentFlow}>
         Connect with this mentor
       </Button>
       {studentId ? (

@@ -24,7 +24,7 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-overlay transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs",
+        "fixed inset-0 z-50 bg-overlay transition-opacity duration-200 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0",
         className
       )}
       {...props}
@@ -43,7 +43,8 @@ function SheetContent({
       <SheetPrimitive.Popup
         data-slot="sheet-content"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex h-full w-3/4 flex-col gap-4 border-l bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-ending-style:translate-x-[2.5rem] data-ending-style:opacity-0 data-starting-style:translate-x-[2.5rem] data-starting-style:opacity-0 sm:max-w-sm",
+          // Slides in from the edge it is attached to, and back out the same way.
+          "fixed inset-y-0 right-0 z-50 flex h-full w-3/4 flex-col gap-4 bg-popover text-sm text-popover-foreground shadow-pop ring-1 ring-foreground/10 transition-[translate] duration-300 ease-desk outline-none data-ending-style:translate-x-full data-starting-style:translate-x-full sm:max-w-sm",
           className
         )}
         {...props}
@@ -82,7 +83,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "font-heading text-base font-medium text-foreground",
+        "font-display text-lg font-semibold tracking-tight text-foreground",
         className
       )}
       {...props}

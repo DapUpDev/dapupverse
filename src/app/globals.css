@@ -1,25 +1,22 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Light only. This ties any `dark:` class to a `.dark` ancestor that is never
+   set, so a component added later cannot follow the visitor's OS theme. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-chrome: var(--dap-chrome);
-  --color-fog: var(--dap-fog);
-  --color-surface-strong: var(--surface-strong);
+  --color-mark: var(--mark);
+  --color-subtle: var(--subtle);
   --color-overlay: var(--overlay);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
-  --font-heading: var(--font-sans);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
@@ -29,170 +26,137 @@
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Paper at rest, paper lifted, and a floating popup. */
+  --shadow-paper: 0 1px 0 rgb(22 24 29 / 0.04), 0 1px 3px rgb(22 24 29 / 0.09);
+  --shadow-sheet:
+    0 1px 0 rgb(22 24 29 / 0.04), 0 2px 4px -1px rgb(22 24 29 / 0.06),
+    0 22px 44px -22px rgb(22 24 29 / 0.28);
+  --shadow-pop: 0 1px 2px rgb(22 24 29 / 0.08), 0 16px 32px -12px rgb(22 24 29 / 0.28);
+  --ease-desk: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /*
- * DapUp seven-color base palette (milestone 3). These are the ONLY base UI
- * colors; every token below derives from them (alpha variants allowed).
- * See docs/design.md for the mapping and visual-weight strategy.
- *
- *   --dap-ink      #0D0C0E  near-black foundation
- *   --dap-abyss    #343851  dark blue-gray
- *   --dap-steel    #4F536F  main blue-gray
- *   --dap-slate    #666C8A  mid blue-gray
- *   --dap-fog      #878D9F  light steel blue-gray
- *   --dap-chrome   #B8BAC3  chrome silver
- *   --dap-frost    #E8E8E7  soft white
+ * The Desk. A cool pale work surface, white paper sheets, graphite ink, and
+ * one highlighter that only marks what is chosen, matched or done.
+ * See DESIGN.md for the rules these tokens serve.
  */
 :root {
-  --dap-ink: #0d0c0e;
-  --dap-abyss: #343851;
-  --dap-steel: #4f536f;
-  --dap-slate: #666c8a;
-  --dap-fog: #878d9f;
-  --dap-chrome: #b8bac3;
-  --dap-frost: #e8e8e7;
+  --desk: #eceef2;
+  --sheet: #ffffff;
+  --ink: #16181d;
+  --ink-2: #454a54;
+  --ink-3: #5e6470;
+  --mark: #d8f04a;
 
-  --background: var(--dap-ink);
-  --foreground: var(--dap-frost);
-  /* Surfaces are near-black with a blue-gray TINT (not solid blue-gray):
-     blue-gray is atmosphere, contrast comes from white type, black masses,
-     and chrome — per the Whiplash-era reference rules. */
-  --card: color-mix(in srgb, var(--dap-abyss) 34%, var(--dap-ink));
-  --card-foreground: var(--dap-frost);
-  --popover: color-mix(in srgb, var(--dap-abyss) 42%, var(--dap-ink));
-  --popover-foreground: var(--dap-frost);
-  --primary: var(--dap-frost);
-  --primary-foreground: var(--dap-ink);
-  --secondary: var(--dap-steel);
-  --secondary-foreground: var(--dap-frost);
-  --muted: color-mix(in srgb, var(--dap-abyss) 26%, var(--dap-ink));
-  --muted-foreground: var(--dap-chrome);
-  --accent: var(--dap-steel);
-  --accent-foreground: var(--dap-frost);
-  /* No red exists in the palette: destructive reads as high-contrast
-     soft-white and is made unmistakable by shape, borders, and labels. */
-  --destructive: var(--dap-frost);
-  --border: color-mix(in srgb, var(--dap-slate) 52%, transparent);
-  --input: color-mix(in srgb, var(--dap-abyss) 45%, transparent);
-  --ring: var(--dap-chrome);
-  --radius: 0.4rem;
-  --overlay: color-mix(in srgb, var(--dap-ink) 72%, transparent);
-  --surface-strong: var(--dap-steel);
-  --gradient-chrome: linear-gradient(
-    105deg,
-    var(--dap-frost) 0%,
-    var(--dap-chrome) 28%,
-    var(--dap-fog) 50%,
-    var(--dap-chrome) 72%,
-    var(--dap-frost) 100%
-  );
+  --background: var(--desk);
+  --foreground: var(--ink);
+  --card: var(--sheet);
+  --popover: var(--sheet);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: #ffffff;
+  --secondary: #e2e5ea;
+  --secondary-foreground: var(--ink);
+  --muted: #f2f3f6;
+  --muted-foreground: var(--ink-2);
+  --subtle: var(--ink-3);
+  --accent: #e9ebef;
+  --destructive: #b42318;
+  --border: rgb(22 24 29 / 0.12);
+  --input: rgb(22 24 29 / 0.42);
+  --ring: var(--ink);
+  --radius: 0.625rem;
+  --overlay: rgb(22 24 29 / 0.38);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    scrollbar-color: #b9bec8 var(--desk);
   }
-  /* Error/alert text carries shape as well as contrast: the palette has no
-     red, so validation messages get a hard leading bar and weight. */
+  body {
+    @apply bg-background text-foreground;
+    caret-color: var(--ink);
+  }
+  ::selection {
+    background: var(--mark);
+    color: var(--ink);
+  }
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  /* A highlighter stroke: the one place colour speaks. */
+  mark {
+    background: var(--mark);
+    color: inherit;
+    padding-inline: 0.12em;
+    margin-inline: -0.12em;
+    border-radius: 0.09em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
   p[role="alert"] {
-    @apply border-l-2 border-foreground pl-2 font-medium text-foreground;
+    @apply font-medium text-destructive;
   }
 }
 
-@layer utilities {
-  /* Technical microtype: metadata, coordinates, statuses, annotations. */
-  .tech-label {
-    font-family: var(--font-geist-mono), monospace;
-    font-size: 0.6875rem;
-    line-height: 1.2;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--dap-fog);
+/* A sheet of paper lying on the desk. */
+@utility sheet {
+  background: var(--card);
+  border-radius: 6px;
+  box-shadow: var(--shadow-paper);
+}
+
+/* The one container every page shares, and the one title on it. */
+@utility page {
+  @apply mx-auto w-full max-w-7xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 lg:px-10;
+}
+@utility page-title {
+  @apply font-display text-4xl leading-[1.05] font-semibold tracking-[-0.03em] sm:text-5xl;
+}
+
+/* A fill-in blank inside a sentence: a native select drawn as highlighted text. */
+@utility blank {
+  appearance: none;
+  field-sizing: content;
+  cursor: pointer;
+  margin-inline: 0.05em;
+  padding: 0 1.5em 0 0.3em;
+  border-radius: 4px;
+  color: var(--foreground);
+  font: inherit;
+  letter-spacing: inherit;
+  background: var(--mark)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2316181d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 0.4em center;
+  transition: scale 0.15s ease-out;
+  &:hover {
+    box-shadow: 0 0 0 2px var(--foreground);
   }
-  /* Chrome gradient text — palette-only multi-stop metallic sweep. */
-  .chrome-text {
-    background-image: var(--gradient-chrome);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-  }
-  /* Thin technical grid lines. */
-  .grid-lines {
-    background-image:
-      linear-gradient(
-        to right,
-        color-mix(in srgb, var(--dap-slate) 14%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--dap-slate) 14%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 72px 72px;
-  }
-  /* Fine metallic border: palette gradient drawn in the border box. */
-  .metal-border {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(var(--card), var(--card)) padding-box,
-      linear-gradient(
-          140deg,
-          var(--dap-chrome),
-          color-mix(in srgb, var(--dap-steel) 70%, transparent) 45%,
-          var(--dap-fog)
-        )
-        border-box;
-  }
-  /* Subtle palette-derived grain (no external assets, transparency only). */
-  .grain {
-    position: relative;
-  }
-  .grain::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: repeating-conic-gradient(
-      color-mix(in srgb, var(--dap-frost) 3%, transparent) 0% 0.0001%,
-      transparent 0.0002% 0.0004%
-    );
-    opacity: 0.5;
+  &:active {
+    scale: 0.98;
   }
 }
 
-/* Precise, mechanical entrance motion. */
-@keyframes dap-rise {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
+@media (prefers-reduced-transparency: reduce) {
+  [data-slot="site-header"] {
+    background: var(--background);
+    backdrop-filter: none;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-rise {
-  /* The 80ms base delay keeps the animation from starting before first
-     paint, where Chromium can leave it stuck holding the from-state. */
-  animation: dap-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 80ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {

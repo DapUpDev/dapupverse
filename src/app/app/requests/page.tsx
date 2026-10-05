@@ -5,16 +5,18 @@ import { MentorRequestsInbox } from "@/components/connections/mentor-requests-in
 export default async function RequestsPage() {
   const identity = await requireAccountType("mentor", "/app/requests");
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="font-display text-3xl font-extrabold tracking-tight">
-        Requests
-      </h1>
-      <p className="mt-1 text-muted-foreground">
-        Accept a request to connect and unlock messaging, or archive it to
-        tidy your inbox.
-      </p>
-      <div className="mt-6">
-        <MentorRequestsInbox mentorId={identity.dataUserId!} />
+    <main className="page">
+      <div className="max-w-3xl">
+        <h1 className="page-title">
+          Requests
+        </h1>
+        <p className="mt-4 max-w-xl text-lg text-pretty text-muted-foreground">
+          Accept a request to connect and unlock messaging, or archive it to
+          tidy your inbox.
+        </p>
+        <div className="mt-10">
+          <MentorRequestsInbox mentorId={identity.dataUserId!} />
+        </div>
       </div>
     </main>
   );

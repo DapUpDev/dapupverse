@@ -41,18 +41,18 @@ export function AuthRequiredDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <ButtonLink className="flex-1" href={`/sign-up?${redirect}`}>
+          <ButtonLink className="sm:flex-1" href={`/sign-up?${redirect}`}>
             Create account
           </ButtonLink>
           <ButtonLink
             variant="outline"
-            className="flex-1"
+            className="sm:flex-1"
             href={`/sign-in?${redirect}`}
           >
             Sign in
           </ButtonLink>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-subtle">
           Every new account starts as a student — it takes under a minute.
         </p>
       </DialogContent>

@@ -31,7 +31,7 @@ export function UnreadBadge({ userId }: { userId: string }) {
     <span
       aria-label={`${count} unread message${count === 1 ? "" : "s"}`}
       data-testid="unread-badge"
-      className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 align-middle text-[11px] font-semibold leading-none text-white"
+      className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 align-middle text-xs leading-none font-semibold text-white tabular-nums"
     >
       {count > 99 ? "99+" : count}
     </span>
