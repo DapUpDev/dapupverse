@@ -49,18 +49,20 @@ export function Conversation({
       return { connection, messages, other };
     },
     [threadId, userId],
+    4_000, // the other person's messages arrive by asking again
   );
 
-  // Mark the thread read when opened.
+  // Mark the thread read when opened, and again as messages arrive in view.
+  const messageCount = data?.messages.length;
   useEffect(() => {
     messageRepository.markThreadRead(threadId, userId);
-  }, [threadId, userId]);
+  }, [threadId, userId, messageCount]);
 
   // Keep the newest message in view.
   useEffect(() => {
     const log = logRef.current;
     if (log) log.scrollTop = log.scrollHeight;
-  }, [data?.messages.length]);
+  }, [messageCount]);
 
   if (!ready) {
     return (

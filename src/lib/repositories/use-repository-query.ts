@@ -13,12 +13,19 @@ import {
  * decoupled from both: they pass repository calls in and receive plain
  * data out.
  *
+ * Nothing pushes another user's writes to this browser, so a query that
+ * must notice them (messages) passes `refreshMs` and is re-run on that
+ * interval while the tab is visible.
+ * ponytail: polling. Swap for a pushed signal (WebSocket or SSE calling
+ * notifyRepositoryChange) when chats are busy enough to feel the delay.
+ *
  * Returns `ready: false` until the first result resolves on the client, so
  * server rendering and hydration stay consistent.
  */
 export function useRepositoryQuery<T>(
   query: () => Promise<T>,
   deps: readonly unknown[],
+  refreshMs?: number,
 ): { data: T | undefined; ready: boolean } {
   const version = useSyncExternalStore(
     subscribeRepositoryChanges,
@@ -30,6 +37,15 @@ export function useRepositoryQuery<T>(
     ready: false,
   });
 
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!refreshMs) return;
+    const id = window.setInterval(() => {
+      if (!document.hidden) setTick((t) => t + 1);
+    }, refreshMs);
+    return () => window.clearInterval(id);
+  }, [refreshMs]);
+
   useEffect(() => {
     let cancelled = false;
     query().then((data) => {
@@ -39,7 +55,7 @@ export function useRepositoryQuery<T>(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version, ...deps]);
+  }, [version, tick, ...deps]);
 
   return state;
 }

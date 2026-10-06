@@ -70,7 +70,7 @@ export function useThreadList(userId: string | null) {
     return items.sort((a, b) =>
       (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""),
     );
-  }, [userId]);
+  }, [userId], 10_000);
 }
 
 export function ThreadList({
