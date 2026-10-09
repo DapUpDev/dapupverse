@@ -77,7 +77,7 @@ export function Conversation({
   if (!data) {
     return (
       <div className="sheet flex flex-col items-start gap-4 p-6 sm:p-8">
-        <h1 className="font-display text-xl font-semibold tracking-tight">
+        <h1 className="font-display text-xl font-semibold">
           Conversation not found
         </h1>
         <ButtonLink variant="outline" href="/app/messages">
@@ -105,7 +105,7 @@ export function Conversation({
 
   return (
     <div className={frame}>
-      <div className="flex items-center gap-3 border-b px-4 py-3 sm:px-6">
+      <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
         <ButtonLink
           variant="ghost"
           size="icon"
@@ -120,7 +120,7 @@ export function Conversation({
           avatarUrl={other.avatarUrl}
           className="size-9"
         />
-        <h1 className="min-w-0 truncate font-display text-xl font-semibold tracking-tight">
+        <h1 className="min-w-0 truncate font-display text-xl font-semibold">
           {other.name}
         </h1>
       </div>
@@ -130,7 +130,7 @@ export function Conversation({
         role="log"
         tabIndex={0}
         aria-label={`Conversation with ${other.name}`}
-        className="flex flex-1 flex-col overflow-y-auto px-4 py-5 outline-none [scrollbar-color:--alpha(var(--foreground)/25%)_transparent] [scrollbar-width:thin] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:px-6"
+        className="flex flex-1 flex-col overflow-y-auto px-4 py-5 outline-none [mask-image:linear-gradient(to_bottom,transparent,black_1.25rem,black_calc(100%-1.25rem),transparent)] [scrollbar-color:--alpha(var(--foreground)/25%)_transparent] [scrollbar-width:thin] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:px-6"
       >
         {data.messages.length === 0 ? (
           <p className="m-auto text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ export function Conversation({
       {readOnly ? (
         <div
           role="alert"
-          className="flex items-start gap-2 border-t px-4 py-4 text-sm text-muted-foreground sm:px-6"
+          className="flex items-start gap-2 px-4 py-4 text-sm text-muted-foreground sm:px-6"
         >
           <CircleOff
             aria-hidden="true"
@@ -198,7 +198,7 @@ export function Conversation({
       ) : (
         <form
           onSubmit={handleSend}
-          className="flex items-end gap-2 border-t px-4 py-3 sm:px-6"
+          className="flex items-end gap-2 px-4 py-3 sm:px-6"
         >
           <div className="relative flex-1">
             <Label htmlFor="message-composer" className="sr-only">

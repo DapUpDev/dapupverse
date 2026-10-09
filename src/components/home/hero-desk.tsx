@@ -300,7 +300,7 @@ export function HomeDesk() {
                 <li key={mentor.id} className="w-24 max-w-full">
                   <Link
                     href={`/mentors/${mentor.slug}`}
-                    className="group block rounded-[4px] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+                    className="group block rounded-[4px] transition-[scale] duration-150 ease-out outline-none active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
                   >
                     <ProfileAvatar
                       name={mentor.name}

@@ -346,7 +346,7 @@ export function MentorProfileForm({ profile }: { profile: MentorProfile }) {
                 avatarUrl={profile.avatarUrl}
                 className={idPhoto}
               />
-              <h2 className="font-display text-xl font-semibold tracking-tight">
+              <h2 className="font-display text-xl font-semibold">
                 {profile.name}
               </h2>
             </div>
