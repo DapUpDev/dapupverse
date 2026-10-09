@@ -49,7 +49,7 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
       <RequestGroup id="mentor-connected-heading" title="Connected students">
         {accepted.length === 0 ? (
           <div className="sheet p-6 sm:p-8">
-            <h3 className="font-display text-xl font-semibold tracking-tight">
+            <h3 className="font-display text-xl font-semibold">
               No connections yet
             </h3>
             <p className="mt-1.5 text-muted-foreground">

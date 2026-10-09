@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -106,19 +107,38 @@ export function PhotoCropDialog({
 
   // Every change goes through here: it works from the latest crop (two
   // fingers report separately) and keeps the frame inside the photo.
-  const adjust = (dx: number, dy: number, factor = 1, zoomTo?: number) =>
+  // While a finger holds it, the photo may go a little past its edge with
+  // growing resistance (Apple's rubber band); it settles back on release.
+  const adjust = (
+    dx: number,
+    dy: number,
+    factor = 1,
+    zoomTo?: number,
+    held = false,
+  ) =>
     setCrop((c) => {
       const zoom = Math.min(Math.max(zoomTo ?? c.zoom * factor, 1), MAX_ZOOM);
-      const half = Math.min(width, height) / zoom / 2;
-      const clamp = (v: number, size: number) =>
-        Math.min(Math.max(v, half), size - half);
+      const side = Math.min(width, height) / zoom;
+      const clamp = (v: number, size: number) => {
+        const inside = Math.min(Math.max(v, side / 2), size - side / 2);
+        const over = v - inside;
+        return held
+          ? inside + (over * side * 0.55) / (side + 0.55 * Math.abs(over))
+          : inside;
+      };
       return {
         zoom,
         x: clamp(c.x - dx / (fit * c.zoom), width),
         y: clamp(c.y - dy / (fit * c.zoom), height),
       };
     });
-  const lift = (e: React.PointerEvent) => touches.current.delete(e.pointerId);
+  const [held, setHeld] = useState(false);
+  const lift = (e: React.PointerEvent) => {
+    touches.current.delete(e.pointerId);
+    if (touches.current.size > 0) return;
+    setHeld(false);
+    adjust(0, 0); // settle back inside the edges
+  };
 
   const save = async () => {
     if (!image) return;
@@ -149,6 +169,7 @@ export function PhotoCropDialog({
               onPointerDown={(e) => {
                 e.currentTarget.setPointerCapture(e.pointerId);
                 touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                setHeld(true);
               }}
               onPointerMove={(e) => {
                 const last = touches.current.get(e.pointerId);
@@ -158,7 +179,8 @@ export function PhotoCropDialog({
                   ([id]) => id !== e.pointerId,
                 )?.[1];
                 touches.current.set(e.pointerId, here);
-                if (!other) return adjust(here.x - last.x, here.y - last.y);
+                if (!other)
+                  return adjust(here.x - last.x, here.y - last.y, 1, undefined, true);
                 // Two fingers: zoom by how far apart they moved, and follow
                 // their midpoint (this finger moved, so it moved by half).
                 const spread = (p: { x: number; y: number }) =>
@@ -167,6 +189,8 @@ export function PhotoCropDialog({
                   (here.x - last.x) / 2,
                   (here.y - last.y) / 2,
                   spread(here) / spread(last),
+                  undefined,
+                  true,
                 );
               }}
               onPointerUp={lift}
@@ -184,7 +208,11 @@ export function PhotoCropDialog({
                   src={image.src}
                   alt=""
                   draggable={false}
-                  className="pointer-events-none absolute top-0 left-0 max-w-none origin-top-left will-change-transform"
+                  className={cn(
+                    "pointer-events-none absolute top-0 left-0 max-w-none origin-top-left will-change-transform",
+                    // Glued to the finger while held; eases home once let go.
+                    !held && "transition-[translate,scale] duration-300 ease-desk",
+                  )}
                   // Zoomed with a transform, not by resizing, so the phone
                   // does not lay the photo out again on every frame.
                   style={{

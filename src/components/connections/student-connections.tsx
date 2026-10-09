@@ -74,7 +74,7 @@ export function StudentConnections({ studentId }: { studentId: string }) {
   if ((data ?? []).length === 0) {
     return (
       <div className="sheet p-6 sm:p-8">
-        <h2 className="font-display text-xl font-semibold tracking-tight">
+        <h2 className="font-display text-xl font-semibold">
           No connections yet
         </h2>
         <p className="mt-1.5 text-muted-foreground">

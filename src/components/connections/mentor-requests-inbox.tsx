@@ -161,7 +161,7 @@ export function RequestSheet({
           <div className="min-w-0">
             <h3
               className={cn(
-                "font-display text-xl leading-tight font-semibold tracking-tight break-words",
+                "font-display text-xl leading-tight font-semibold break-words",
                 !when && "text-muted-foreground",
               )}
             >
@@ -295,7 +295,7 @@ export function MentorRequestsInbox({ mentorId }: { mentorId: string }) {
               <circle cx="17" cy="17" r="12" className="fill-mark" />
               <path d="m11.5 17.5 3.8 3.8 7.2-8" />
             </svg>
-            <h3 className="mt-4 font-display text-xl font-semibold tracking-tight">
+            <h3 className="mt-4 font-display text-xl font-semibold">
               Inbox zero
             </h3>
             <p className="mt-1.5 text-muted-foreground">

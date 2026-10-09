@@ -123,7 +123,7 @@ export function MentorDirectory({
         ) : (
           // An empty place on the desk where the cards would lie.
           <div className="mt-4 flex max-w-xl flex-col items-start rounded-[6px] border border-dashed border-foreground/25 p-7 sm:p-9">
-            <p className="font-display text-xl font-semibold tracking-tight">
+            <p className="font-display text-xl font-semibold">
               No mentors match your search.
             </p>
             <p className="mt-2 text-muted-foreground">
