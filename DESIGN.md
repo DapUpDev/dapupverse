@@ -331,6 +331,8 @@ Quiet, flat and exact; they answer the press, not the release.
 A dialog is a sheet laid over the dimmed desk: 6px radius, 24 to 32px padding, 28rem maximum, Pop shadow, a Section-style title and a ghost close button. It is used only where the task needs an interruption (sending a request, being asked to sign in first). Toasts are paper with the Pop shadow; success carries a highlighter-filled tick and an error a red mark.
 
 ### The Fill-In Sentence
+Above the desk, the landing page opens with Lake to Sky (`src/components/home/journey.tsx`): three full-height photo chapters, lake, clouds over peaks, open sky, with white display type over a dark bottom gradient. It is the one place photos run edge to edge and type is white. Each photo is 36% taller than its chapter and slides at a third of the scroll speed (transform only, one scroll listener, off under reduced motion), and the final chapter's button scrolls to the desk.
+
 The landing page's signature: a sentence in the display face whose choices are selects drawn as highlighted text, opening the same paper menu as every other select (highlighter fill, 4px radius, a small ink chevron, sized to their content). Hover draws a 2px ink outline; press scales to 0.98. Changing a blank re-deals the fan beside it to the mentors who match, and the facts that matched are highlighted on each card. The status line under the sentence links to the directory with the sentence's choices as its starting filters.
 
 ### The Mentor Card
