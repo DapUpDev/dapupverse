@@ -28,7 +28,9 @@ export default function PrivacyPage() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Who we are</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Who we are
+          </h2>
 
           <p className="text-muted-foreground">
             DapUp is run by Sunny Le in New Zealand. DapUp is an online
@@ -46,7 +48,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">1. Information we collect</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            1. Information we collect
+          </h2>
 
           <p className="text-muted-foreground">
             To make an account you need to give us your name, your email address
@@ -73,13 +77,13 @@ export default function PrivacyPage() {
           <p className="text-muted-foreground">
             Our hosting and sign-in providers also keep standard server logs,
             which include your IP address, browser and device type and when you
-            signed in. We also use Vercel Web Analytics to count visits and
-            page views. It does not use cookies and does not identify you.
+            signed in. We also use Vercel Web Analytics to count visits and page
+            views. It does not use cookies and does not identify you.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             2. How we use your information
           </h2>
 
@@ -113,7 +117,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             3. Who can see your information
           </h2>
 
@@ -164,7 +168,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">4. Your rights</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            4. Your rights
+          </h2>
 
           <p className="text-muted-foreground">
             Under the Privacy Act 2020 you have the right to:
@@ -195,7 +201,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">5. How long we keep it</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            5. How long we keep it
+          </h2>
 
           <p className="text-muted-foreground">
             We keep your information while your account is active. When you
@@ -212,7 +220,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">6. Security</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            6. Security
+          </h2>
 
           <p className="text-muted-foreground">
             We take reasonable steps to protect your information:
@@ -234,7 +244,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">7. If something goes wrong</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            7. If something goes wrong
+          </h2>
 
           <p className="text-muted-foreground">
             If your information is lost, leaked or accessed without permission
@@ -245,7 +257,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">8. Under 18s</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            8. Under 18s
+          </h2>
 
           <p className="text-muted-foreground">
             You must be at least 13 to use DapUp. If you are under 18, we
@@ -256,7 +270,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">9. Cookies</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            9. Cookies
+          </h2>
 
           <p className="text-muted-foreground">
             We and Clerk use cookies to keep you signed in and to help the site
@@ -266,7 +282,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">10. Changes to this policy</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            10. Changes to this policy
+          </h2>
 
           <p className="text-muted-foreground">
             We may update this policy when the site changes or the law requires
@@ -276,7 +294,9 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">11. Complaints and contact</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            11. Complaints and contact
+          </h2>
 
           <p className="text-muted-foreground">
             If you think we have got your privacy wrong, email our privacy

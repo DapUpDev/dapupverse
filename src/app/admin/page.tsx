@@ -10,7 +10,9 @@ function AdminMentorTable() {
   // the API) is what grants admin visibility of the price.
   const { data: profiles, ready } = useRepositoryQuery(async () => {
     const mentors = await mentorRepository.list();
-    return Promise.all(mentors.map((m) => mentorRepository.getPrivateProfile(m.id)));
+    return Promise.all(
+      mentors.map((m) => mentorRepository.getPrivateProfile(m.id)),
+    );
   }, []);
 
   if (!ready) {
@@ -62,7 +64,9 @@ function AdminMentorTable() {
                 <td className={`${cell} text-muted-foreground`}>
                   {profile.university}
                 </td>
-                <td className={`${cell} text-right whitespace-nowrap tabular-nums`}>
+                <td
+                  className={`${cell} text-right whitespace-nowrap tabular-nums`}
+                >
                   ${profile.privatePriceUsd} USD
                 </td>
               </tr>
@@ -83,9 +87,7 @@ export default function AdminPage() {
     <main className="page">
       <div className="max-w-4xl">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="page-title">
-            Admin
-          </h1>
+          <h1 className="page-title">Admin</h1>
           <Badge variant="secondary">Admin capability</Badge>
         </div>
         <p className="mt-4 max-w-xl text-lg text-pretty text-muted-foreground">
@@ -95,7 +97,7 @@ export default function AdminPage() {
         <section aria-labelledby="admin-mentors-heading" className="mt-14">
           <h2
             id="admin-mentors-heading"
-            className="font-display text-2xl font-semibold tracking-tight"
+            className="font-display text-2xl font-[450] tracking-[-0.02em]"
           >
             Mentor roster
           </h2>
