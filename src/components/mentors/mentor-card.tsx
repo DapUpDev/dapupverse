@@ -51,7 +51,7 @@ export function MentorCard({
           // The lead card shows its photo at full width, like a product shot.
           className={
             primary
-              ? "aspect-square h-auto w-full rounded-[4px] [&_[data-slot=avatar-fallback]]:text-5xl"
+              ? "aspect-[4/3] h-auto w-full rounded-[4px] [&_[data-slot=avatar-fallback]]:text-5xl"
               : idPhoto
           }
         />
@@ -91,7 +91,9 @@ export function MentorCard({
         aria-hidden="true"
         className={cn(
           buttonVariants({ variant: primary ? "default" : "outline" }),
-          "mt-auto self-start",
+          // Drawn only: the whole card is the link. The glass pane paints
+          // above the card's link overlay, so clicks must fall through it.
+          "pointer-events-none mt-auto self-start",
         )}
       >
         Ask {mentor.name.split(" ")[0]}
