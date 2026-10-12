@@ -116,16 +116,13 @@ export function HomeDesk() {
   // The fan holds the matches; with none, whoever is here.
   const shown = hits.length > 0 ? hits : mentors;
   const front = shown.find((m) => m.id === frontId);
-  // ponytail: Sunny is pinned to the front by name for now; swap for a
-  // "featured" flag on the mentor when more people need pinning.
-  const pinned = mentors.find((m) => m.name.startsWith("Sunny"));
+  // ponytail: Sunny then David are pinned to the front by name for now; swap
+  // for a "featured" flag on the mentor when more people need pinning.
+  const pinned = ["Sunny", "David"].flatMap((first) =>
+    mentors.filter((m) => m.name.startsWith(first)),
+  );
   const ranked = [
-    ...new Set([
-      ...(front ? [front] : []),
-      ...(pinned ? [pinned] : []),
-      ...shown,
-      ...mentors,
-    ]),
+    ...new Set([...(front ? [front] : []), ...pinned, ...shown, ...mentors]),
   ].slice(0, MOUNTED);
   const fanned = Math.min(shown.length, FAN.length);
   // Rendered in a fixed order so a card keeps its element as its rank changes.
@@ -240,7 +237,6 @@ export function HomeDesk() {
               AP, IB and A Levels.
             </p>
           </section>
-          <UniversityMarquee universities={universities} />
         </div>
 
         <div
@@ -288,6 +284,8 @@ export function HomeDesk() {
         </div>
       </div>
 
+      <UniversityMarquee universities={universities} />
+
       <section
         aria-labelledby="network-heading"
         className="grid items-center gap-10 pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-32"
@@ -314,7 +312,7 @@ export function HomeDesk() {
                   <Skeleton className="mt-2 h-3 w-full" />
                 </li>
               ))
-            : [...new Set([...(pinned ? [pinned] : []), ...mentors])]
+            : [...new Set([...pinned, ...mentors])]
                 .slice(0, 4)
                 .map((mentor) => (
                   <li key={mentor.id}>
