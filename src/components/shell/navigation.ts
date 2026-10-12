@@ -44,7 +44,7 @@ export function navItemsForIdentity(identity: NavIdentity): NavItem[] {
   return [
     { href: "/", label: "Home" },
     { href: "/mentors", label: "Find Mentors" },
-    { href: "/#mission", label: "Mission" },
+    { href: "/#mission", label: "Why us" },
     { href: "/terms", label: "Terms" },
   ];
 }

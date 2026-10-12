@@ -130,10 +130,12 @@ export function HomeDesk() {
   })}`;
 
   // A new sentence puts its own match on top again.
-  const choose = <T,>(set: (value: T) => void) => (value: T) => {
-    set(value);
-    setFrontId(undefined);
-  };
+  const choose =
+    <T,>(set: (value: T) => void) =>
+    (value: T) => {
+      set(value);
+      setFrontId(undefined);
+    };
 
   return (
     <>
@@ -150,8 +152,7 @@ export function HomeDesk() {
           </h1>
           <p className="mt-6 max-w-[34rem] text-lg text-pretty text-muted-foreground sm:text-[1.1875rem]">
             DapUp connects you with mentors who sat the same exams, wrote the
-            same applications, and got into the places you&rsquo;re aiming
-            for.
+            same applications, and got into the places you&rsquo;re aiming for.
           </p>
 
           <div
@@ -179,7 +180,10 @@ export function HomeDesk() {
                 label="University"
                 value={university}
                 onChange={choose(setUniversity)}
-                options={[["", "any university"], ...universities.map((u) => [u, u] as const)]}
+                options={[
+                  ["", "any university"],
+                  ...universities.map((u) => [u, u] as const),
+                ]}
               />
               .
             </p>
@@ -272,43 +276,48 @@ export function HomeDesk() {
         </div>
       </div>
 
-      <section aria-labelledby="network-heading" className="pt-24 lg:pt-32">
-        <h2
-          id="network-heading"
-          className="max-w-3xl font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance"
-        >
-          A small, approved group of successful NZ friends who went overseas.
-        </h2>
-        <p className="mt-5 max-w-xl text-lg text-pretty text-muted-foreground">
-          Every DapUp mentor is reviewed and approved before they appear in
-          the directory, so the advice you get comes from students who have
-          genuinely done it.
-        </p>
-        <ul className="-mx-4 mt-10 flex snap-x gap-6 overflow-x-auto px-4 pb-2 [mask-image:linear-gradient(to_right,transparent,black_1rem,black_calc(100%-1rem),transparent)] [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+      <section
+        aria-labelledby="network-heading"
+        className="grid items-center gap-10 pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-32"
+      >
+        <div>
+          <h2
+            id="network-heading"
+            className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance"
+          >
+            A small, approved group of successful NZ friends who went overseas.
+          </h2>
+          <p className="mt-5 max-w-xl text-lg text-pretty text-muted-foreground">
+            Every DapUp mentor is reviewed and approved before they appear in
+            the directory, so the advice you get comes from students who have
+            genuinely done it.
+          </p>
+        </div>
+        <ul className="grid grid-cols-2 gap-4">
           {!ready
-            ? [0, 1, 2].map((i) => (
-                <li key={i}>
-                  <Skeleton className="size-24 rounded-full sm:size-32" />
+            ? [0, 1, 2, 3].map((i) => (
+                <li key={i} className="sheet p-5">
+                  <Skeleton className="size-16 rounded-full" />
+                  <Skeleton className="mt-4 h-4 w-2/3" />
+                  <Skeleton className="mt-2 h-3 w-full" />
                 </li>
               ))
-            : mentors.slice(0, 8).map((mentor) => (
-                <li key={mentor.id} className="w-24 shrink-0 snap-start sm:w-32">
+            : mentors.slice(0, 4).map((mentor) => (
+                <li key={mentor.id}>
                   <Link
                     href={`/mentors/${mentor.slug}`}
-                    className="group block rounded-[4px] text-center outline-none transition-[scale] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background active:scale-[0.95]"
+                    className="sheet block p-5 transition-[scale] duration-150 ease-out outline-none hover:shadow-sheet active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-6"
                   >
-                    <span className="block aspect-square rounded-full p-[3px] ring-[2.5px] ring-mark">
-                      <ProfileAvatar
-                        name={mentor.name}
-                        avatarUrl={mentor.avatarUrl}
-                        className="size-full [&_[data-slot=avatar-fallback]]:text-xl"
-                      />
+                    <ProfileAvatar
+                      name={mentor.name}
+                      avatarUrl={mentor.avatarUrl}
+                      className="size-16 [&_[data-slot=avatar-fallback]]:text-lg"
+                    />
+                    <span className="mt-4 block truncate font-medium">
+                      {mentor.name}
                     </span>
-                    <span className="mt-2 block truncate text-sm leading-tight font-medium group-hover:underline">
-                      {mentor.name.split(" ")[0]}
-                    </span>
-                    <span className="mt-0.5 block truncate text-xs leading-snug text-subtle">
-                      {mentor.university}
+                    <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-muted-foreground">
+                      {mentor.major} at {mentor.university}
                     </span>
                   </Link>
                 </li>
