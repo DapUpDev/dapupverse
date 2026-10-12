@@ -7,7 +7,7 @@ colors:
   ink: "#16181d"
   ink-2: "#454a54"
   ink-3: "#5e6470"
-  mark: "#d8f04a"
+  mark: "#81d8d0"
   destructive: "#b42318"
   secondary: "#e2e5ea"
   accent: "#e9ebef"
@@ -198,13 +198,13 @@ Motion is physical and brief. Things move by transform and opacity only, from wh
 
 ## Colors
 
-A near-monochrome cool palette: pale desk, white paper, graphite ink, with one yellow-green highlighter and one red, each holding a single job.
+A near-monochrome cool palette: pale desk, white paper, graphite ink, with one teal highlighter and one red, each holding a single job.
 
 ### Primary
 - **Graphite Ink** (`ink`, #16181d): all primary text, the one filled button of a view, focus rings, the text caret. It is the system's "primary"; there is no brand hue.
 
 ### Secondary
-- **Highlighter** (`mark`, #d8f04a): the only chromatic voice besides red. It marks what is chosen (the fill-in blanks, a filter chip's value, the checked item in a menu or select, the underline under the current nav item, a ticked choice in a form), what matched (the facts on a mentor card that answered the search) and what is done (the Connected and "Profile complete" chips, the ticked ring on "inbox zero", the success toast's tick). Text on it is always ink. It is also the selection colour.
+- **Highlighter** (`mark`, #81d8d0): the only chromatic voice besides red. It marks what is chosen (the fill-in blanks, a filter chip's value, the checked item in a menu or select, the underline under the current nav item, a ticked choice in a form), what matched (the facts on a mentor card that answered the search) and what is done (the Connected and "Profile complete" chips, the ticked ring on "inbox zero", the success toast's tick). Text on it is always ink. It is also the selection colour.
 
 ### Tertiary
 - **Red** (`destructive`, #b42318): errors (field errors, invalid field edges, the error toast icon), destructive actions (block, disconnect, remove: red text on paper that fills red on hover) and every unread count (the total beside Messages in the header, the count on a conversation row). Nothing else.
