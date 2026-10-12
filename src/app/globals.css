@@ -52,6 +52,9 @@
   --ink-2: #454a54;
   --ink-3: #5e6470;
   --mark: #b6eaff;
+  /* Landing-page blocks only: never a state colour. */
+  --block-dark: #0f1218;
+  --block-warm: #f4f3ef;
 
   --background: var(--desk);
   --foreground: var(--ink);
@@ -162,6 +165,14 @@
     background: var(--sheet);
     backdrop-filter: none;
   }
+}
+
+/* A landing-page block: as wide as the window, whatever the page's width. */
+@utility bleed {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  translate: -50% 0;
 }
 
 /* A ribbon that slides by half its width: the content is drawn twice. */

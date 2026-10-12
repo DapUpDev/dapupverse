@@ -8,6 +8,8 @@ colors:
   ink-2: "#454a54"
   ink-3: "#5e6470"
   mark: "#b6eaff"
+  block-dark: "#0f1218"
+  block-warm: "#f4f3ef"
   destructive: "#b42318"
   secondary: "#e2e5ea"
   accent: "#e9ebef"
@@ -205,6 +207,7 @@ A near-monochrome cool palette: pale desk, white paper, graphite ink, with one s
 
 ### Secondary
 - **Highlighter** (`mark`, #b6eaff): the only chromatic voice besides red. It marks what is chosen (the fill-in blanks, a filter chip's value, the checked item in a menu or select, the underline under the current nav item, a ticked choice in a form), what matched (the facts on a mentor card that answered the search) and what is done (the Connected and "Profile complete" chips, the ticked ring on "inbox zero", the success toast's tick). Text on it is always ink. It is also the selection colour.
+- **Landing blocks** (`block-dark` #0f1218, `block-warm` #f4f3ef): full-width section backgrounds on the landing page only. Near-black carries the group and "Why us" sections, with white text and white sheets on it; warm off-white carries "How DapUp works". They are never a state colour, never a control, never used inside the app.
 
 ### Tertiary
 - **Red** (`destructive`, #b42318): errors (field errors, invalid field edges, the error toast icon), destructive actions (block, disconnect, remove: red text on paper that fills red on hover) and every unread count (the total beside Messages in the header, the count on a conversation row). Nothing else.
