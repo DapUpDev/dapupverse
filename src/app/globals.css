@@ -36,7 +36,8 @@
   --shadow-sheet:
     0 1px 0 rgb(22 24 29 / 0.04), 0 2px 4px -1px rgb(22 24 29 / 0.06),
     0 22px 44px -22px rgb(22 24 29 / 0.28);
-  --shadow-pop: 0 1px 2px rgb(22 24 29 / 0.08), 0 16px 32px -12px rgb(22 24 29 / 0.28);
+  --shadow-pop:
+    0 1px 2px rgb(22 24 29 / 0.08), 0 16px 32px -12px rgb(22 24 29 / 0.28);
   --ease-desk: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -129,7 +130,7 @@
   @apply mx-auto w-full max-w-7xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 lg:px-10;
 }
 @utility page-title {
-  @apply font-display text-4xl leading-[1.05] font-semibold tracking-[-0.03em] sm:text-5xl;
+  @apply font-display text-4xl leading-[1.05] font-[450] tracking-[-0.025em] sm:text-5xl;
 }
 
 @media (prefers-reduced-transparency: reduce) {

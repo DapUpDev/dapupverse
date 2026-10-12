@@ -17,14 +17,12 @@ export default function TermsPage() {
       {/* One sheet; its padding leaves the text a 65 to 75 character line. */}
       <article className="sheet mx-auto max-w-[40rem] space-y-10 p-7 leading-7 text-pretty shadow-sheet sm:p-12 md:p-16">
         <header className="space-y-4 border-b pb-8">
-          <h1 className="page-title">
-            Terms and Conditions
-          </h1>
+          <h1 className="page-title">Terms and Conditions</h1>
           <p className="text-sm text-subtle">Effective Date: 01 July 2025</p>
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             Ownership of Site; Agreement to Terms of Use
           </h2>
           <p className="text-muted-foreground">
@@ -47,19 +45,20 @@ export default function TermsPage() {
             AGREE, DO NOT USE THE SITE.
           </p>
           <p className="text-muted-foreground">
-            DapUp reserves the right, at its sole discretion, to change,
-            modify, add, or remove portions of these Terms of Use at any time.
-            It is your responsibility to review these Terms periodically for
-            updates. Your continued use of the Site after changes are posted
-            constitutes your acceptance of those changes. As long as you comply
-            with these Terms of Use, DapUp grants you a personal,
-            non-exclusive, non-transferable, limited right to access and use
-            the Site.
+            DapUp reserves the right, at its sole discretion, to change, modify,
+            add, or remove portions of these Terms of Use at any time. It is
+            your responsibility to review these Terms periodically for updates.
+            Your continued use of the Site after changes are posted constitutes
+            your acceptance of those changes. As long as you comply with these
+            Terms of Use, DapUp grants you a personal, non-exclusive,
+            non-transferable, limited right to access and use the Site.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Content</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Content
+          </h2>
           <p className="text-muted-foreground">
             All text, graphics, user interfaces, visual design, photographs,
             logos, audio, artwork, computer code, and other materials
@@ -75,13 +74,15 @@ export default function TermsPage() {
             uploaded, posted, publicly displayed, encoded, translated,
             transmitted, or distributed in any way (including
             &ldquo;mirroring&rdquo;) to any other computer, server, website, or
-            medium for publication or commercial use without DapUp&rsquo;s
-            prior written permission.
+            medium for publication or commercial use without DapUp&rsquo;s prior
+            written permission.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Who Can Join</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Who Can Join
+          </h2>
           <p className="text-muted-foreground">To use DapUp, you must:</p>
           <ul className="list-disc space-y-1 pl-6 text-muted-foreground">
             <li>Be at least 13 years old</li>
@@ -92,14 +93,16 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             How to Behave
           </h2>
           <p className="text-muted-foreground">We expect all users to:</p>
           <ul className="list-disc space-y-1 pl-6 text-muted-foreground">
             <li>Act respectfully and professionally</li>
             <li>Avoid spam, harassment, or harmful content</li>
-            <li>Not engage in discriminatory, offensive, or illegal behavior</li>
+            <li>
+              Not engage in discriminatory, offensive, or illegal behavior
+            </li>
             <li>Use DapUp only for educational and mentorship purposes</li>
           </ul>
           <p className="text-muted-foreground">
@@ -109,7 +112,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             What We&rsquo;re Not Liable For
           </h2>
           <p className="text-muted-foreground">DapUp does not:</p>
@@ -120,8 +123,7 @@ export default function TermsPage() {
               platform interactions
             </li>
             <li>
-              Endorse or manage any opportunities discussed outside the
-              platform
+              Endorse or manage any opportunities discussed outside the platform
             </li>
           </ul>
           <p className="text-muted-foreground">
@@ -130,7 +132,9 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Your Privacy</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Your Privacy
+          </h2>
           <p className="text-muted-foreground">
             We value your privacy. Highlights:
           </p>
@@ -145,7 +149,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             Platform Changes
           </h2>
           <p className="text-muted-foreground">
@@ -155,7 +159,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             Account Deletion
           </h2>
           <p className="text-muted-foreground">
@@ -166,7 +170,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
             No Guarantees
           </h2>
           <p className="text-muted-foreground">
@@ -176,7 +180,9 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Jurisdiction</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Jurisdiction
+          </h2>
           <p className="text-muted-foreground">
             These Terms are governed by the laws of New Zealand. Any disputes
             will be handled by New Zealand courts.
@@ -184,7 +190,9 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Contact Us</h2>
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">
+            Contact Us
+          </h2>
           <p className="text-muted-foreground">
             Questions? We&rsquo;re here to help.
           </p>

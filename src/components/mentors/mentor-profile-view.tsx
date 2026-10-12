@@ -6,10 +6,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectCta } from "@/components/connect/connect-cta";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
-import {
-  connectionRepository,
-  mentorRepository,
-} from "@/lib/repositories";
+import { connectionRepository, mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
 
 /**
@@ -189,7 +186,7 @@ export function MentorProfileView({ slug }: { slug: string }) {
         >
           <h2
             id="mentor-about"
-            className="font-display text-2xl font-semibold tracking-tight"
+            className="font-display text-2xl font-[450] tracking-[-0.02em]"
           >
             About
           </h2>

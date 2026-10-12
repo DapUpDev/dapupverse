@@ -22,26 +22,26 @@ typography:
   display:
     fontFamily: "Bricolage Grotesque, sans-serif"
     fontSize: "clamp(2.6rem, 4.6vw + 0.6rem, 5rem)"
-    fontWeight: 640
+    fontWeight: 450
     lineHeight: 1
-    letterSpacing: "-0.035em"
+    letterSpacing: "-0.03em"
   headline:
     fontFamily: "Bricolage Grotesque, sans-serif"
     fontSize: "3rem"
-    fontWeight: 600
+    fontWeight: 450
     lineHeight: 1.05
-    letterSpacing: "-0.03em"
+    letterSpacing: "-0.025em"
   section:
     fontFamily: "Bricolage Grotesque, sans-serif"
     fontSize: "1.5rem"
-    fontWeight: 600
-    letterSpacing: "-0.025em"
+    fontWeight: 450
+    letterSpacing: "-0.02em"
   title:
     fontFamily: "Bricolage Grotesque, sans-serif"
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.25
-    letterSpacing: "-0.025em"
+    letterSpacing: "-0.01em"
   lede:
     fontFamily: "Geist, sans-serif"
     fontSize: "1.125rem"
@@ -227,6 +227,8 @@ A near-monochrome cool palette: pale desk, white paper, graphite ink, with one s
 **The One Highlighter Rule.** The highlighter means exactly one of: this is chosen, this matched, this is done or connected. It is never a count, never decoration, never a hover colour, never a large background, and its text is always ink.
 
 **The One Red Rule.** Red means an error, a destructive action, or an unread count, wherever that count appears. If something is merely important, it is ink.
+
+**The Light Headline Rule.** Everything set in Bricolage at 24px and above (display, headline, section) is weight 450 with tracking that tightens as size grows (-0.02em at 24px, -0.025em at 48px, -0.03em at the hero). Only the 20px title role (names, card titles, document sections) is 600, with -0.01em. Button labels are never smaller than 14px. The same role never changes weight or family between the landing page and the app.
 
 **The Label And Mark Rule.** State is never colour alone. Every state carries a text label and a drawn mark: a dashed ring for pending, a ticked ring for connected, a struck ring for ended or read-only, a barred circle for blocked.
 

@@ -166,7 +166,7 @@ export function HomeDesk() {
             >
               Learn from students who&rsquo;ve <mark>already made it.</mark>
             </h1>
-            <p className="mt-6 max-w-[34rem] text-lg text-pretty text-muted-foreground sm:text-[1.1875rem]">
+            <p className="mt-6 max-w-[34rem] text-lg text-pretty text-muted-foreground">
               DapUp connects you with mentors who sat the same exams, wrote the
               same applications, and got into the places you&rsquo;re aiming
               for.
@@ -177,7 +177,7 @@ export function HomeDesk() {
               aria-label="Find your mentor"
               className="mt-8 border-t border-border pt-7 lg:mt-11 lg:pt-9"
             >
-              <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.75] font-medium tracking-[-0.015em]">
+              <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.5] font-medium tracking-[-0.015em]">
                 I&rsquo;m on{" "}
                 <Blank
                   label="Your exam system"

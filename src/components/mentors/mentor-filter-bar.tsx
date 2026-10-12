@@ -162,7 +162,7 @@ export function MentorFilterBar({
       {active.map(({ key, label, icon: Icon, values }) => (
         <div
           key={key}
-          className="flex h-8 max-w-full items-stretch overflow-hidden rounded-lg border border-foreground/25 bg-card text-[0.8125rem]"
+          className="flex h-8 max-w-full items-stretch overflow-hidden rounded-lg border border-foreground/25 bg-card text-sm"
         >
           <span className="flex shrink-0 items-center gap-1.5 pr-1 pl-2.5 text-muted-foreground">
             <Icon aria-hidden="true" className="size-3.5" />

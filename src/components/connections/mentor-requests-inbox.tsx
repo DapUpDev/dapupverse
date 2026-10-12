@@ -108,7 +108,7 @@ export function RequestGroup({
     <section aria-labelledby={id}>
       <h2
         id={id}
-        className="font-display text-2xl font-semibold tracking-tight"
+        className="font-display text-2xl font-[450] tracking-[-0.02em]"
       >
         {title}
       </h2>
@@ -266,7 +266,9 @@ export function MentorRequestsInbox({ mentorId }: { mentorId: string }) {
       when={`Sent ${formatDate(request.createdAt)}`}
       actions={
         <>
-          <Button onClick={() => handleAccept(request.id, studentName(student))}>
+          <Button
+            onClick={() => handleAccept(request.id, studentName(student))}
+          >
             Accept
           </Button>
           {second}
