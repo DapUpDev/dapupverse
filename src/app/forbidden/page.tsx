@@ -10,7 +10,7 @@ export default function ForbiddenPage() {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-10">
       <div className="sheet w-full max-w-md p-8 shadow-sheet sm:p-10">
-        <h1 className="font-display text-3xl leading-[1.1] font-[450] tracking-[-0.025em]">
+        <h1 className="font-display text-3xl leading-[1.1] font-normal tracking-[-0.025em]">
           You don&rsquo;t have access to that page
         </h1>
         <p className="mt-4 text-pretty text-muted-foreground">

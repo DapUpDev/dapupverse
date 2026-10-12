@@ -160,7 +160,7 @@ export function HomeDesk() {
           >
             <h1
               id="hero-heading"
-              className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-none font-[450] tracking-[-0.03em]"
+              className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-[1.02] font-normal tracking-[-0.01em]"
             >
               Learn from students who&rsquo;ve <mark>already made it.</mark>
             </h1>
@@ -175,7 +175,7 @@ export function HomeDesk() {
               aria-label="Find your mentor"
               className="mt-8 border-t border-border pt-7 lg:mt-11 lg:pt-9"
             >
-              <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.5] font-medium tracking-[-0.015em]">
+              <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.5] font-normal tracking-0">
                 I&rsquo;m on{" "}
                 <Blank
                   label="Your exam system"
@@ -303,7 +303,7 @@ export function HomeDesk() {
           <div>
             <h2
               id="network-heading"
-              className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-[450] tracking-[-0.025em] text-balance"
+              className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-normal tracking-[-0.01em] text-balance"
             >
               A small, approved group of successful NZ friends who went
               overseas.

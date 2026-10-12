@@ -1,7 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist } from "next/font/google";
+import { EB_Garamond, Geist } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteFooter } from "@/components/shell/site-footer";
 import { SiteHeader } from "@/components/shell/site-header";
@@ -14,11 +14,12 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-// Headlines only. The optical-size axis keeps large settings tight.
-const bricolage = Bricolage_Grotesque({
+// Headlines and names: an editorial serif at regular weight, the way
+// Hermès sets its headlines.
+const bricolage = EB_Garamond({
   variable: "--font-display",
   subsets: ["latin"],
-  axes: ["opsz"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {

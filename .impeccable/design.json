@@ -7,7 +7,7 @@
       "desk": {
         "role": "neutral",
         "displayName": "Desk",
-        "canonical": "#eceef2",
+        "canonical": "#faf8f5",
         "tonalRamp": [
           "oklch(15% 0.01 265)",
           "oklch(27% 0.01 265)",
@@ -222,7 +222,7 @@
       "block-warm": {
         "role": "neutral",
         "displayName": "Landing block, warm",
-        "canonical": "#f4f3ef"
+        "canonical": "#f1ede6"
       }
     },
     "typographyMeta": {

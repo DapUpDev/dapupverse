@@ -97,7 +97,7 @@ export default function AdminPage() {
         <section aria-labelledby="admin-mentors-heading" className="mt-14">
           <h2
             id="admin-mentors-heading"
-            className="font-display text-2xl font-[450] tracking-[-0.02em]"
+            className="font-display text-2xl font-normal tracking-[-0.02em]"
           >
             Mentor roster
           </h2>
