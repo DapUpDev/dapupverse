@@ -10,14 +10,46 @@ export default function HomePage() {
         <h2 id="how-heading" className="sr-only">
           How DapUp works
         </h2>
-        {/* The life of one request, in the chips the app shows it with. */}
-        <p className="sheet max-w-3xl p-8 font-display text-[clamp(1.25rem,1vw+1rem,1.625rem)] leading-[1.6] font-medium tracking-[-0.01em] text-pretty sm:p-12">
-          Tell a mentor what you need — an essay review, application advice,
-          or subject help. Your request stays{" "}
-          <StateChip state="pending">Pending</StateChip> until they accept.
-          Once you&rsquo;re <StateChip state="accepted">Connected</StateChip>,
-          message them directly and plan your next steps together.
-        </p>
+        <ol className="grid gap-4 md:grid-cols-3">
+          {[
+            [
+              "Find mentors",
+              <>Filter by school, subject, or the help you need.</>,
+            ],
+            [
+              "Send a request",
+              <>
+                Ask for an essay review, application advice, or subject help. It
+                stays <StateChip state="pending">Pending</StateChip> until they
+                accept.
+              </>,
+            ],
+            [
+              "Get matched",
+              <>
+                Once you&rsquo;re{" "}
+                <StateChip state="accepted">Connected</StateChip>, message them
+                directly and plan your next steps together.
+              </>,
+            ],
+          ].map(([title, copy], i) => (
+            <li
+              key={i}
+              className="sheet flex gap-5 p-7 sm:p-8 md:flex-col md:gap-10"
+            >
+              <span
+                aria-hidden="true"
+                className="flex size-11 shrink-0 items-center justify-center rounded-[8px] bg-foreground font-display text-xl font-semibold text-background"
+              >
+                {i + 1}
+              </span>
+              <div>
+                <h3 className="font-display text-xl font-semibold">{title}</h3>
+                <p className="mt-2 text-pretty text-muted-foreground">{copy}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section
