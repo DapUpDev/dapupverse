@@ -34,7 +34,7 @@ function Items({ items, marked }: { items: string[]; marked: string[] }) {
  * `marked` highlights the facts that matched a search.
  */
 const arrow =
-  "absolute top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-foreground backdrop-blur-md transition-[background-color,scale] duration-150 ease-out outline-none hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92]";
+  "absolute top-1/2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/55 text-foreground/80 backdrop-blur-md transition-[background-color,color,scale] duration-150 ease-out outline-none after:absolute after:-inset-2 hover:bg-white/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92]";
 
 export function MentorCard({
   mentor,
@@ -67,7 +67,7 @@ export function MentorCard({
                   className={cn(arrow, "left-2")}
                   onClick={() => onStep(-1)}
                 >
-                  <ChevronLeft className="size-4" strokeWidth={1.75} />
+                  <ChevronLeft className="size-3.5" strokeWidth={1.5} />
                 </button>
                 <button
                   type="button"
@@ -75,7 +75,7 @@ export function MentorCard({
                   className={cn(arrow, "right-2")}
                   onClick={() => onStep(1)}
                 >
-                  <ChevronRight className="size-4" strokeWidth={1.75} />
+                  <ChevronRight className="size-3.5" strokeWidth={1.5} />
                 </button>
               </>
             )}
