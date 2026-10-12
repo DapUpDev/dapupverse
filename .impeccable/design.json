@@ -82,7 +82,7 @@
       "mark": {
         "role": "secondary",
         "displayName": "Highlighter",
-        "canonical": "#81d8d0",
+        "canonical": "#eefdf4",
         "tonalRamp": [
           "oklch(15% 0.17 118)",
           "oklch(27% 0.17 118)",
