@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 /*
  * Written against the NZ Privacy Act 2020 (IPP 3 notice items, IPP 6/7
  * access and correction, IPP 12 overseas storage, Part 5 complaints,
- * notifiable breaches). The [bracketed] legal name and address in "Who we
- * are" must be filled in by the DapUp team before launch.
+ * notifiable breaches). "Who we are" gives an email contact only; add a
+ * postal address or PO Box when DapUp has one (IPP 3 asks for an address).
  */
 export default function PrivacyPage() {
   return (
@@ -31,10 +31,10 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-semibold">Who we are</h2>
 
           <p className="text-muted-foreground">
-            DapUp is run by [legal name of the company or the people running
-            DapUp], [postal address], New Zealand. We are the agency that
+            DapUp is run by Sunny Le in New Zealand. DapUp is an online
+            platform, so the way to reach us is by email. We are the agency that
             collects and holds your information under the Privacy Act 2020. Our
-            privacy officer can be reached at{" "}
+            privacy officer is Sunny Le, reachable at{" "}
             <a
               href="mailto:dapup.dev@gmail.com"
               className="font-medium text-foreground underline"
