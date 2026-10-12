@@ -44,11 +44,16 @@ export function MentorCard({
 }) {
   return (
     <article className="sheet relative flex h-full flex-col p-5 transition-[scale] duration-150 ease-out active:scale-[0.985] hover:shadow-sheet has-focus-visible:shadow-sheet has-focus-visible:ring-2 has-focus-visible:ring-ring">
-      <div className="flex items-start gap-4">
+      <div className={cn("flex items-start gap-4", primary && "flex-col")}>
         <ProfileAvatar
           name={mentor.name}
           avatarUrl={mentor.avatarUrl}
-          className={idPhoto}
+          // The lead card shows its photo at full width, like a product shot.
+          className={
+            primary
+              ? "aspect-square h-auto w-full rounded-[4px] [&_[data-slot=avatar-fallback]]:text-5xl"
+              : idPhoto
+          }
         />
         <div className="min-w-0 pt-0.5">
           <h2 className="font-display text-xl leading-tight font-semibold">
@@ -60,8 +65,7 @@ export function MentorCard({
             </Link>
           </h2>
           <p className="mt-1 text-sm leading-snug text-muted-foreground">
-            {mentor.major} ·{" "}
-            <UniversityMark university={mentor.university} />
+            {mentor.major} · <UniversityMark university={mentor.university} />
             <Items items={[mentor.university]} marked={marked} />
           </p>
         </div>

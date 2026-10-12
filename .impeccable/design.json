@@ -213,6 +213,16 @@
           "oklch(87% 0.01 265)",
           "oklch(95% 0.01 265)"
         ]
+      },
+      "block-dark": {
+        "role": "neutral",
+        "displayName": "Landing block, dark",
+        "canonical": "#0f1218"
+      },
+      "block-warm": {
+        "role": "neutral",
+        "displayName": "Landing block, warm",
+        "canonical": "#f4f3ef"
       }
     },
     "typographyMeta": {

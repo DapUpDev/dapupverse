@@ -152,7 +152,7 @@ export function HomeDesk() {
           >
             <h1
               id="hero-heading"
-              className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-none font-[640] tracking-[-0.035em]"
+              className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-none font-[450] tracking-[-0.03em]"
             >
               Learn from students who&rsquo;ve <mark>already made it.</mark>
             </h1>
@@ -288,53 +288,56 @@ export function HomeDesk() {
 
       <section
         aria-labelledby="network-heading"
-        className="grid items-center gap-10 pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-32"
+        className="bleed mt-20 bg-[var(--block-dark)] py-24 text-white lg:mt-28 lg:py-32"
       >
-        <div>
-          <h2
-            id="network-heading"
-            className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance"
-          >
-            A small, approved group of successful NZ friends who went overseas.
-          </h2>
-          <p className="mt-5 max-w-xl text-lg text-pretty text-muted-foreground">
-            Every DapUp mentor is reviewed and approved before they appear in
-            the directory, so the advice you get comes from students who have
-            genuinely done it.
-          </p>
-        </div>
-        <ul className="grid grid-cols-2 gap-4">
-          {!ready
-            ? [0, 1, 2, 3].map((i) => (
-                <li key={i} className="sheet p-5">
-                  <Skeleton className="size-16 rounded-full" />
-                  <Skeleton className="mt-4 h-4 w-2/3" />
-                  <Skeleton className="mt-2 h-3 w-full" />
-                </li>
-              ))
-            : [...new Set([...pinned, ...mentors])]
-                .slice(0, 4)
-                .map((mentor) => (
-                  <li key={mentor.id}>
-                    <Link
-                      href={`/mentors/${mentor.slug}`}
-                      className="sheet block p-5 transition-[scale] duration-150 ease-out outline-none hover:shadow-sheet active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-6"
-                    >
-                      <ProfileAvatar
-                        name={mentor.name}
-                        avatarUrl={mentor.avatarUrl}
-                        className="size-16 [&_[data-slot=avatar-fallback]]:text-lg"
-                      />
-                      <span className="mt-4 block truncate font-medium">
-                        {mentor.name}
-                      </span>
-                      <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-muted-foreground">
-                        {mentor.major} at {mentor.university}
-                      </span>
-                    </Link>
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
+          <div>
+            <h2
+              id="network-heading"
+              className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-[450] tracking-[-0.025em] text-balance"
+            >
+              A small, approved group of successful NZ friends who went
+              overseas.
+            </h2>
+            <p className="mt-5 max-w-xl text-lg text-pretty text-white/70">
+              Every DapUp mentor is reviewed and approved before they appear in
+              the directory, so the advice you get comes from students who have
+              genuinely done it.
+            </p>
+          </div>
+          <ul className="grid grid-cols-2 gap-4">
+            {!ready
+              ? [0, 1, 2, 3].map((i) => (
+                  <li key={i} className="sheet p-5">
+                    <Skeleton className="size-16 rounded-full" />
+                    <Skeleton className="mt-4 h-4 w-2/3" />
+                    <Skeleton className="mt-2 h-3 w-full" />
                   </li>
-                ))}
-        </ul>
+                ))
+              : [...new Set([...pinned, ...mentors])]
+                  .slice(0, 4)
+                  .map((mentor) => (
+                    <li key={mentor.id}>
+                      <Link
+                        href={`/mentors/${mentor.slug}`}
+                        className="sheet block p-5 text-foreground transition-[scale] duration-150 ease-out outline-none hover:shadow-sheet active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-6"
+                      >
+                        <ProfileAvatar
+                          name={mentor.name}
+                          avatarUrl={mentor.avatarUrl}
+                          className="size-16 [&_[data-slot=avatar-fallback]]:text-lg"
+                        />
+                        <span className="mt-4 block truncate font-medium">
+                          {mentor.name}
+                        </span>
+                        <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-muted-foreground">
+                          {mentor.major} at {mentor.university}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+          </ul>
+        </div>
       </section>
     </>
   );
