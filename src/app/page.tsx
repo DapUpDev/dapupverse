@@ -23,7 +23,7 @@ const STEPS: [string, React.ReactNode][] = [
       key="ask"
       className="flex items-center gap-3 rounded-[6px] bg-muted px-4 py-3 text-sm"
     >
-      <ProfileAvatar name="Mira Chen" avatarUrl={null} className="size-9" />
+      <ProfileAvatar name="Sunny" avatarUrl={null} className="size-9" />
       <span className="font-medium">Essay review</span>
       <StateChip state="pending">Pending</StateChip>
     </span>,
@@ -33,12 +33,12 @@ const STEPS: [string, React.ReactNode][] = [
     <span key="chat" className="flex flex-col items-center gap-3 text-sm">
       <span className="flex -space-x-3">
         <ProfileAvatar
-          name="Jae Park"
+          name="You"
           avatarUrl={null}
           className="size-11 ring-2 ring-white"
         />
         <ProfileAvatar
-          name="Mira Chen"
+          name="Sunny"
           avatarUrl={null}
           className="size-11 ring-2 ring-white"
         />

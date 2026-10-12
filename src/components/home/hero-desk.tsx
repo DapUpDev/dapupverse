@@ -115,9 +115,16 @@ export function HomeDesk() {
   // The fan holds the matches; with none, whoever is here.
   const shown = hits.length > 0 ? hits : mentors;
   const front = shown.find((m) => m.id === frontId);
+  // ponytail: Sunny is pinned to the front by name for now; swap for a
+  // "featured" flag on the mentor when more people need pinning.
+  const pinned = mentors.find((m) => m.name.startsWith("Sunny"));
   const ranked = [
-    ...(front ? [front, ...shown.filter((m) => m !== front)] : shown),
-    ...mentors.filter((m) => !shown.includes(m)),
+    ...new Set([
+      ...(front ? [front] : []),
+      ...(pinned ? [pinned] : []),
+      ...shown,
+      ...mentors,
+    ]),
   ].slice(0, MOUNTED);
   const fanned = Math.min(shown.length, FAN.length);
   // Rendered in a fixed order so a card keeps its element as its rank changes.
@@ -302,26 +309,28 @@ export function HomeDesk() {
                   <Skeleton className="mt-2 h-3 w-full" />
                 </li>
               ))
-            : mentors.slice(0, 4).map((mentor) => (
-                <li key={mentor.id}>
-                  <Link
-                    href={`/mentors/${mentor.slug}`}
-                    className="sheet block p-5 transition-[scale] duration-150 ease-out outline-none hover:shadow-sheet active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-6"
-                  >
-                    <ProfileAvatar
-                      name={mentor.name}
-                      avatarUrl={mentor.avatarUrl}
-                      className="size-16 [&_[data-slot=avatar-fallback]]:text-lg"
-                    />
-                    <span className="mt-4 block truncate font-medium">
-                      {mentor.name}
-                    </span>
-                    <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-muted-foreground">
-                      {mentor.major} at {mentor.university}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+            : [...new Set([...(pinned ? [pinned] : []), ...mentors])]
+                .slice(0, 4)
+                .map((mentor) => (
+                  <li key={mentor.id}>
+                    <Link
+                      href={`/mentors/${mentor.slug}`}
+                      className="sheet block p-5 transition-[scale] duration-150 ease-out outline-none hover:shadow-sheet active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-6"
+                    >
+                      <ProfileAvatar
+                        name={mentor.name}
+                        avatarUrl={mentor.avatarUrl}
+                        className="size-16 [&_[data-slot=avatar-fallback]]:text-lg"
+                      />
+                      <span className="mt-4 block truncate font-medium">
+                        {mentor.name}
+                      </span>
+                      <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-muted-foreground">
+                        {mentor.major} at {mentor.university}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
         </ul>
       </section>
     </>
