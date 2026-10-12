@@ -18,7 +18,7 @@ const DOMAINS: Record<string, string> = {
   MIT: "mit.edu",
   "University of Melbourne": "unimelb.edu.au",
   "ETH Z�rich": "ethz.ch",
-  "National University of Singapore": "nus.edu.sg",
+  "National University of Singapore": "/universities/nus.svg",
   "University of Otago": "otago.ac.nz",
   "Victoria University of Wellington": "wgtn.ac.nz",
   "University of Canterbury": "canterbury.ac.nz",
