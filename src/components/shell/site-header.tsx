@@ -40,7 +40,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="font-display text-xl font-semibold tracking-tight"
+            className="font-display text-xl font-semibold"
           >
             DapUp
           </Link>
@@ -51,7 +51,7 @@ export function SiteHeader() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "relative rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                      "relative rounded-md px-3 py-2 text-sm text-muted-foreground transition-[color,scale] duration-150 ease-out hover:text-foreground active:scale-[0.96]",
                       isActive(item.href) &&
                         "font-medium text-foreground after:absolute after:inset-x-3 after:bottom-1 after:h-[3px] after:rounded-full after:bg-mark",
                     )}
@@ -110,7 +110,7 @@ export function SiteHeader() {
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
-                          "block rounded-md px-3 py-2.5 text-base text-muted-foreground hover:bg-accent hover:text-foreground",
+                          "block rounded-md px-3 py-2.5 text-base text-muted-foreground transition-[scale] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.98]",
                           isActive(item.href) && "font-medium text-foreground",
                         )}
                         aria-current={isActive(item.href) ? "page" : undefined}
@@ -127,7 +127,7 @@ export function SiteHeader() {
                       <Link
                         href="/sign-in"
                         onClick={() => setMobileOpen(false)}
-                        className="block rounded-md px-3 py-2.5 text-base text-muted-foreground hover:bg-accent hover:text-foreground"
+                        className="block rounded-md px-3 py-2.5 text-base text-muted-foreground transition-[scale] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.98]"
                       >
                         Sign in
                       </Link>

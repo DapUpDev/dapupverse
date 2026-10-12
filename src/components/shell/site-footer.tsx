@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer>
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-10">
         <div>
-          <p className="font-display text-lg font-semibold tracking-tight">
+          <p className="font-display text-lg font-semibold">
             DapUp
           </p>
           <p className="mt-1 text-sm text-muted-foreground">

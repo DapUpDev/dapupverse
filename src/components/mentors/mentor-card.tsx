@@ -42,7 +42,7 @@ export function MentorCard({
   marked?: string[];
 }) {
   return (
-    <article className="sheet relative flex h-full flex-col p-5 hover:shadow-sheet has-focus-visible:shadow-sheet has-focus-visible:ring-2 has-focus-visible:ring-ring">
+    <article className="sheet relative flex h-full flex-col p-5 transition-[scale] duration-150 ease-out active:scale-[0.985] hover:shadow-sheet has-focus-visible:shadow-sheet has-focus-visible:ring-2 has-focus-visible:ring-ring">
       <div className="flex items-start gap-4">
         <ProfileAvatar
           name={mentor.name}
@@ -50,7 +50,7 @@ export function MentorCard({
           className={idPhoto}
         />
         <div className="min-w-0 pt-0.5">
-          <h2 className="font-display text-xl leading-tight font-semibold tracking-tight">
+          <h2 className="font-display text-xl leading-tight font-semibold">
             <Link
               href={`/mentors/${mentor.slug}`}
               className="outline-none after:absolute after:inset-0"

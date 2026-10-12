@@ -32,7 +32,7 @@ export function ConnectedStudentPanel({
 
   return (
     <div data-testid="connected-panel" className="flex flex-col gap-4">
-      <p className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
+      <p className="flex items-center gap-2 font-display text-xl font-semibold">
         <CircleCheck
           aria-hidden="true"
           strokeWidth={1.75}

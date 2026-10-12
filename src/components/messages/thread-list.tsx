@@ -109,7 +109,7 @@ export function ThreadList({
           strokeWidth={1.75}
           absoluteStrokeWidth
         />
-        <h2 className="mt-5 font-display text-xl font-semibold tracking-tight">
+        <h2 className="mt-5 font-display text-xl font-semibold">
           No conversations yet
         </h2>
         <p className="mt-2 text-pretty text-muted-foreground">
@@ -137,7 +137,7 @@ export function ThreadList({
                 href={`/app/messages/${item.threadId}`}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3.5 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-accent",
+                  "flex items-center gap-3 px-4 py-3.5 outline-none transition-[background-color,scale] duration-150 ease-out hover:bg-muted active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-accent",
                   active && "bg-accent hover:bg-accent",
                 )}
               >

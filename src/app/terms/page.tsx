@@ -24,7 +24,7 @@ export default function TermsPage() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             Ownership of Site; Agreement to Terms of Use
           </h2>
           <p className="text-muted-foreground">
@@ -59,7 +59,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Content</h2>
+          <h2 className="text-xl font-semibold">Content</h2>
           <p className="text-muted-foreground">
             All text, graphics, user interfaces, visual design, photographs,
             logos, audio, artwork, computer code, and other materials
@@ -81,7 +81,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Who Can Join</h2>
+          <h2 className="text-xl font-semibold">Who Can Join</h2>
           <p className="text-muted-foreground">To use DapUp, you must:</p>
           <ul className="list-disc space-y-1 pl-6 text-muted-foreground">
             <li>Be at least 13 years old</li>
@@ -92,7 +92,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             How to Behave
           </h2>
           <p className="text-muted-foreground">We expect all users to:</p>
@@ -109,7 +109,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             What We&rsquo;re Not Liable For
           </h2>
           <p className="text-muted-foreground">DapUp does not:</p>
@@ -130,7 +130,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Your Privacy</h2>
+          <h2 className="text-xl font-semibold">Your Privacy</h2>
           <p className="text-muted-foreground">
             We value your privacy. Highlights:
           </p>
@@ -145,7 +145,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             Platform Changes
           </h2>
           <p className="text-muted-foreground">
@@ -155,7 +155,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             Account Deletion
           </h2>
           <p className="text-muted-foreground">
@@ -166,7 +166,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold">
             No Guarantees
           </h2>
           <p className="text-muted-foreground">
@@ -176,7 +176,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Jurisdiction</h2>
+          <h2 className="text-xl font-semibold">Jurisdiction</h2>
           <p className="text-muted-foreground">
             These Terms are governed by the laws of New Zealand. Any disputes
             will be handled by New Zealand courts.
@@ -184,7 +184,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Contact Us</h2>
+          <h2 className="text-xl font-semibold">Contact Us</h2>
           <p className="text-muted-foreground">
             Questions? We&rsquo;re here to help.
           </p>

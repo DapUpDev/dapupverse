@@ -277,7 +277,7 @@ export function StudentProfileForm({ profile }: { profile: StudentProfile }) {
                 avatarUrl={profile.avatarUrl}
                 className={idPhoto}
               />
-              <h2 className="font-display text-xl font-semibold tracking-tight">
+              <h2 className="font-display text-xl font-semibold">
                 {profile.fullName}
               </h2>
             </div>
