@@ -69,7 +69,7 @@ export function UniversityMarquee({
   return (
     <div
       aria-label="Universities in the group"
-      className="sheet overflow-hidden py-5 [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)]"
+      className="relative left-1/2 mt-10 w-screen -translate-x-1/2 overflow-hidden bg-[var(--sheet)] py-5 shadow-sheet [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)] lg:mt-14"
     >
       <ul className="marquee flex w-max gap-12 pl-12 hover:[animation-play-state:paused]">
         {row(false)}
