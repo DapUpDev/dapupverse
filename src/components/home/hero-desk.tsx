@@ -1,7 +1,9 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { MentorCard } from "@/components/mentors/mentor-card";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
@@ -115,7 +117,7 @@ export function HomeDesk() {
   });
   // The fan holds the matches; with none, whoever is here.
   const shown = hits.length > 0 ? hits : mentors;
-  const front = shown.find((m) => m.id === frontId);
+  const front = mentors.find((m) => m.id === frontId);
   // ponytail: Sunny then David are pinned to the front by name for now; swap
   // for a "featured" flag on the mentor when more people need pinning.
   const pinned = ["Sunny", "David"].flatMap((first) =>
@@ -125,6 +127,14 @@ export function HomeDesk() {
     ...new Set([...(front ? [front] : []), ...pinned, ...shown, ...mentors]),
   ].slice(0, MOUNTED);
   const fanned = Math.min(shown.length, FAN.length);
+  // The arrows walk the same order the fan is dealt in, front card excluded.
+  const deck = [...new Set([...pinned, ...shown, ...mentors])].slice(
+    0,
+    MOUNTED,
+  );
+  const at = Math.max(deck.indexOf(front ?? deck[0]), 0);
+  const step = (by: number) =>
+    setFrontId(deck[(at + by + deck.length) % deck.length]?.id);
   // Rendered in a fixed order so a card keeps its element as its rank changes.
   const mounted = [...ranked].sort((a, b) => a.id.localeCompare(b.id));
   const marked = [chosenSystem, service, university].filter(Boolean);
@@ -144,7 +154,7 @@ export function HomeDesk() {
 
   return (
     <>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21.5rem] lg:gap-12">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-12">
         <div className="grid min-w-0 gap-6">
           <section
             aria-labelledby="hero-heading"
@@ -281,6 +291,29 @@ export function HomeDesk() {
                   </div>
                 );
               })}
+          {ready && deck.length > 1 && (
+            <div className="order-last flex items-center justify-end gap-2 lg:col-start-1 lg:row-start-2">
+              <span className="mr-1 text-sm text-subtle tabular-nums">
+                {at + 1} / {deck.length}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Previous mentor"
+                onClick={() => step(-1)}
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Next mentor"
+                onClick={() => step(1)}
+              >
+                <ChevronRight />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
