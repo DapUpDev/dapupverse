@@ -27,10 +27,14 @@ const DOMAINS: Record<string, string> = {
   "Harvard University": "harvard.edu",
   "UC Berkeley": "berkeley.edu",
   "University of British Columbia": "ubc.ca",
+  "University of Southern California": "usc.edu",
+  "London School of Economics": "lse.ac.uk",
 };
 
 export function UniversityMark({ university }: { university: string }) {
-  const domain = DOMAINS[university];
+  // "London School of Economics (LSE)" matches without its bracketed short name.
+  const domain =
+    DOMAINS[university] ?? DOMAINS[university.replace(/\s*\(.*\)$/, "")];
   if (!domain) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- tiny third-party icon, not an asset of ours
