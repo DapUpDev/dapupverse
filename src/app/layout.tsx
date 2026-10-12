@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Toaster />
           </MockIdentityBridge>
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
