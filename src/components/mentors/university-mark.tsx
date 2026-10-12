@@ -30,8 +30,9 @@ const DOMAINS: Record<string, string> = {
   "Georgia Tech": "gatech.edu",
   "University of Pennsylvania": "upenn.edu",
   "Brown University": "brown.edu",
-  "University of Southern California": "usc.edu",
-  "London School of Economics": "lse.ac.uk",
+  "University of Southern California": "/universities/usc.png",
+  "London School of Economics": "/universities/lse.png",
+
 };
 
 export function UniversityMark({ university }: { university: string }) {
@@ -42,7 +43,11 @@ export function UniversityMark({ university }: { university: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- tiny third-party icon, not an asset of ours
     <img
-      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+      src={
+        domain.startsWith("/")
+          ? domain
+          : `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+      }
       alt=""
       width={16}
       height={16}
