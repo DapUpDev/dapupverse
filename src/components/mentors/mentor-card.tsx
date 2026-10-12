@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import type { Mentor } from "@/lib/domain/types";
 import { buttonVariants } from "@/components/ui/button";
@@ -33,28 +33,60 @@ function Items({ items, marked }: { items: string[]; marked: string[] }) {
  * `primary` fills the "Ask" affordance on the card that should lead, and
  * `marked` highlights the facts that matched a search.
  */
+const arrow =
+  "absolute top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-foreground backdrop-blur-md transition-[background-color,scale] duration-150 ease-out outline-none hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92]";
+
 export function MentorCard({
   mentor,
   primary = false,
   marked = [],
+  onStep,
 }: {
   mentor: Mentor;
   primary?: boolean;
   marked?: string[];
+  /** With `primary`: draws arrows over the photo that step to another mentor. */
+  onStep?: (by: 1 | -1) => void;
 }) {
   return (
     <article className="sheet relative flex h-full flex-col p-5 transition-[scale] duration-150 ease-out active:scale-[0.985] hover:shadow-sheet has-focus-visible:shadow-sheet has-focus-visible:ring-2 has-focus-visible:ring-ring">
       <div className={cn("flex items-start gap-4", primary && "flex-col")}>
-        <ProfileAvatar
-          name={mentor.name}
-          avatarUrl={mentor.avatarUrl}
-          // The lead card shows its photo at full width, like a product shot.
-          className={
-            primary
-              ? "aspect-[4/3] h-auto w-full rounded-[4px] [&_[data-slot=avatar-fallback]]:text-5xl"
-              : idPhoto
-          }
-        />
+        {primary ? (
+          <div className="relative w-full">
+            <ProfileAvatar
+              name={mentor.name}
+              avatarUrl={mentor.avatarUrl}
+              // The lead card shows its photo at full width, like a product shot.
+              className="aspect-[4/3] h-auto w-full rounded-[4px] [&_[data-slot=avatar-fallback]]:text-5xl"
+            />
+            {onStep && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous mentor"
+                  className={cn(arrow, "left-2")}
+                  onClick={() => onStep(-1)}
+                >
+                  <ChevronLeft className="size-4" strokeWidth={1.75} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next mentor"
+                  className={cn(arrow, "right-2")}
+                  onClick={() => onStep(1)}
+                >
+                  <ChevronRight className="size-4" strokeWidth={1.75} />
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <ProfileAvatar
+            name={mentor.name}
+            avatarUrl={mentor.avatarUrl}
+            className={idPhoto}
+          />
+        )}
         <div className="min-w-0 pt-0.5">
           <h2 className="font-display text-xl leading-tight font-semibold">
             <Link

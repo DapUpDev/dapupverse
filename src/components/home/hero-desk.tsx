@@ -1,9 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { MentorCard } from "@/components/mentors/mentor-card";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
@@ -123,16 +121,16 @@ export function HomeDesk() {
   const pinned = ["Sunny", "David"].flatMap((first) =>
     mentors.filter((m) => m.name.startsWith(first)),
   );
-  const ranked = [
-    ...new Set([...(front ? [front] : []), ...pinned, ...shown, ...mentors]),
-  ].slice(0, MOUNTED);
-  const fanned = Math.min(shown.length, FAN.length);
-  // The arrows walk the same order the fan is dealt in, front card excluded.
+  // One fixed deal: pinned, then the matches, then everyone else. The fan is
+  // that deck turned so the chosen card is on top, so the arrows (and a tap
+  // on a card behind) always move through the deck in order.
   const deck = [...new Set([...pinned, ...shown, ...mentors])].slice(
     0,
     MOUNTED,
   );
   const at = Math.max(deck.indexOf(front ?? deck[0]), 0);
+  const ranked = [...deck.slice(at), ...deck.slice(0, at)];
+  const fanned = Math.min(shown.length, FAN.length);
   const step = (by: number) =>
     setFrontId(deck[(at + by + deck.length) % deck.length]?.id);
   // Rendered in a fixed order so a card keeps its element as its rank changes.
@@ -279,6 +277,7 @@ export function HomeDesk() {
                       mentor={mentor}
                       primary={rank === 0}
                       marked={hits.includes(mentor) ? marked : []}
+                      onStep={rank === 0 && deck.length > 1 ? step : undefined}
                     />
                     {inFan && rank > 0 && (
                       <button
@@ -291,29 +290,6 @@ export function HomeDesk() {
                   </div>
                 );
               })}
-          {ready && deck.length > 1 && (
-            <div className="order-last flex items-center justify-end gap-2 lg:col-start-1 lg:row-start-2">
-              <span className="mr-1 text-sm text-subtle tabular-nums">
-                {at + 1} / {deck.length}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Previous mentor"
-                onClick={() => step(-1)}
-              >
-                <ChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Next mentor"
-                onClick={() => step(1)}
-              >
-                <ChevronRight />
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
