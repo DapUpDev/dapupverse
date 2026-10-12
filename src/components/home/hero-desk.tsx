@@ -292,7 +292,7 @@ export function HomeDesk() {
                 );
               })}
           {ready && deck.length > 1 && (
-            <div className="flex items-center justify-end gap-2 lg:col-start-1 lg:row-start-2">
+            <div className="order-last flex items-center justify-end gap-2 lg:col-start-1 lg:row-start-2">
               <span className="mr-1 text-sm text-subtle tabular-nums">
                 {at + 1} / {deck.length}
               </span>
