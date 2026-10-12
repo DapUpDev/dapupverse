@@ -55,20 +55,18 @@ export default function HomePage() {
 
       <section
         aria-labelledby="how-heading"
-        className="bleed bg-[var(--block-warm)] py-24 lg:py-32"
+        className="bleed -mt-6 bg-[var(--block-warm)] py-24 lg:py-32"
       >
         <h2
           id="how-heading"
-          className="mx-auto max-w-7xl px-4 font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-[450] tracking-[-0.025em] sm:px-6 lg:px-10"
+          className="mx-auto max-w-7xl px-4 font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-normal tracking-[-0.025em] sm:px-6 lg:px-10"
         >
           How DapUp works
         </h2>
         <ol className="mx-auto mt-10 grid max-w-7xl gap-4 px-4 sm:px-6 md:grid-cols-3 lg:px-10">
           {STEPS.map(([line, scene], i) => (
             <li key={i} className="sheet p-6 sm:p-7">
-              <p className="font-display text-sm font-medium tracking-[0.08em] text-subtle uppercase">
-                Step {i + 1}
-              </p>
+              <p className="label-caps text-subtle">Step {i + 1}</p>
               <p className="mt-1.5 font-medium">{line}</p>
               <div
                 aria-hidden="true"
@@ -84,12 +82,12 @@ export default function HomePage() {
       <section
         aria-labelledby="mission-heading"
         id="mission"
-        className="bleed scroll-mt-24 bg-[var(--block-dark)] py-24 text-white lg:py-32"
+        className="bleed -mt-6 scroll-mt-24 bg-[var(--block-dark)] py-24 text-white lg:py-32"
       >
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-10">
           <h2
             id="mission-heading"
-            className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-[450] tracking-[-0.025em]"
+            className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-normal tracking-[-0.025em]"
           >
             Why us?
           </h2>

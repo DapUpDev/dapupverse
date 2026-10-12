@@ -186,7 +186,7 @@ export function MentorProfileView({ slug }: { slug: string }) {
         >
           <h2
             id="mentor-about"
-            className="font-display text-2xl font-[450] tracking-[-0.02em]"
+            className="font-display text-2xl font-normal tracking-[-0.02em]"
           >
             About
           </h2>

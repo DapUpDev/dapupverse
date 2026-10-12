@@ -2,14 +2,14 @@
 name: DapUp
 description: One calm desk where a student's request, the mentors' cards and the next step lie on white paper.
 colors:
-  desk: "#eceef2"
+  desk: "#faf8f5"
   sheet: "#ffffff"
   ink: "#16181d"
   ink-2: "#454a54"
   ink-3: "#5e6470"
   mark: "#b6eaff"
   block-dark: "#0f1218"
-  block-warm: "#f4f3ef"
+  block-warm: "#f1ede6"
   destructive: "#b42318"
   secondary: "#e2e5ea"
   accent: "#e9ebef"
@@ -20,24 +20,24 @@ colors:
   overlay: "rgb(22 24 29 / 0.38)"
 typography:
   display:
-    fontFamily: "Bricolage Grotesque, sans-serif"
+    fontFamily: "EB Garamond, serif"
     fontSize: "clamp(2.6rem, 4.6vw + 0.6rem, 5rem)"
-    fontWeight: 450
+    fontWeight: 400
     lineHeight: 1
     letterSpacing: "-0.03em"
   headline:
-    fontFamily: "Bricolage Grotesque, sans-serif"
+    fontFamily: "EB Garamond, serif"
     fontSize: "3rem"
-    fontWeight: 450
+    fontWeight: 400
     lineHeight: 1.05
     letterSpacing: "-0.025em"
   section:
-    fontFamily: "Bricolage Grotesque, sans-serif"
+    fontFamily: "EB Garamond, serif"
     fontSize: "1.5rem"
-    fontWeight: 450
+    fontWeight: 400
     letterSpacing: "-0.02em"
   title:
-    fontFamily: "Bricolage Grotesque, sans-serif"
+    fontFamily: "EB Garamond, serif"
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.25
@@ -187,7 +187,7 @@ components:
 
 DapUp is the desk a mentor sits down at. The page is the desk surface, a cool pale grey. Everything a person reads or operates lies on white paper sheets with a small radius and a soft shadow. The ink is graphite. There is one highlighter, and it only marks what is chosen, matched or done. The result is calm, soft and precise: a companion to the essays open in the next tab, never corporate software and never a show.
 
-The system is light only by design; there is no dark theme, and `dark:` styles are tied to a class that is never set. Density is moderate: generous space between groups, tight space inside them, and reading text held to a 65 to 75 character measure. Type does the structural work. Bricolage Grotesque sets headlines and names; Geist sets everything that is read or operated. Colour is almost absent, which is what lets the highlighter and the single red mean something.
+The system is light only by design; there is no dark theme, and `dark:` styles are tied to a class that is never set. Density is moderate: generous space between groups, tight space inside them, and reading text held to a 65 to 75 character measure. Type does the structural work. EB Garamond, an editorial serif at regular weight, sets headlines and names; Geist sets everything that is read or operated. Colour is almost absent, which is what lets the highlighter and the single red mean something.
 
 Motion is physical and brief. Things move by transform and opacity only, from where they already are, on one critically damped ease (`cubic-bezier(0.16, 1, 0.3, 1)`). A control answers on press, not on release (buttons scale to 0.97 in 150ms). Popups grow from their trigger (scale 0.95 to 1, 150ms) and leave the way they came; the dialog does the same from 0.97 in 200ms; the mobile drawer slides in from the right in 300ms; a sheet that travels, like a mentor card coming to the front of the fan, takes 600ms. Nothing animates in on load and nothing reveals on scroll. A control's colour and focus ring may ease over 150ms; a sheet's shadow changes at once. `prefers-reduced-motion` collapses every transition and animation globally, and `prefers-reduced-transparency` makes the header opaque.
 
@@ -207,13 +207,13 @@ A near-monochrome cool palette: pale desk, white paper, graphite ink, with one s
 
 ### Secondary
 - **Highlighter** (`mark`, #b6eaff): the only chromatic voice besides red. It marks what is chosen (the fill-in blanks, a filter chip's value, the checked item in a menu or select, the underline under the current nav item, a ticked choice in a form), what matched (the facts on a mentor card that answered the search) and what is done (the Connected and "Profile complete" chips, the ticked ring on "inbox zero", the success toast's tick). Text on it is always ink. It is also the selection colour.
-- **Landing blocks** (`block-dark` #0f1218, `block-warm` #f4f3ef): full-width section backgrounds on the landing page only. Near-black carries the group and "Why us" sections, with white text and white sheets on it; warm off-white carries "How DapUp works". They are never a state colour, never a control, never used inside the app.
+- **Landing blocks** (`block-dark` #0f1218, `block-warm` #f1ede6): full-width section backgrounds on the landing page only. Near-black carries the group and "Why us" sections, with white text and white sheets on it; warm off-white carries "How DapUp works". They are never a state colour, never a control, never used inside the app.
 
 ### Tertiary
 - **Red** (`destructive`, #b42318): errors (field errors, invalid field edges, the error toast icon), destructive actions (block, disconnect, remove: red text on paper that fills red on hover) and every unread count (the total beside Messages in the header, the count on a conversation row). Nothing else.
 
 ### Neutral
-- **Desk** (`desk`, #eceef2): the page ground. Also the translucent header (80% with blur) and the scrollbar track.
+- **Desk** (`desk`, #faf8f5): the page ground, a warm off-white like a Hermès or Dior page rather than pure white. Also the translucent header (80% with blur) and the scrollbar track.
 - **Paper** (`sheet`, #ffffff): every sheet, popup, field and outline button. Also the text on ink and on red.
 - **Ink 2** (`ink-2`, #454a54): secondary text: ledes, descriptions, inactive nav links.
 - **Ink 3** (`ink-3`, #5e6470): meta text: timestamps, counts, helper text, placeholders, definition terms. Nothing readable goes lighter than this.
@@ -228,7 +228,7 @@ A near-monochrome cool palette: pale desk, white paper, graphite ink, with one s
 
 **The One Red Rule.** Red means an error, a destructive action, or an unread count, wherever that count appears. If something is merely important, it is ink.
 
-**The Light Headline Rule.** Everything set in Bricolage at 24px and above (display, headline, section) is weight 450 with tracking that tightens as size grows (-0.02em at 24px, -0.025em at 48px, -0.03em at the hero). Only the 20px title role (names, card titles, document sections) is 600, with -0.01em. Button labels are never smaller than 14px. The same role never changes weight or family between the landing page and the app.
+**The Light Headline Rule.** Everything set in EB Garamond at 24px and above (display, headline, section) is weight 400 with near-normal tracking (-0.01em); a serif is never tightened the way a grotesque is. Only the 20px title role (names, card titles, document sections) is 600. Button labels are never smaller than 14px. Small labels (nav, eyebrows, the strip's short names) use `label-caps`: Geist 500 at 11px, uppercase, 0.14em tracking. The same role never changes weight or family between the landing page and the app.
 
 **The Label And Mark Rule.** State is never colour alone. Every state carries a text label and a drawn mark: a dashed ring for pending, a ticked ring for connected, a struck ring for ended or read-only, a barred circle for blocked.
 

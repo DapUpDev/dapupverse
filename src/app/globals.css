@@ -47,7 +47,7 @@
  * See DESIGN.md for the rules these tokens serve.
  */
 :root {
-  --desk: #eceef2;
+  --desk: #faf8f5;
   --sheet: #ffffff;
   --ink: #16181d;
   --ink-2: #454a54;
@@ -55,7 +55,7 @@
   --mark: #b6eaff;
   /* Landing-page blocks only: never a state colour. */
   --block-dark: #0f1218;
-  --block-warm: #f4f3ef;
+  --block-warm: #f1ede6;
 
   --background: var(--desk);
   --foreground: var(--ink);
@@ -130,7 +130,7 @@
   @apply mx-auto w-full max-w-7xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 lg:px-10;
 }
 @utility page-title {
-  @apply font-display text-4xl leading-[1.05] font-[450] tracking-[-0.025em] sm:text-5xl;
+  @apply font-display text-4xl leading-[1.05] font-normal tracking-[-0.01em] sm:text-5xl;
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -169,8 +169,14 @@
 }
 
 /* A landing-page block: as wide as the window, whatever the page's width. */
+/* Small spaced capitals: nav, eyebrows, short labels. The luxury-house habit. */
+@utility label-caps {
+  @apply text-[0.6875rem] font-medium tracking-[0.14em] uppercase;
+}
+
 @utility bleed {
   position: relative;
+  border-radius: 24px 24px 0 0;
   left: 50%;
   width: 100vw;
   translate: -50% 0;

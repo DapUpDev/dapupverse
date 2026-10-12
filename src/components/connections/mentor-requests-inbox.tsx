@@ -108,7 +108,7 @@ export function RequestGroup({
     <section aria-labelledby={id}>
       <h2
         id={id}
-        className="font-display text-2xl font-[450] tracking-[-0.02em]"
+        className="font-display text-2xl font-normal tracking-[-0.02em]"
       >
         {title}
       </h2>
