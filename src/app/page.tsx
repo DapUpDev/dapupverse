@@ -1,5 +1,52 @@
 import { StateChip } from "@/components/connections/mentor-requests-inbox";
 import { HomeDesk } from "@/components/home/hero-desk";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
+
+/* Each step is one line and one small drawn scene, in the app's own parts. */
+const STEPS: [string, React.ReactNode][] = [
+  [
+    "Filter by school, subject or help.",
+    <span key="find" className="flex flex-wrap justify-center gap-2 text-sm">
+      {["IB", "essay review", "any university"].map((w) => (
+        <span
+          key={w}
+          className="rounded-[4px] bg-mark px-2 py-0.5 leading-[1.3]"
+        >
+          {w}
+        </span>
+      ))}
+    </span>,
+  ],
+  [
+    "One request. Pending until they accept.",
+    <span
+      key="ask"
+      className="flex items-center gap-3 rounded-[6px] bg-muted px-4 py-3 text-sm"
+    >
+      <ProfileAvatar name="Mira Chen" avatarUrl={null} className="size-9" />
+      <span className="font-medium">Essay review</span>
+      <StateChip state="pending">Pending</StateChip>
+    </span>,
+  ],
+  [
+    "Connected. Message them directly.",
+    <span key="chat" className="flex flex-col items-center gap-3 text-sm">
+      <span className="flex -space-x-3">
+        <ProfileAvatar
+          name="Jae Park"
+          avatarUrl={null}
+          className="size-11 ring-2 ring-white"
+        />
+        <ProfileAvatar
+          name="Mira Chen"
+          avatarUrl={null}
+          className="size-11 ring-2 ring-white"
+        />
+      </span>
+      <StateChip state="accepted">Connected</StateChip>
+    </span>,
+  ],
+];
 
 export default function HomePage() {
   return (
@@ -11,42 +58,20 @@ export default function HomePage() {
           How DapUp works
         </h2>
         <ol className="grid gap-4 md:grid-cols-3">
-          {[
-            [
-              "Find mentors",
-              <>Filter by school, subject, or the help you need.</>,
-            ],
-            [
-              "Send a request",
-              <>
-                Ask for an essay review, application advice, or subject help. It
-                stays <StateChip state="pending">Pending</StateChip> until they
-                accept.
-              </>,
-            ],
-            [
-              "Get matched",
-              <>
-                Once you&rsquo;re{" "}
-                <StateChip state="accepted">Connected</StateChip>, message them
-                directly and plan your next steps together.
-              </>,
-            ],
-          ].map(([title, copy], i) => (
-            <li
-              key={i}
-              className="sheet flex gap-5 p-7 sm:p-8 md:flex-col md:gap-10"
-            >
-              <span
+          {STEPS.map(([line, scene], i) => (
+            <li key={i} className="sheet flex flex-col p-6 sm:p-7">
+              <div
                 aria-hidden="true"
-                className="flex size-11 shrink-0 items-center justify-center rounded-[8px] bg-foreground font-display text-xl font-semibold text-background"
+                className="flex h-36 items-center justify-center"
               >
-                {i + 1}
-              </span>
-              <div>
-                <h3 className="font-display text-xl font-semibold">{title}</h3>
-                <p className="mt-2 text-pretty text-muted-foreground">{copy}</p>
+                {scene}
               </div>
+              <p className="mt-5 flex items-baseline gap-3 font-medium">
+                <span className="font-display text-sm text-subtle tabular-nums">
+                  0{i + 1}
+                </span>
+                {line}
+              </p>
             </li>
           ))}
         </ol>
