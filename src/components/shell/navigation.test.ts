@@ -7,7 +7,7 @@ describe("navItemsForIdentity", () => {
     const labels = navItemsForIdentity(identityForRole("visitor")).map(
       (i) => i.label,
     );
-    expect(labels).toEqual(["Home", "Find Mentors", "Mission", "Terms"]);
+    expect(labels).toEqual(["Home", "Find Mentors", "Why us", "Terms"]);
   });
 
   it("gives students their navigation without Requests or Admin", () => {

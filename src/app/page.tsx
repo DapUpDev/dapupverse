@@ -82,12 +82,12 @@ export default function HomePage() {
         id="mission"
         className="scroll-mt-24 pt-24 lg:pt-32"
       >
-        <div className="sheet max-w-2xl p-8 sm:p-12 lg:ml-auto">
+        <div className="sheet mx-auto max-w-2xl p-8 sm:p-12">
           <h2
             id="mission-heading"
             className="font-display text-3xl font-semibold tracking-[-0.025em] sm:text-4xl"
           >
-            Our Founding Mission...
+            Why us?
           </h2>
           <div className="mt-7 space-y-4 text-lg text-pretty text-muted-foreground">
             <p>
