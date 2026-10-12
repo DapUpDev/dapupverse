@@ -60,7 +60,7 @@ export function UniversityMarquee({
         aria-hidden={hidden || undefined}
         className="flex shrink-0 flex-col items-center gap-2 whitespace-nowrap"
       >
-        <UniversityMark university={name} className="size-10" />
+        <UniversityMark university={name} className="h-10 w-auto" />
         <span className="text-xs font-medium text-muted-foreground">
           {short(name)}
         </span>

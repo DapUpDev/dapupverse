@@ -38,7 +38,7 @@ const DOMAINS: Record<string, string> = {
 
 export function UniversityMark({
   university,
-  className = "mr-1.5 size-4 align-[-3px]",
+  className = "mr-1.5 h-4 w-auto align-[-3px]",
 }: {
   university: string;
   className?: string;
