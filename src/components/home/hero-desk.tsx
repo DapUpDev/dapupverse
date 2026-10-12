@@ -272,45 +272,42 @@ export function HomeDesk() {
         </div>
       </div>
 
-      <section
-        aria-labelledby="network-heading"
-        className="grid items-center gap-10 pt-24 lg:grid-cols-2 lg:gap-16 lg:pt-32"
-      >
-        <div>
-          <h2
-            id="network-heading"
-            className="font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-semibold tracking-[-0.03em]"
-          >
-            A small, approved group&nbsp;— not a marketplace.
-          </h2>
-          <p className="mt-5 max-w-xl text-lg text-pretty text-muted-foreground">
-            Every DapUp mentor is reviewed and approved before they appear in
-            the directory, so the advice you get comes from students who have
-            genuinely done it.
-          </p>
-        </div>
-        <ul className="grid grid-cols-3 gap-x-5 gap-y-6 sm:grid-cols-6 lg:grid-cols-3 lg:justify-self-end">
+      <section aria-labelledby="network-heading" className="pt-24 lg:pt-32">
+        <h2
+          id="network-heading"
+          className="max-w-3xl font-display text-[clamp(1.9rem,2.4vw+1rem,3rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance"
+        >
+          A small, approved group of successful NZ friends who went overseas.
+        </h2>
+        <p className="mt-5 max-w-xl text-lg text-pretty text-muted-foreground">
+          Every DapUp mentor is reviewed and approved before they appear in
+          the directory, so the advice you get comes from students who have
+          genuinely done it.
+        </p>
+        <ul className="-mx-4 mt-10 flex snap-x gap-6 overflow-x-auto px-4 pb-2 [mask-image:linear-gradient(to_right,transparent,black_1rem,black_calc(100%-1rem),transparent)] [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
           {!ready
-            ? [0, 1].map((i) => (
+            ? [0, 1, 2].map((i) => (
                 <li key={i}>
-                  <Skeleton className="size-24 rounded-[4px]" />
+                  <Skeleton className="size-24 rounded-full sm:size-32" />
                 </li>
               ))
-            : mentors.slice(0, 6).map((mentor) => (
-                <li key={mentor.id} className="w-24 max-w-full">
+            : mentors.slice(0, 8).map((mentor) => (
+                <li key={mentor.id} className="w-24 shrink-0 snap-start sm:w-32">
                   <Link
                     href={`/mentors/${mentor.slug}`}
-                    className="group block rounded-[4px] transition-[scale] duration-150 ease-out outline-none active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+                    className="group block rounded-[4px] text-center outline-none transition-[scale] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background active:scale-[0.95]"
                   >
-                    <ProfileAvatar
-                      name={mentor.name}
-                      avatarUrl={mentor.avatarUrl}
-                      className="size-24 rounded-[4px] shadow-paper [&_[data-slot=avatar-fallback]]:text-xl"
-                    />
-                    <span className="mt-2 block text-sm leading-tight font-medium group-hover:underline">
-                      {mentor.name}
+                    <span className="block aspect-square rounded-full p-[3px] ring-[2.5px] ring-mark">
+                      <ProfileAvatar
+                        name={mentor.name}
+                        avatarUrl={mentor.avatarUrl}
+                        className="size-full [&_[data-slot=avatar-fallback]]:text-xl"
+                      />
                     </span>
-                    <span className="mt-0.5 block text-xs leading-snug text-subtle">
+                    <span className="mt-2 block truncate text-sm leading-tight font-medium group-hover:underline">
+                      {mentor.name.split(" ")[0]}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs leading-snug text-subtle">
                       {mentor.university}
                     </span>
                   </Link>
