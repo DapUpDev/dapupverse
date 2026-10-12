@@ -163,3 +163,13 @@
     backdrop-filter: none;
   }
 }
+
+/* A ribbon that slides by half its width: the content is drawn twice. */
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+@utility marquee {
+  animation: marquee 45s linear infinite;
+}

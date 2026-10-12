@@ -19,6 +19,7 @@ import {
   type EducationSystem,
   type ServiceType,
 } from "@/lib/domain/types";
+import { UniversityMarquee } from "@/components/home/university-marquee";
 import { mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
 import { cn } from "@/lib/utils";
@@ -149,7 +150,7 @@ export function HomeDesk() {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21.5rem] lg:gap-12">
         <section
           aria-labelledby="hero-heading"
-          className="sheet p-7 shadow-sheet sm:p-10 lg:p-16"
+          className="sheet min-w-0 p-7 shadow-sheet sm:p-10 lg:p-16"
         >
           <h1
             id="hero-heading"
@@ -236,6 +237,7 @@ export function HomeDesk() {
               : ""}
             AP, IB and A Levels.
           </p>
+          <UniversityMarquee universities={universities} />
         </section>
 
         <div

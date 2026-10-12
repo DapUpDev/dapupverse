@@ -27,6 +27,9 @@ const DOMAINS: Record<string, string> = {
   "Harvard University": "harvard.edu",
   "UC Berkeley": "berkeley.edu",
   "University of British Columbia": "ubc.ca",
+  "Georgia Tech": "gatech.edu",
+  "University of Pennsylvania": "upenn.edu",
+  "Brown University": "brown.edu",
 };
 
 export function UniversityMark({ university }: { university: string }) {
