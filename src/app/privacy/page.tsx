@@ -73,7 +73,8 @@ export default function PrivacyPage() {
           <p className="text-muted-foreground">
             Our hosting and sign-in providers also keep standard server logs,
             which include your IP address, browser and device type and when you
-            signed in. We do not run analytics that track which pages you visit.
+            signed in. We also use Vercel Web Analytics to count visits and
+            page views. It does not use cookies and does not identify you.
           </p>
         </section>
 
