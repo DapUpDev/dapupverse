@@ -5,6 +5,7 @@ import type { Mentor } from "@/lib/domain/types";
 import { buttonVariants } from "@/components/ui/button";
 import { idPhoto, ProfileAvatar } from "@/components/profile/profile-avatar";
 import { cn } from "@/lib/utils";
+import { UniversityMark } from "@/components/mentors/university-mark";
 
 function Fact({ term, children }: { term: string; children: ReactNode }) {
   return (
@@ -60,6 +61,7 @@ export function MentorCard({
           </h2>
           <p className="mt-1 text-sm leading-snug text-muted-foreground">
             {mentor.major} ·{" "}
+            <UniversityMark university={mentor.university} />
             <Items items={[mentor.university]} marked={marked} />
           </p>
         </div>

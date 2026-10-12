@@ -59,19 +59,17 @@ export default function HomePage() {
         </h2>
         <ol className="grid gap-4 md:grid-cols-3">
           {STEPS.map(([line, scene], i) => (
-            <li key={i} className="sheet flex flex-col p-6 sm:p-7">
+            <li key={i} className="sheet p-6 sm:p-7">
+              <p className="font-display text-sm font-medium tracking-[0.08em] text-subtle uppercase">
+                Step {i + 1}
+              </p>
+              <p className="mt-1.5 font-medium">{line}</p>
               <div
                 aria-hidden="true"
-                className="flex h-36 items-center justify-center"
+                className="mt-6 flex h-28 items-center justify-center"
               >
                 {scene}
               </div>
-              <p className="mt-5 flex items-baseline gap-3 font-medium">
-                <span className="font-display text-sm text-subtle tabular-nums">
-                  0{i + 1}
-                </span>
-                {line}
-              </p>
             </li>
           ))}
         </ol>
