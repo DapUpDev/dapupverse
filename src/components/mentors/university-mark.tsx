@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 /**
  * A small university mark beside the name. Loaded from Google's favicon
  * service so no logo files are stored here; the mark is only ever shown
@@ -30,20 +32,34 @@ const DOMAINS: Record<string, string> = {
   "Georgia Tech": "gatech.edu",
   "University of Pennsylvania": "upenn.edu",
   "Brown University": "brown.edu",
+  "University of Southern California": "/universities/usc.png",
+  "London School of Economics": "/universities/lse.png",
 };
 
-export function UniversityMark({ university }: { university: string }) {
-  const domain = DOMAINS[university];
+export function UniversityMark({
+  university,
+  className = "mr-1.5 size-4 align-[-3px]",
+}: {
+  university: string;
+  className?: string;
+}) {
+  // "London School of Economics (LSE)" matches without its bracketed short name.
+  const domain =
+    DOMAINS[university] ?? DOMAINS[university.replace(/\s*\(.*\)$/, "")];
   if (!domain) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- tiny third-party icon, not an asset of ours
     <img
-      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+      src={
+        domain.startsWith("/")
+          ? domain
+          : `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+      }
       alt=""
       width={16}
       height={16}
       loading="lazy"
-      className="mr-1.5 inline-block size-4 rounded-[3px] align-[-3px]"
+      className={cn("inline-block rounded-[3px] object-contain", className)}
       onError={(e) => (e.currentTarget.hidden = true)}
     />
   );

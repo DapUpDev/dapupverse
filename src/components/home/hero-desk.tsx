@@ -148,97 +148,100 @@ export function HomeDesk() {
   return (
     <>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21.5rem] lg:gap-12">
-        <section
-          aria-labelledby="hero-heading"
-          className="sheet min-w-0 p-7 shadow-sheet sm:p-10 lg:p-16"
-        >
-          <h1
-            id="hero-heading"
-            className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-none font-[640] tracking-[-0.035em]"
+        <div className="grid min-w-0 gap-6">
+          <section
+            aria-labelledby="hero-heading"
+            className="sheet min-w-0 p-7 shadow-sheet sm:p-10 lg:p-16"
           >
-            Learn from students who&rsquo;ve <mark>already made it.</mark>
-          </h1>
-          <p className="mt-6 max-w-[34rem] text-lg text-pretty text-muted-foreground sm:text-[1.1875rem]">
-            DapUp connects you with mentors who sat the same exams, wrote the
-            same applications, and got into the places you&rsquo;re aiming for.
-          </p>
-
-          <div
-            role="group"
-            aria-label="Find your mentor"
-            className="mt-8 border-t border-border pt-7 lg:mt-11 lg:pt-9"
-          >
-            <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.75] font-medium tracking-[-0.015em]">
-              I&rsquo;m on{" "}
-              <Blank
-                label="Your exam system"
-                value={chosenSystem}
-                onChange={choose(setSystem)}
-                options={EDUCATION_SYSTEMS.map((s) => [s, s])}
-              />{" "}
-              and want{" "}
-              <Blank
-                label="What you want help with"
-                value={service}
-                onChange={choose(setService)}
-                options={SERVICE_TYPES.map((s) => [s, s.toLowerCase()])}
-              />{" "}
-              from a student at{" "}
-              <Blank
-                label="University"
-                value={university}
-                onChange={choose(setUniversity)}
-                options={[
-                  ["", "any university"],
-                  ...universities.map((u) => [u, u] as const),
-                ]}
-              />
-              .
-            </p>
-            <p
-              role="status"
-              aria-live="polite"
-              className="mt-4 min-h-6 text-muted-foreground"
+            <h1
+              id="hero-heading"
+              className="font-display text-[clamp(2.6rem,4.6vw+0.6rem,5rem)] leading-none font-[640] tracking-[-0.035em]"
             >
-              {!ready ? (
-                "Finding mentors…"
-              ) : mentors.length === 0 ? (
-                "Mentors are being approved. Check back soon."
-              ) : (
-                <>
-                  {hits.length === 0 ? (
-                    "No mentor matches that yet. Here is everyone who is here."
-                  ) : (
-                    <>
-                      <strong className="font-semibold text-foreground">
-                        {hits.length === 1
-                          ? hits[0].name.split(" ")[0]
-                          : plural(hits.length, "mentor", "mentors")}
-                      </strong>{" "}
-                      can help with that.
-                    </>
-                  )}{" "}
-                  <Link
-                    href={hits.length > 1 ? directory : "/mentors"}
-                    className="text-foreground underline"
-                  >
-                    {hits.length > 1
-                      ? `See all ${hits.length}`
-                      : "Browse all mentors"}
-                  </Link>
-                </>
-              )}
+              Learn from students who&rsquo;ve <mark>already made it.</mark>
+            </h1>
+            <p className="mt-6 max-w-[34rem] text-lg text-pretty text-muted-foreground sm:text-[1.1875rem]">
+              DapUp connects you with mentors who sat the same exams, wrote the
+              same applications, and got into the places you&rsquo;re aiming
+              for.
             </p>
-          </div>
 
-          <p className="mt-7 text-sm text-subtle tabular-nums">
-            {ready && mentors.length > 0
-              ? `${plural(mentors.length, "mentor", "mentors")} · ${plural(universities.length, "university", "universities")} · `
-              : ""}
-            AP, IB and A Levels.
-          </p>
+            <div
+              role="group"
+              aria-label="Find your mentor"
+              className="mt-8 border-t border-border pt-7 lg:mt-11 lg:pt-9"
+            >
+              <p className="font-display text-[clamp(1.3rem,1.3vw+0.9rem,1.75rem)] leading-[1.75] font-medium tracking-[-0.015em]">
+                I&rsquo;m on{" "}
+                <Blank
+                  label="Your exam system"
+                  value={chosenSystem}
+                  onChange={choose(setSystem)}
+                  options={EDUCATION_SYSTEMS.map((s) => [s, s])}
+                />{" "}
+                and want{" "}
+                <Blank
+                  label="What you want help with"
+                  value={service}
+                  onChange={choose(setService)}
+                  options={SERVICE_TYPES.map((s) => [s, s.toLowerCase()])}
+                />{" "}
+                from a student at{" "}
+                <Blank
+                  label="University"
+                  value={university}
+                  onChange={choose(setUniversity)}
+                  options={[
+                    ["", "any university"],
+                    ...universities.map((u) => [u, u] as const),
+                  ]}
+                />
+                .
+              </p>
+              <p
+                role="status"
+                aria-live="polite"
+                className="mt-4 min-h-6 text-muted-foreground"
+              >
+                {!ready ? (
+                  "Finding mentors…"
+                ) : mentors.length === 0 ? (
+                  "Mentors are being approved. Check back soon."
+                ) : (
+                  <>
+                    {hits.length === 0 ? (
+                      "No mentor matches that yet. Here is everyone who is here."
+                    ) : (
+                      <>
+                        <strong className="font-semibold text-foreground">
+                          {hits.length === 1
+                            ? hits[0].name.split(" ")[0]
+                            : plural(hits.length, "mentor", "mentors")}
+                        </strong>{" "}
+                        can help with that.
+                      </>
+                    )}{" "}
+                    <Link
+                      href={hits.length > 1 ? directory : "/mentors"}
+                      className="text-foreground underline"
+                    >
+                      {hits.length > 1
+                        ? `See all ${hits.length}`
+                        : "Browse all mentors"}
+                    </Link>
+                  </>
+                )}
+              </p>
+            </div>
+
+            <p className="mt-7 text-sm text-subtle tabular-nums">
+              {ready && mentors.length > 0
+                ? `${plural(mentors.length, "mentor", "mentors")} · ${plural(universities.length, "university", "universities")} · `
+                : ""}
+              AP, IB and A Levels.
+            </p>
+          </section>
           <UniversityMarquee universities={universities} />
-        </section>
+        </div>
 
         <div
           aria-label="Mentors"
