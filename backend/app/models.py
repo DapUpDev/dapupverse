@@ -9,7 +9,7 @@ from enum import StrEnum
 
 import uuid
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, String, Text, func, text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, SmallInteger, String, Text, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -160,6 +160,12 @@ class CheckIn(Base):
     status: Mapped[str] = mapped_column(String(20), server_default="sent")
     sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     reminded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # The student's answer (app/checkins.py routes); empty until answered.
+    progress: Mapped[str] = mapped_column(Text, server_default="")
+    blockers: Mapped[str] = mapped_column(Text, server_default="")
+    confidence: Mapped[int | None] = mapped_column(SmallInteger)
+    help_wanted: Mapped[str] = mapped_column(Text, server_default="")
+    answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class Document(Base):
@@ -174,3 +180,49 @@ class Document(Base):
     s3_key: Mapped[str] = mapped_column(Text, unique=True)
     kind: Mapped[str] = mapped_column(String(40))
     ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Task(Base):
+    """A student's task, optionally with a deadline. Read by the triage agent
+    (open = not done). Filled by the app later and by importing old sheets."""
+
+    __tablename__ = "tasks"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(Text)
+    due_on: Mapped[date | None] = mapped_column(Date)
+    done: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Meeting(Base):
+    """A held mentor meeting and its notes; the triage agent reads the last one."""
+
+    __tablename__ = "meetings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    mentor_id: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id", ondelete="SET NULL"))
+    held_on: Mapped[date] = mapped_column(Date)
+    minutes: Mapped[int | None] = mapped_column()
+    notes: Mapped[str] = mapped_column(Text, server_default="")
+
+
+class TriageDecision(Base):
+    """The triage agent's answer for one check-in (app/triage.py)."""
+
+    __tablename__ = "triage_decisions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    check_in_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("check_ins.id", ondelete="CASCADE"), unique=True)
+    status: Mapped[str] = mapped_column(String(20))  # decided | needs_mentor
+    decision: Mapped[str | None] = mapped_column(String(20))  # NO_MEETING | 15 | 30 | 45 | 60
+    reason: Mapped[str] = mapped_column(Text, server_default="")
+    blockers: Mapped[str] = mapped_column(Text, server_default="")
+    agenda: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
+    error: Mapped[str] = mapped_column(Text, server_default="")
+    model: Mapped[str] = mapped_column(String(120), server_default="")
+    attempts: Mapped[int] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
