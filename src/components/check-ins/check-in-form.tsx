@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiBaseUrl, apiFetch } from "@/lib/api/client";
+import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -50,8 +51,13 @@ export function CheckInForm({ checkInId }: { checkInId: string }) {
     apiBaseUrl() ? { state: "loading" } : { state: "missing" },
   );
 
+  // Wait for Clerk: before it has loaded, requests go out without the
+  // session token and the API answers 401.
+  const { isLoaded, identity } = useAuthIdentity();
+  const signedIn = isLoaded && identity.isAuthenticated;
+
   useEffect(() => {
-    if (!apiBaseUrl()) return;
+    if (!apiBaseUrl() || !signedIn) return;
     apiFetch<CheckIn>(`/me/check-ins/${encodeURIComponent(checkInId)}`).then(
       (checkIn) => setLoad({ state: "ready", checkIn }),
       (error) =>
@@ -62,7 +68,7 @@ export function CheckInForm({ checkInId }: { checkInId: string }) {
               : "error",
         }),
     );
-  }, [checkInId]);
+  }, [checkInId, signedIn]);
 
   if (load.state === "loading") {
     return (

@@ -32,7 +32,7 @@ describe("CheckInForm", () => {
   it("asks the four questions, requires an answer and a confidence, then sends them", async () => {
     const user = userEvent.setup();
     apiFetch.mockResolvedValueOnce(OPEN);
-    renderWithProviders(<CheckInForm checkInId="c1" />);
+    renderWithProviders(<CheckInForm checkInId="c1" />, { role: "student" });
 
     await user.click(
       await screen.findByRole("button", { name: "Send check-in" }),
@@ -81,9 +81,14 @@ describe("CheckInForm", () => {
     expect(screen.getByText("2 of 5")).toBeInTheDocument();
   });
 
+  it("waits for sign-in before asking the API (no token means a 401)", () => {
+    renderWithProviders(<CheckInForm checkInId="c1" />, { role: "visitor" });
+    expect(apiFetch).not.toHaveBeenCalled();
+  });
+
   it("shows a closed check-in without a form", async () => {
     apiFetch.mockResolvedValueOnce({ ...OPEN, status: "expired" });
-    renderWithProviders(<CheckInForm checkInId="c1" />);
+    renderWithProviders(<CheckInForm checkInId="c1" />, { role: "student" });
     expect(
       await screen.findByText("This check-in has closed"),
     ).toBeInTheDocument();
