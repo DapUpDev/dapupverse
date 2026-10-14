@@ -3,13 +3,13 @@ api/alembic/versions; these classes must match them, never replace them."""
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 
 import uuid
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Numeric, String, Text, func, text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, String, Text, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -145,3 +145,18 @@ class ThreadRead(Base):
     )
     user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     last_read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CheckIn(Base):
+    """One weekly check-in per student. Created by the weekly job before the
+    email goes out; the unique (student_id, week_start) pair makes a second
+    run a no-op. Lifecycle: sent -> answered | expired (app/checkins.py)."""
+
+    __tablename__ = "check_ins"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    week_start: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(20), server_default="sent")
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    reminded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

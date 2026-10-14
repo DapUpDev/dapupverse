@@ -4,7 +4,8 @@
 # The AI workflows module fills in real behaviour later.
 #
 # Permissions are its own (worker_task role): the queue, read-only access
-# to the student-files bucket, and Anthropic models on Bedrock. Database
+# to the student-files bucket, sending check-in emails through SES, and
+# Anthropic models on Bedrock. Database
 # credentials arrive the same way as for the API (execution role + secret).
 
 resource "aws_cloudwatch_log_group" "worker" {
@@ -40,6 +41,14 @@ data "aws_iam_policy_document" "worker_task" {
     sid       = "ListStudentFiles"
     actions   = ["s3:ListBucket"]
     resources = [data.aws_s3_bucket.student_files.arn]
+  }
+
+  # Weekly check-in emails and reminders (app/checkins.py), from the same
+  # verified domain the API sends from (see email.tf).
+  statement {
+    sid       = "SendCheckInEmail"
+    actions   = ["ses:SendEmail"]
+    resources = ["arn:aws:ses:${var.ses_region}:${local.account_id}:identity/${var.ses_identity}"]
   }
 
   # Anthropic models only, called directly or through a cross-region
@@ -96,6 +105,10 @@ resource "aws_ecs_task_definition" "worker" {
       # Which model to call and under what name (see llm.tf).
       { name = "LLM_PROVIDER", value = var.llm_provider },
       { name = "LLM_MODEL", value = var.llm_model },
+      # Check-in emails, same settings as the API's (see ecs.tf).
+      { name = "EMAIL_FROM", value = var.email_from },
+      { name = "SES_REGION", value = var.ses_region },
+      { name = "APP_BASE_URL", value = var.app_base_url },
     ]
 
     # Database credentials as for the API (see database.tf), plus the model

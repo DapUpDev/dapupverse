@@ -138,8 +138,9 @@ Anything that should not make a request wait goes through a queue. `infra/queue.
 is an SQS queue (plus a dead-letter queue after five failed tries); `infra/worker.tf`
 is a second Fargate service running the same image as the API with the command
 `python -m app.worker` (`backend/app/worker.py`): no public address, long-polls the
-queue, handles each message, deletes it only once handled. Today "handle" means
-log the job; the AI workflows module replaces that. `infra/schedule.tf` is the
+queue, handles each message, deletes it only once handled. Today that means the
+weekly check-in cycle (`app/checkins.py`: send on Mondays, remind and expire
+daily) and the `llm-ping` test job. `infra/schedule.tf` is the
 clock: EventBridge Scheduler drops one `{"job": "weekly-checkin"}` message on the
 queue every Monday 09:00 UTC. The worker has its own role: the queue, read-only
 student files, and Anthropic models on Bedrock (via inference profiles). It runs
