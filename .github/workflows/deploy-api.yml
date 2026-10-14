@@ -55,7 +55,7 @@ jobs:
     # A real PostgreSQL for the database tests (migrations and every route that touches it).
     services:
       postgres:
-        image: postgres:18
+        image: pgvector/pgvector:pg18 # Postgres 18 + the vector extension (history search)
         env:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: dapup_test

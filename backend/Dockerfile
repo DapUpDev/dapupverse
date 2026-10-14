@@ -18,6 +18,10 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
 
+# The history-search embedding model (app/history.py), fetched at build time
+# so the running container never downloads anything.
+RUN .venv/bin/python -c "from fastembed import TextEmbedding; TextEmbedding('jinaai/jina-embeddings-v2-small-en', cache_dir='/app/models')"
+
 COPY app ./app
 COPY alembic.ini ./alembic.ini
 COPY alembic ./alembic
@@ -28,13 +32,14 @@ FROM python:3.13-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/.venv/bin:$PATH"
+    PATH="/app/.venv/bin:$PATH"     EMBED_CACHE_DIR=/app/models     HF_HUB_OFFLINE=1
 
 # Run as an unprivileged user; nothing here needs root.
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser
 
 WORKDIR /app
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+COPY --from=builder --chown=appuser:appuser /app/models /app/models
 COPY --from=builder --chown=appuser:appuser /app/app /app/app
 COPY --from=builder --chown=appuser:appuser /app/alembic.ini /app/alembic.ini
 COPY --from=builder --chown=appuser:appuser /app/alembic /app/alembic

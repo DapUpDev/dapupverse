@@ -3,9 +3,10 @@
 - A throwaway RSA key pair stands in for the Clerk instance; tokens are
   signed with it and the verifier is handed the public key through a fake
   JWKS, so every auth check runs the production code path without network.
-- A real PostgreSQL for the database tests: TEST_DATABASE_URL when set (CI
-  uses a service container), otherwise a temporary cluster started with the
-  locally installed initdb/pg_ctl, torn down after the session.
+- A real PostgreSQL with pgvector for the database tests: TEST_DATABASE_URL
+  when set (CI and local runs use the pgvector/pgvector:pg18 image, see the
+  README), otherwise a temporary cluster from the locally installed
+  initdb/pg_ctl, which only works if that install has pgvector.
 """
 
 from __future__ import annotations
@@ -95,6 +96,7 @@ class FakeStorage:
     def __init__(self) -> None:
         self.objects: dict[str, ObjectInfo] = {}
         self.deleted: list[str] = []
+        self.texts: dict[str, str] = {}
 
     def put(self, key: str, content_type: str = "image/png", size: int = 1024) -> None:
         self.objects[key] = ObjectInfo(content_type=content_type, size=size)
@@ -111,6 +113,15 @@ class FakeStorage:
     def delete(self, key: str) -> None:
         self.objects.pop(key, None)
         self.deleted.append(key)
+
+    def put_text(self, key: str, text: str) -> None:
+        self.texts[key] = text
+
+    def get_text(self, key: str) -> str:
+        return self.texts[key]
+
+    def list_keys(self, prefix: str) -> list[str]:
+        return sorted(k for k in self.texts if k.startswith(prefix))
 
 
 @pytest.fixture

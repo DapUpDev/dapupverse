@@ -6,7 +6,8 @@ SQS queue, handles each message, and deletes it only once handled, so a
 crash mid-job means the message reappears and is retried instead of lost.
 
 Every job is logged. Known kinds then run: "weekly-checkin" and
-"daily-checkin" (the check-in cycle, app/checkins.py) and "llm-ping",
+"daily-checkin" (the check-in cycle, app/checkins.py), "ingest-history"
+(student history into pgvector, app/history.py) and "llm-ping",
 which asks the configured model (app/llm.py) for a one-line reply and
 logs it to prove the provider switch end to end.
 
@@ -83,6 +84,22 @@ def checkin_job(kind: str, job: dict[str, Any]) -> None:
         checkins.run_daily(sessions, mailer, now)
 
 
+def ingest_history_job() -> None:
+    """Load new history files. Errors are not caught: the message is retried
+    and already-loaded files are skipped."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app import history
+    from app.db import get_engine
+    from app.storage import get_storage
+
+    engine, storage = get_engine(), get_storage()
+    if engine is None or storage is None:
+        log.warning("ingest-history skipped: database or STORAGE_BUCKET is not configured")
+        return
+    history.ingest(sessionmaker(bind=engine, expire_on_commit=False), storage, history.get_embedder())
+
+
 def handle(job: dict[str, Any], message_id: str) -> None:
     """One job. The receipt line is logged for every job; known kinds then
     go to their handler. Unknown shapes are logged too, not dropped
@@ -93,6 +110,8 @@ def handle(job: dict[str, Any], message_id: str) -> None:
         llm_ping(job, message_id)
     elif kind in ("weekly-checkin", "daily-checkin"):
         checkin_job(kind, job)
+    elif kind == "ingest-history":
+        ingest_history_job()
 
 
 def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool = False) -> int:

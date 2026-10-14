@@ -160,3 +160,17 @@ class CheckIn(Base):
     status: Mapped[str] = mapped_column(String(20), server_default="sent")
     sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     reminded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Document(Base):
+    """One student-history file in S3 that the ingestion job has loaded
+    (app/history.py). Its chunks live in document_chunks, which has a
+    pgvector column and is only touched with SQL in app/history.py."""
+
+    __tablename__ = "documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    s3_key: Mapped[str] = mapped_column(Text, unique=True)
+    kind: Mapped[str] = mapped_column(String(40))
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
