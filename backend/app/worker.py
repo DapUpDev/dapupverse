@@ -5,11 +5,10 @@ request wait (weekly check-ins, later the AI workflows). It long-polls the
 SQS queue, handles each message, and deletes it only once handled, so a
 crash mid-job means the message reappears and is retried instead of lost.
 
-For now "handle" mostly means log the job. The one real job is "llm-ping":
-it asks the configured model (see app/llm.py) for a one-line reply and
-logs it, which proves the provider switch end to end. Real behaviour
-arrives with the AI workflows module; the plumbing (queue, schedule,
-permissions, deploy) is what this file proves.
+Every job is logged. Known kinds then run: "weekly-checkin" and
+"daily-checkin" (the check-in cycle, app/checkins.py) and "llm-ping",
+which asks the configured model (app/llm.py) for a one-line reply and
+logs it to prove the provider switch end to end.
 
 Stops cleanly: ECS sends SIGTERM before it removes a task (deploys, Spot
 reclaims). The loop finishes the batch in hand and exits 0.
@@ -24,9 +23,10 @@ import signal
 import sys
 import threading
 import time
+from datetime import UTC, datetime
 from typing import Any, Protocol
 
-from app import llm
+from app import checkins, llm
 
 log = logging.getLogger("dapup.worker")
 
@@ -62,6 +62,27 @@ def llm_ping(job: dict[str, Any], message_id: str) -> None:
     )
 
 
+def checkin_job(kind: str, job: dict[str, Any]) -> None:
+    """The check-in cycle. Database errors are NOT caught: the message is
+    then retried, which is safe because both jobs are idempotent."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app.db import get_engine
+    from app.notifications import get_mailer
+
+    engine, mailer = get_engine(), get_mailer()
+    if engine is None or mailer is None:
+        log.warning("%s skipped: database or EMAIL_FROM is not configured", kind)
+        return
+    sessions = sessionmaker(bind=engine, expire_on_commit=False)
+    now = datetime.now(UTC)
+    if kind == "weekly-checkin":
+        only = job.get("only")
+        checkins.send_weekly(sessions, mailer, now, only=only if isinstance(only, str) else None)
+    else:
+        checkins.run_daily(sessions, mailer, now)
+
+
 def handle(job: dict[str, Any], message_id: str) -> None:
     """One job. The receipt line is logged for every job; known kinds then
     go to their handler. Unknown shapes are logged too, not dropped
@@ -70,6 +91,8 @@ def handle(job: dict[str, Any], message_id: str) -> None:
     log.info("job %s received: %s (message %s)", kind, json.dumps(job, sort_keys=True)[:500], message_id)
     if kind == "llm-ping":
         llm_ping(job, message_id)
+    elif kind in ("weekly-checkin", "daily-checkin"):
+        checkin_job(kind, job)
 
 
 def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool = False) -> int:

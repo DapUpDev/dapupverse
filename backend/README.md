@@ -55,6 +55,19 @@ opt out in the DeepSeek account settings. Do not send student personal data
 through it without that opt-out. Bedrock and Anthropic do not train on API
 data.
 
+### Weekly check-ins
+
+`app/checkins.py`, run by the worker. `weekly-checkin` (Mondays 09:00 UTC)
+creates one `check_ins` row per student with a profile, then emails a link
+to `/app/check-ins/<id>`. The row comes first and is unique per student per
+week, so running the job again sends nothing. `daily-checkin` (every day
+09:00 UTC) sends one reminder two days later and marks unanswered check-ins
+`expired` on Saturday. To test by hand without emailing every student:
+
+```bash
+aws sqs send-message --queue-url "$(cd ../infra && terraform output -raw jobs_queue_url)" --message-body '{"job":"weekly-checkin","only":"you@example.com"}'
+```
+
 ## Routes
 
 | Route | Auth | Purpose |
