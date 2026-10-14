@@ -11,6 +11,13 @@ daily-checkin (every day):
     for two days get one reminder (reminded_at is set before the email goes
     out, for the same reason).
 
+Routes (the check-in page, /app/check-ins/<id>):
+    GET /me/check-ins/<id>   the student's own check-in
+    PUT /me/check-ins/<id>   answer it once, while the window is open. The
+        answer is saved, written to the student's history in S3, and the
+        worker is sent {"job": "triage", "student_id", "check_in_id"} and
+        {"job": "ingest-history"}.
+
 A failed email (logged by notifications.deliver) is undone: the check-in
 row is deleted, or reminded_at cleared, so the next run tries that student
 again. Only an email SES accepted counts as sent.
@@ -19,14 +26,24 @@ again. Only an email SES accepted counts as sent.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timedelta
+import uuid
+from datetime import UTC, date, datetime, timedelta
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import Field
 from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
+from app import history, jobs
+from app.auth import Principal
+from app.db import get_session
+from app.mentors import _Camel
 from app.models import AccountType, CheckIn, StudentProfile, User
 from app.notifications import Mailer, checkin_email, checkin_reminder_email, deliver
+from app.storage import Storage, get_storage
+from app.students import require_student
 
 log = logging.getLogger("dapup.checkins")
 
@@ -107,3 +124,99 @@ def run_daily(sessions: sessionmaker[Session], mailer: Mailer, now: datetime) ->
                 session.execute(update(CheckIn).where(CheckIn.id == check_in_id).values(reminded_at=None))
     log.info("daily check-in: %d expired, %d reminded", expired, reminded)
     return expired, reminded
+
+
+# ---- routes: the check-in page -------------------------------------------
+router = APIRouter()
+
+
+class CheckInOut(_Camel):
+    id: str
+    week_start: date
+    status: str  # sent | answered | expired
+    closes_at: datetime
+    progress: str
+    blockers: str
+    confidence: int | None
+    help_wanted: str
+    answered_at: datetime | None
+
+
+class CheckInAnswer(_Camel):
+    progress: str = Field(min_length=1, max_length=2000)
+    blockers: str = Field(default="", max_length=2000)
+    confidence: int = Field(ge=1, le=5)
+    help_wanted: str = Field(default="", max_length=2000)
+
+
+def _out(row: CheckIn) -> CheckInOut:
+    return CheckInOut(id=str(row.id), week_start=row.week_start, status=row.status,
+                      closes_at=row.sent_at + REPLY_WINDOW, progress=row.progress, blockers=row.blockers,
+                      confidence=row.confidence, help_wanted=row.help_wanted, answered_at=row.answered_at)
+
+
+def _own(session: Session, user: Principal, check_in_id: str) -> CheckIn:
+    """The caller's check-in; anyone else's is "not found", never "forbidden"."""
+    try:
+        row = session.get(CheckIn, uuid.UUID(check_in_id))
+    except ValueError:
+        row = None
+    if row is None or row.student_id != user.user_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Check-in not found.")
+    return row
+
+
+def _conflict(code: str, message: str) -> HTTPException:
+    return HTTPException(status.HTTP_409_CONFLICT, {"code": code, "message": message})
+
+
+def history_body(row: CheckIn) -> str:
+    return "\n\n".join([
+        f"Weekly check-in, week of {row.week_start}",
+        f"What I got done: {row.progress}",
+        f"What is blocking me: {row.blockers or 'Nothing'}",
+        f"Confidence about my next deadline: {row.confidence}/5",
+        f"What I want help with: {row.help_wanted or 'Nothing'}",
+    ])
+
+
+@router.get("/me/check-ins/{check_in_id}", response_model=CheckInOut, response_model_by_alias=True)
+def get_my_check_in(
+    check_in_id: str,
+    user: Annotated[Principal, Depends(require_student)],
+    session: Annotated[Session, Depends(get_session)],
+) -> CheckInOut:
+    return _out(_own(session, user, check_in_id))
+
+
+@router.put("/me/check-ins/{check_in_id}", response_model=CheckInOut, response_model_by_alias=True)
+def answer_my_check_in(
+    check_in_id: str,
+    body: CheckInAnswer,
+    user: Annotated[Principal, Depends(require_student)],
+    session: Annotated[Session, Depends(get_session)],
+    storage: Annotated[Storage | None, Depends(get_storage)],
+) -> CheckInOut:
+    row = _own(session, user, check_in_id)
+    now = datetime.now(UTC)
+    if row.status == "answered":
+        raise _conflict("already_answered", "You already sent this week's check-in.")
+    if row.status == "expired" or now > row.sent_at + REPLY_WINDOW:
+        raise _conflict("closed", "This check-in has closed. The next one arrives on Monday.")
+    row.progress, row.blockers, row.confidence, row.help_wanted = (
+        body.progress, body.blockers, body.confidence, body.help_wanted)
+    row.status, row.answered_at = "answered", now
+    session.commit()  # the answer is saved before anything else can fail
+
+    # ponytail: a failed S3 write or SQS send is logged and the answer stays
+    # saved; nothing re-sends it. Add a daily sweep for answered check-ins
+    # without a decision if this ever shows up in the logs.
+    if storage:
+        try:
+            history.save(storage, student_id=row.student_id, kind="check-in", record_id=str(row.id),
+                         body=history_body(row))
+        except Exception as exc:  # noqa: BLE001
+            log.error("check-in %s: could not save history: %s: %s", row.id, type(exc).__name__, exc)
+    jobs.enqueue({"job": "triage", "student_id": row.student_id, "check_in_id": str(row.id)})
+    jobs.enqueue({"job": "ingest-history", "source": "check-in"})
+    return _out(row)
