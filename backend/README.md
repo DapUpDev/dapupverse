@@ -68,6 +68,19 @@ week, so running the job again sends nothing. `daily-checkin` (every day
 aws sqs send-message --queue-url "$(cd ../infra && terraform output -raw jobs_queue_url)" --message-body '{"job":"weekly-checkin","only":"you@example.com"}'
 ```
 
+### Student history search (pgvector)
+
+`app/history.py`. `history.save()` writes one file per mentor note, meeting
+summary or check-in answer to `s3://<bucket>/history/<student_id>/<kind>/<id>.md`.
+The worker's `ingest-history` job loads every file it has not seen: a few
+paragraphs per chunk, each embedded by a small model that runs inside the
+worker (`jinaai/jina-embeddings-v2-small-en`, 512 numbers, baked into the
+image) and stored in `document_chunks` with its student id. `history.search()`
+filters by student id inside the SQL, so one student's history never comes
+back for another (`tests/test_history.py`; run it with `-s` to see results).
+Moving to Bedrock Titan Text Embeddings V2 later: add an embedder with
+`dimensions=512`, delete the `documents` rows, and rerun `ingest-history`.
+
 ## Routes
 
 | Route | Auth | Purpose |
@@ -144,7 +157,9 @@ them every caller is a student with no admin capability and no email.
 ```bash
 cd backend
 uv sync
-uv run pytest          # database tests start a temporary PostgreSQL from a local initdb, or use TEST_DATABASE_URL
+# The tests need PostgreSQL with pgvector. Easiest: the same image CI uses.
+docker run -d --name dapup-pgvector-test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=dapup_test -p 55432:5432 pgvector/pgvector:pg18
+TEST_DATABASE_URL=postgresql+psycopg://postgres:test@127.0.0.1:55432/dapup_test uv run pytest
 CLERK_ISSUER=https://<slug>.clerk.accounts.dev CORS_ALLOWED_ORIGINS=http://localhost:3000 DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/dapup?sslmode=disable uv run python -m app.migrate
 CLERK_ISSUER=... CORS_ALLOWED_ORIGINS=... DATABASE_URL=... uv run uvicorn app.main:app --reload
 ```

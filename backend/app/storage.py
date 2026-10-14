@@ -33,6 +33,9 @@ class Storage(Protocol):
     def presign_get(self, key: str) -> str: ...
     def head(self, key: str) -> ObjectInfo | None: ...
     def delete(self, key: str) -> None: ...
+    def put_text(self, key: str, text: str) -> None: ...
+    def get_text(self, key: str) -> str: ...
+    def list_keys(self, prefix: str) -> list[str]: ...
 
 
 class S3Storage:
@@ -71,6 +74,19 @@ class S3Storage:
 
     def delete(self, key: str) -> None:
         self.client.delete_object(Bucket=self.bucket, Key=key)
+
+    # Server-side text files (student history, app/history.py); written by
+    # the API, read by the worker. Never presigned.
+    def put_text(self, key: str, text: str) -> None:
+        self.client.put_object(Bucket=self.bucket, Key=key, Body=text.encode(),
+                               ContentType="text/markdown; charset=utf-8")
+
+    def get_text(self, key: str) -> str:
+        return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read().decode()
+
+    def list_keys(self, prefix: str) -> list[str]:
+        pages = self.client.get_paginator("list_objects_v2").paginate(Bucket=self.bucket, Prefix=prefix)
+        return [obj["Key"] for page in pages for obj in page.get("Contents", [])]
 
 
 @lru_cache

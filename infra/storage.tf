@@ -14,6 +14,14 @@ data "aws_iam_policy_document" "task_avatars" {
     actions   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
     resources = ["${data.aws_s3_bucket.student_files.arn}/avatars/*"]
   }
+
+  # Student history files (app/history.py): the API writes them; the worker
+  # reads them with its own bucket-wide read access (worker.tf).
+  statement {
+    sid       = "HistoryWrite"
+    actions   = ["s3:PutObject"]
+    resources = ["${data.aws_s3_bucket.student_files.arn}/history/*"]
+  }
 }
 
 resource "aws_iam_role_policy" "task_avatars" {

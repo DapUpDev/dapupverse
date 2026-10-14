@@ -145,8 +145,9 @@ variable "worker_cpu" {
 }
 
 variable "worker_memory" {
-  type    = number
-  default = 512
+  description = "MiB. 1024 since the history-search embedding model runs in the worker (~250 MiB resident)."
+  type        = number
+  default     = 1024
 }
 
 variable "weekly_schedule" {
