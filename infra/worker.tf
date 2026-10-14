@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "worker_task" {
   statement {
     sid       = "SendCheckInEmail"
     actions   = ["ses:SendEmail"]
-    resources = ["arn:aws:ses:${var.ses_region}:${local.account_id}:identity/${var.ses_identity}"]
+    resources = local.ses_send_resources # see email.tf
   }
 
   # Anthropic models only, called directly or through a cross-region

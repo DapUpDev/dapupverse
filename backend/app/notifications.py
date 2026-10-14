@@ -69,13 +69,15 @@ def get_mailer() -> Mailer | None:
     return SesMailer(sender=sender, region=os.getenv("SES_REGION", "us-east-2"))
 
 
-def deliver(mailer: Mailer, email: Email) -> None:
-    """Runs as a background task; never raises."""
+def deliver(mailer: Mailer, email: Email) -> bool:
+    """Runs as a background task; never raises. True when SES took it."""
     try:
         mailer.send(email)
         log.info("sent %r to %s", email.subject, email.to)
+        return True
     except Exception as exc:  # noqa: BLE001 - see module docstring
         log.warning("could not send %r to %s: %s", email.subject, email.to, exc)
+        return False
 
 
 def app_url(path: str) -> str:

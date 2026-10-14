@@ -16,10 +16,13 @@ MONDAY = datetime(2026, 10, 12, 9, 0, 3, tzinfo=UTC)  # a few seconds after the 
 
 
 class FakeMailer:
-    def __init__(self) -> None:
+    def __init__(self, failing=()) -> None:
         self.sent = []
+        self.failing = set(failing)
 
     def send(self, email) -> None:
+        if email.to in self.failing:
+            raise RuntimeError("AccessDeniedException")
         self.sent.append(email)
 
 
@@ -91,3 +94,19 @@ def test_daily_reminds_once_after_two_days_then_expires_on_saturday(sessions):
         statuses = dict(s.execute(select(CheckIn.student_id, CheckIn.status)).all())
     assert statuses == {"u_maya": "expired", "u_leo": "answered"}
     assert len(mailer.sent) == 1
+
+
+def test_a_failed_email_is_retried_on_the_next_run(sessions):
+    mailer = FakeMailer(failing={"maya@example.com"})
+    assert checkins.send_weekly(sessions, mailer, MONDAY) == 1  # Leo only
+    mailer.failing.clear()
+    assert checkins.send_weekly(sessions, mailer, MONDAY + timedelta(hours=1)) == 1
+    assert sorted(e.to for e in mailer.sent) == ["leo@example.com", "maya@example.com"]
+
+    # A failed reminder is retried the next day, then sent once.
+    mailer.failing.add("leo@example.com")
+    wednesday = MONDAY.replace(second=0) + timedelta(days=2)
+    assert checkins.run_daily(sessions, mailer, wednesday) == (0, 0)  # Maya's went out an hour later
+    mailer.failing.clear()
+    assert checkins.run_daily(sessions, mailer, wednesday + timedelta(days=1)) == (0, 2)
+    assert checkins.run_daily(sessions, mailer, wednesday + timedelta(days=1, hours=1)) == (0, 0)
