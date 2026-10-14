@@ -27,3 +27,19 @@ resource "aws_sqs_queue" "jobs" {
     maxReceiveCount     = 5
   })
 }
+
+# The API is a producer too: an answered check-in queues a triage job.
+# Send only; the worker is the one consumer (worker.tf).
+data "aws_iam_policy_document" "task_enqueue" {
+  statement {
+    sid       = "EnqueueJobs"
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.jobs.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "task_enqueue" {
+  name   = "enqueue-jobs"
+  role   = aws_iam_role.task.id
+  policy = data.aws_iam_policy_document.task_enqueue.json
+}

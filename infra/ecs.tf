@@ -89,6 +89,8 @@ resource "aws_ecs_task_definition" "api" {
       # Profile pictures: bucket name and the region to sign URLs for.
       { name = "STORAGE_BUCKET", value = data.aws_s3_bucket.student_files.bucket },
       { name = "AWS_REGION", value = var.aws_region },
+      # Jobs for the worker, e.g. triage after a check-in is answered (queue.tf).
+      { name = "QUEUE_URL", value = aws_sqs_queue.jobs.url },
     ]
 
     secrets = concat(
