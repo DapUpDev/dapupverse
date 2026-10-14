@@ -7,7 +7,8 @@ crash mid-job means the message reappears and is retried instead of lost.
 
 Every job is logged. Known kinds then run: "weekly-checkin" and
 "daily-checkin" (the check-in cycle, app/checkins.py), "ingest-history"
-(student history into pgvector, app/history.py) and "llm-ping",
+(student history into pgvector, app/history.py), "triage" and
+"triage-eval" (the meeting-length agent, app/triage.py) and "llm-ping",
 which asks the configured model (app/llm.py) for a one-line reply and
 logs it to prove the provider switch end to end.
 
@@ -100,6 +101,27 @@ def ingest_history_job() -> None:
     history.ingest(sessionmaker(bind=engine, expire_on_commit=False), storage, history.get_embedder())
 
 
+def triage_job(kind: str, job: dict[str, Any]) -> None:
+    """One check-in through the triage agent, or the five evaluation cases.
+    Database errors are not caught: the message is retried, and a check-in
+    that already has a decision is skipped."""
+    from app import triage
+
+    if kind == "triage-eval":
+        triage.evaluate(triage.db_deps(None).ask)
+        return
+
+    from sqlalchemy.orm import sessionmaker
+
+    from app.db import get_engine
+
+    engine = get_engine()
+    if engine is None:
+        log.warning("triage skipped: database is not configured")
+        return
+    triage.triage_check_in(sessionmaker(bind=engine, expire_on_commit=False), str(job.get("check_in_id", "")))
+
+
 def handle(job: dict[str, Any], message_id: str) -> None:
     """One job. The receipt line is logged for every job; known kinds then
     go to their handler. Unknown shapes are logged too, not dropped
@@ -112,6 +134,8 @@ def handle(job: dict[str, Any], message_id: str) -> None:
         checkin_job(kind, job)
     elif kind == "ingest-history":
         ingest_history_job()
+    elif kind in ("triage", "triage-eval"):
+        triage_job(kind, job)
 
 
 def run(client: QueueClient, queue_url: str, stop: threading.Event, once: bool = False) -> int:

@@ -81,6 +81,19 @@ back for another (`tests/test_history.py`; run it with `-s` to see results).
 Moving to Bedrock Titan Text Embeddings V2 later: add an embedder with
 `dimensions=512`, delete the `documents` rows, and rerun `ingest-history`.
 
+### Triage agent
+
+`app/triage.py`, a LangGraph workflow run by the worker's `triage` job
+(`{"job":"triage","check_in_id":"..."}`): load the check-in, open tasks and
+last meeting notes; search the student's history; ask the configured model
+(`LLM_PROVIDER`); check the answer in code; save one `triage_decisions` row.
+The decision must be `NO_MEETING`, `15`, `30`, `45` or `60` with a reason,
+blockers and agenda. An invalid answer is asked once more; two invalid
+answers save `needs_mentor` with the error, and nothing gets booked. No
+names or ids are sent to the model. `{"job":"triage-eval"}` runs five
+made-up check-ins with known answers through the real model and logs
+expected vs actual (nothing touches the database).
+
 ## Routes
 
 | Route | Auth | Purpose |
