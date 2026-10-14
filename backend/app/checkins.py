@@ -11,8 +11,9 @@ daily-checkin (every day):
     for two days get one reminder (reminded_at is set before the email goes
     out, for the same reason).
 
-Email failures are logged and dropped (notifications.deliver): the record
-already exists, and one lost email beats a duplicate.
+A failed email (logged by notifications.deliver) is undone: the check-in
+row is deleted, or reminded_at cleared, so the next run tries that student
+again. Only an email SES accepted counts as sent.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from __future__ import annotations
 import logging
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -64,8 +65,11 @@ def send_weekly(sessions: sessionmaker[Session], mailer: Mailer, now: datetime, 
             ).scalar()
         if check_in_id is None:
             continue  # already has this week's check-in
-        deliver(mailer, checkin_email(to=email, student_name=name, check_in_id=str(check_in_id)))
-        sent += 1
+        if deliver(mailer, checkin_email(to=email, student_name=name, check_in_id=str(check_in_id))):
+            sent += 1
+        else:
+            with sessions.begin() as session:
+                session.execute(delete(CheckIn).where(CheckIn.id == check_in_id))
     log.info("weekly check-in: %d sent for week of %s (%d students)", sent, week, len(students))
     return sent
 
@@ -96,8 +100,10 @@ def run_daily(sessions: sessionmaker[Session], mailer: Mailer, now: datetime) ->
     reminded = 0
     for check_in_id, student_id in due:
         email, name = people.get(student_id, (None, ""))
-        if email:
-            deliver(mailer, checkin_reminder_email(to=email, student_name=name or "", check_in_id=str(check_in_id)))
+        if email and deliver(mailer, checkin_reminder_email(to=email, student_name=name or "", check_in_id=str(check_in_id))):
             reminded += 1
+        elif email:
+            with sessions.begin() as session:
+                session.execute(update(CheckIn).where(CheckIn.id == check_in_id).values(reminded_at=None))
     log.info("daily check-in: %d expired, %d reminded", expired, reminded)
     return expired, reminded
