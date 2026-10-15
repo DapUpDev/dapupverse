@@ -139,10 +139,10 @@ is an SQS queue (plus a dead-letter queue after five failed tries); `infra/worke
 is a second Fargate service running the same image as the API with the command
 `python -m app.worker` (`backend/app/worker.py`): no public address, long-polls the
 queue, handles each message, deletes it only once handled. Today that means the
-weekly check-in cycle (`app/checkins.py`: send on Mondays, remind and expire
-daily) and the `llm-ping` test job. `infra/schedule.tf` is the
-clock: EventBridge Scheduler drops one `{"job": "weekly-checkin"}` message on the
-queue every Monday 09:00 UTC. The worker has its own role: the queue, read-only
+weekly check-in cycle (`app/checkins.py`: send to consulting students at the
+time set on `/admin`, default Thursday 08:00 Pacific; remind and expire) and the
+`llm-ping` test job. `infra/schedule.tf` is the clock: EventBridge Scheduler
+drops one `{"job": "checkin-tick"}` message on the queue every hour. The worker has its own role: the queue, read-only
 student files, and Anthropic models on Bedrock (via inference profiles). It runs
 on Fargate Spot, one task, and the deploy pipeline rolls it onto every new image.
 

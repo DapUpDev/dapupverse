@@ -57,12 +57,16 @@ data.
 
 ### Weekly check-ins
 
-`app/checkins.py`, run by the worker. `weekly-checkin` (Mondays 09:00 UTC)
-creates one `check_ins` row per student with a profile, then emails a link
-to `/app/check-ins/<id>`. The row comes first and is unique per student per
-week, so running the job again sends nothing. `daily-checkin` (every day
-09:00 UTC) sends one reminder two days later and marks unanswered check-ins
-`expired` on Saturday. To test by hand without emailing every student:
+`app/checkins.py`, run by the worker's hourly `checkin-tick` job. Once the
+week's send time has passed (set on `/admin`; default Thursday 08:00
+America/Los_Angeles) it creates one `check_ins` row per **consulting**
+student, then emails a link to `/app/check-ins/<id>`. The row comes first
+and is unique per student per week, so later ticks send nothing. The same
+tick sends one reminder a day after sending and marks unanswered check-ins
+`expired` two days after. Consulting students and their mentor teams (up to
+3) are set on `/admin` by admin-capability mentors (`app/consulting.py`).
+`weekly-checkin` sends now regardless of the schedule; to test by hand
+without emailing every consulting student:
 
 ```bash
 aws sqs send-message --queue-url "$(cd ../infra && terraform output -raw jobs_queue_url)" --message-body '{"job":"weekly-checkin","only":"you@example.com"}'

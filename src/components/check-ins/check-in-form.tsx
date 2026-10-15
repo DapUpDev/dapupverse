@@ -13,7 +13,7 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
- * The weekly check-in, reached from the Monday email. It talks to the API
+ * The weekly check-in, reached from the weekly email. It talks to the API
  * directly: check-ins only exist on the live backend, so there is no mock.
  * Answered once; submitting queues the triage agent on the API side.
  */
@@ -122,7 +122,7 @@ export function CheckInForm({ checkInId }: { checkInId: string }) {
         />
       ) : (
         <Notice title="This check-in has closed">
-          The next one arrives in your inbox on Monday.
+          The next one arrives in your inbox next week.
         </Notice>
       )}
     </div>

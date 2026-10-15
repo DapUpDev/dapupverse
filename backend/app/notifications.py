@@ -115,21 +115,23 @@ def request_accepted_email(*, to: str, student_name: str, mentor_name: str) -> E
     return Email(to=to, subject=f"{mentor_name} accepted your request on DapUp", text=text, html=body)
 
 
-def checkin_email(*, to: str, student_name: str, check_in_id: str) -> Email:
+def checkin_email(*, to: str, student_name: str, check_in_id: str, closes: str) -> Email:
+    """`closes` is a ready-made phrase, e.g. "Saturday 18 October at 8:00 AM PDT"."""
     text, body = _render(
         f"Hi {student_name or 'there'},",
         ["How did this week go? Your weekly check-in takes about two minutes: "
-         "what you got done, anything blocking you, and whether you'd like help from a mentor."],
+         "what you got done, anything blocking you, and whether you'd like help from a mentor.",
+         f"It closes {closes}."],
         "Do this week's check-in", app_url(f"/app/check-ins/{check_in_id}"),
     )
     return Email(to=to, subject="Your DapUp check-in for this week", text=text, html=body)
 
 
-def checkin_reminder_email(*, to: str, student_name: str, check_in_id: str) -> Email:
+def checkin_reminder_email(*, to: str, student_name: str, check_in_id: str, closes: str) -> Email:
     text, body = _render(
         f"Hi {student_name or 'there'},",
-        ["Your check-in for this week is still open. It closes on Saturday, "
-         "so there's still time to tell us how things are going."],
+        [f"Your check-in for this week is still open. It closes {closes}, "
+         "so there's still time to tell your mentors how things are going."],
         "Do this week's check-in", app_url(f"/app/check-ins/{check_in_id}"),
     )
-    return Email(to=to, subject="Reminder: your DapUp check-in closes Saturday", text=text, html=body)
+    return Email(to=to, subject="Reminder: your DapUp check-in closes soon", text=text, html=body)

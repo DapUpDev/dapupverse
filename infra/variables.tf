@@ -150,15 +150,10 @@ variable "worker_memory" {
   default     = 1024
 }
 
-variable "weekly_schedule" {
-  description = "EventBridge Scheduler cron for the weekly job (UTC). Default: Mondays 09:00."
-  type        = string
-  default     = "cron(0 9 ? * MON *)"
-}
-
 variable "weekly_schedule_enabled" {
-  type    = bool
-  default = true
+  description = "Turns the hourly check-in tick on or off (false pauses check-in emails and reminders)."
+  type        = bool
+  default     = true
 }
 
 variable "llm_provider" {

@@ -109,8 +109,9 @@ smoke-test `https://api.dapup.space/health` for the new version.
 Three files, one apply: `queue.tf` (SQS job queue + dead-letter queue),
 `worker.tf` (second Fargate service, same image, command `python -m app.worker`,
 own task role: queue + read-only student files + check-in email via SES + Anthropic on Bedrock, Fargate
-Spot, no public address), `schedule.tf` (EventBridge Scheduler, Mondays 09:00
-UTC, drops `{"job":"weekly-checkin"}` on the queue). The worker's task
+Spot, no public address), `schedule.tf` (EventBridge Scheduler, every hour,
+drops `{"job":"checkin-tick"}` on the queue; the send day and time live in the
+database and are set on `/admin`). The worker's task
 definition follows the same ownership contract as the API's; the deploy
 workflow rolls the worker onto every new image (skipped until the service
 exists).

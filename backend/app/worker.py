@@ -5,7 +5,7 @@ request wait (weekly check-ins, later the AI workflows). It long-polls the
 SQS queue, handles each message, and deletes it only once handled, so a
 crash mid-job means the message reappears and is retried instead of lost.
 
-Every job is logged. Known kinds then run: "weekly-checkin" and
+Every job is logged. Known kinds then run: "checkin-tick" (hourly), "weekly-checkin" and
 "daily-checkin" (the check-in cycle, app/checkins.py), "ingest-history"
 (student history into pgvector, app/history.py), "triage" and
 "triage-eval" (the meeting-length agent, app/triage.py) and "llm-ping",
@@ -78,11 +78,16 @@ def checkin_job(kind: str, job: dict[str, Any]) -> None:
         return
     sessions = sessionmaker(bind=engine, expire_on_commit=False)
     now = datetime.now(UTC)
-    if kind == "weekly-checkin":
+    if kind == "checkin-tick":
+        checkins.checkin_tick(sessions, mailer, now)
+        return
+    with sessions() as session:
+        schedule = checkins.load_schedule(session)
+    if kind == "weekly-checkin":  # by hand: send now, whatever the schedule says
         only = job.get("only")
-        checkins.send_weekly(sessions, mailer, now, only=only if isinstance(only, str) else None)
+        checkins.send_weekly(sessions, mailer, now, schedule, only=only if isinstance(only, str) else None)
     else:
-        checkins.run_daily(sessions, mailer, now)
+        checkins.run_daily(sessions, mailer, now, schedule)
 
 
 def ingest_history_job() -> None:
@@ -130,7 +135,7 @@ def handle(job: dict[str, Any], message_id: str) -> None:
     log.info("job %s received: %s (message %s)", kind, json.dumps(job, sort_keys=True)[:500], message_id)
     if kind == "llm-ping":
         llm_ping(job, message_id)
-    elif kind in ("weekly-checkin", "daily-checkin"):
+    elif kind in ("checkin-tick", "weekly-checkin", "daily-checkin"):
         checkin_job(kind, job)
     elif kind == "ingest-history":
         ingest_history_job()

@@ -3,13 +3,13 @@ api/alembic/versions; these classes must match them, never replace them."""
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 from enum import StrEnum
 
 import uuid
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, SmallInteger, String, Text, func, text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, SmallInteger, String, Text, Time, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -84,6 +84,8 @@ class StudentProfile(Base):
     subjects: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     biography: Mapped[str] = mapped_column(Text, default="")
     avatar_key: Mapped[str | None] = mapped_column(Text)
+    # On the USA applications consulting package: gets the weekly check-in.
+    consulting: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -226,3 +228,23 @@ class TriageDecision(Base):
     model: Mapped[str] = mapped_column(String(120), server_default="")
     attempts: Mapped[int] = mapped_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ConsultingMentor(Base):
+    """One mentor on a consulting student's team (up to 3, enforced by the API)."""
+
+    __tablename__ = "consulting_mentors"
+
+    student_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    mentor_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+
+
+class ProgramSettings(Base):
+    """The one row (id = 1) of program-wide settings, edited on /admin."""
+
+    __tablename__ = "program_settings"
+
+    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    checkin_weekday: Mapped[int] = mapped_column(SmallInteger)  # Monday = 0
+    checkin_time: Mapped[time] = mapped_column(Time)
+    timezone: Mapped[str] = mapped_column(String(64))
