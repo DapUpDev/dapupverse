@@ -5,8 +5,8 @@ inferred from account type):
 
     GET  /admin/consulting/students          every student with a profile
     PUT  /admin/consulting/students/<id>     consulting on/off + up to 3 mentors
-    GET  /admin/settings                     when the weekly check-in goes out, and
-    PUT  /admin/settings                     the meeting hours bookings must fit in
+    GET  /admin/settings                     when the weekly check-in goes out
+    PUT  /admin/settings
 
 Only consulting students get the weekly check-in (app/checkins.py).
 """
@@ -61,9 +61,6 @@ class SettingsOut(_Camel):
     checkin_weekday: int  # Monday = 0
     checkin_time: str  # "HH:MM", local to timezone
     timezone: str  # IANA, e.g. America/Los_Angeles
-    meeting_days: list[int]  # when meetings may be booked, Monday = 0
-    meeting_start: str  # "HH:MM"
-    meeting_end: str
 
 
 HHMM = r"^([01]\d|2[0-3]):[0-5]\d$"
@@ -73,17 +70,6 @@ class SettingsUpdate(_Camel):
     checkin_weekday: int = Field(ge=0, le=6)
     checkin_time: str = Field(pattern=HHMM)
     timezone: str
-    # Optional: left out = unchanged.
-    meeting_days: list[int] | None = Field(default=None, min_length=1, max_length=7)
-    meeting_start: str | None = Field(default=None, pattern=HHMM)
-    meeting_end: str | None = Field(default=None, pattern=HHMM)
-
-    @field_validator("meeting_days")
-    @classmethod
-    def weekdays(cls, value: list[int] | None) -> list[int] | None:
-        if value is not None and not all(0 <= d <= 6 for d in value):
-            raise ValueError("Days are 0 (Monday) to 6 (Sunday).")
-        return sorted(set(value)) if value is not None else None
 
     @field_validator("timezone")
     @classmethod
@@ -144,8 +130,7 @@ def update_student(student_id: str, body: ConsultingUpdate, user: Admin, session
 
 def _settings_out(row: ProgramSettings) -> SettingsOut:
     return SettingsOut(checkin_weekday=row.checkin_weekday, checkin_time=row.checkin_time.strftime("%H:%M"),
-                       timezone=row.timezone, meeting_days=sorted(row.meeting_days),
-                       meeting_start=row.meeting_start.strftime("%H:%M"), meeting_end=row.meeting_end.strftime("%H:%M"))
+                       timezone=row.timezone)
 
 
 @router.get("/admin/settings", response_model=SettingsOut, response_model_by_alias=True)
@@ -159,12 +144,5 @@ def update_settings(body: SettingsUpdate, user: Admin, session: Db) -> SettingsO
     row.checkin_weekday = body.checkin_weekday
     row.checkin_time = time.fromisoformat(body.checkin_time)
     row.timezone = body.timezone
-    if body.meeting_days is not None:
-        row.meeting_days = body.meeting_days
-    start = time.fromisoformat(body.meeting_start) if body.meeting_start else row.meeting_start
-    end = time.fromisoformat(body.meeting_end) if body.meeting_end else row.meeting_end
-    if start >= end:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Meeting hours must end after they start.")
-    row.meeting_start, row.meeting_end = start, end
     session.flush()
     return _settings_out(row)

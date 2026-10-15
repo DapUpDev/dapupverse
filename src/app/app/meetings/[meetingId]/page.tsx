@@ -8,7 +8,8 @@ export default async function MeetingPage({
   await requireAuth(`/app/meetings/${meetingId}`);
   return (
     <main className="page">
-      <div className="max-w-2xl">
+      {/* Wide enough for two availability grids side by side. */}
+      <div className="max-w-5xl">
         <MeetingDetail meetingId={meetingId} />
       </div>
     </main>
