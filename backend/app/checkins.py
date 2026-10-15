@@ -36,7 +36,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import Field
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -136,6 +136,21 @@ def send_weekly(sessions: sessionmaker[Session], mailer: Mailer, now: datetime,
                 session.execute(delete(CheckIn).where(CheckIn.id == check_in_id))
     log.info("weekly check-in: %d sent for week of %s (%d students)", sent, week, len(students))
     return sent
+
+
+def reset_week(sessions: sessionmaker[Session], now: datetime, schedule: Schedule, email: str) -> int:
+    """Testing aid (worker job "reset-checkin"): delete one student's check-in
+    for this week, with its triage decision and meeting (foreign keys
+    cascade), so the next tick sends them a fresh one. Returns rows deleted."""
+    with sessions.begin() as session:
+        deleted = session.execute(
+            delete(CheckIn).where(
+                CheckIn.week_start == week_start(now, schedule),
+                CheckIn.student_id.in_(select(User.id).where(func.lower(User.email) == email.lower())),
+            )
+        ).rowcount
+    log.info("reset-checkin: %d check-in(s) deleted for %s, week of %s", deleted, email, week_start(now, schedule))
+    return deleted
 
 
 def run_daily(sessions: sessionmaker[Session], mailer: Mailer, now: datetime,

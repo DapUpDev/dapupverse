@@ -12,11 +12,9 @@ import {
 } from "@/components/connections/mentor-requests-inbox";
 import { formatDate } from "@/lib/format";
 import type { ConnectionRequest, Mentor } from "@/lib/domain/types";
-import {
-  connectionRepository,
-  mentorRepository,
-} from "@/lib/repositories";
+import { connectionRepository, mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
+import { useChatLinks } from "@/components/connections/use-chat-links";
 
 type RequestWithMentor = { request: ConnectionRequest; mentor: Mentor | null };
 
@@ -44,6 +42,7 @@ const emptySlot =
  * rejection.
  */
 export function StudentConnections({ studentId }: { studentId: string }) {
+  const chatLink = useChatLinks(studentId);
   const { data, ready } = useRepositoryQuery<RequestWithMentor[]>(async () => {
     const requests = await connectionRepository.listForStudent(studentId);
     const mentors = await mentorRepository.list();
@@ -60,8 +59,7 @@ export function StudentConnections({ studentId }: { studentId: string }) {
   const pending = (data ?? []).filter((r) => r.request.state === "pending");
   const accepted = (data ?? []).filter((r) => r.request.state === "accepted");
   const ended = (data ?? []).filter(
-    (r) =>
-      r.request.state === "disconnected" || r.request.state === "blocked",
+    (r) => r.request.state === "disconnected" || r.request.state === "blocked",
   );
 
   const handleDisconnect = async (id: string, mentorName: string) => {
@@ -93,18 +91,22 @@ export function StudentConnections({ studentId }: { studentId: string }) {
         {accepted.length === 0 ? (
           <p className={emptySlot}>No accepted connections yet.</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="grid gap-3 lg:grid-cols-2">
             {accepted.map(({ request, mentor }) => (
               <RequestSheet
                 key={request.id}
+                compact
                 {...mentorOf(mentor)}
                 chip={<StateChip state="accepted">Connected</StateChip>}
                 request={request}
                 when={`Connected ${formatDate(request.updatedAt)}`}
                 actions={
                   <>
-                    <ButtonLink href="/app/messages">Message</ButtonLink>
+                    <ButtonLink size="sm" href={chatLink(request.id)}>
+                      Message
+                    </ButtonLink>
                     <Button
+                      size="sm"
                       variant="destructive"
                       className="ml-auto"
                       onClick={() =>

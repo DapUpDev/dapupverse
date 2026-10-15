@@ -136,6 +136,7 @@ export function RequestSheet({
   request,
   when,
   actions,
+  compact = false,
 }: {
   name: string;
   /** The name as shown; a link when the person has a public page. */
@@ -146,9 +147,11 @@ export function RequestSheet({
   request: ConnectionRequest;
   when?: string;
   actions?: ReactNode;
+  /** Connections tab: tighter, so more fit on screen. */
+  compact?: boolean;
 }) {
   return (
-    <li className="sheet p-5 sm:p-6">
+    <li className={cn("sheet", compact ? "p-4 sm:p-5" : "p-5 sm:p-6")}>
       {/* The chip drops under the name when a narrow sheet has no room. */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <div className="flex min-w-0 flex-1 basis-56 items-center gap-4">
@@ -156,12 +159,13 @@ export function RequestSheet({
           <ProfileAvatar
             name={name}
             avatarUrl={avatarUrl}
-            className="size-12 rounded-[4px]"
+            className={cn("rounded-[4px]", compact ? "size-10" : "size-12")}
           />
           <div className="min-w-0">
             <h3
               className={cn(
-                "font-display text-xl leading-tight font-semibold break-words",
+                "font-display leading-tight font-semibold break-words",
+                compact ? "text-lg" : "text-xl",
                 !when && "text-muted-foreground",
               )}
             >
@@ -178,17 +182,34 @@ export function RequestSheet({
       </div>
       {when ? (
         <>
-          <p className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4">
+          <p
+            className={cn(
+              "flex flex-wrap items-baseline justify-between gap-x-4",
+              compact ? "mt-3 text-sm" : "mt-5",
+            )}
+          >
             <span className="font-medium">{request.purpose}</span>
             <span className="text-sm text-subtle tabular-nums">{when}</span>
           </p>
-          <p className="mt-1.5 max-w-[65ch] text-pretty break-words whitespace-pre-line">
+          <p
+            className={cn(
+              "max-w-[65ch] text-pretty break-words",
+              compact
+                ? "mt-1 line-clamp-2 text-sm text-muted-foreground"
+                : "mt-1.5 whitespace-pre-line",
+            )}
+          >
             {request.message}
           </p>
         </>
       ) : null}
       {actions ? (
-        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-dashed border-foreground/25 pt-4">
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 border-t border-dashed border-foreground/25",
+            compact ? "mt-3 pt-3" : "mt-5 pt-4",
+          )}
+        >
           {actions}
         </div>
       ) : null}

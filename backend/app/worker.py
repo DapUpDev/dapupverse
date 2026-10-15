@@ -86,9 +86,14 @@ def checkin_job(kind: str, job: dict[str, Any]) -> None:
         return
     with sessions() as session:
         schedule = checkins.load_schedule(session)
+    only = job.get("only") if isinstance(job.get("only"), str) else None
     if kind == "weekly-checkin":  # by hand: send now, whatever the schedule says
-        only = job.get("only")
-        checkins.send_weekly(sessions, mailer, now, schedule, only=only if isinstance(only, str) else None)
+        checkins.send_weekly(sessions, mailer, now, schedule, only=only)
+    elif kind == "reset-checkin":  # testing: forget one student's check-in for this week
+        if only:
+            checkins.reset_week(sessions, now, schedule, only)
+        else:
+            log.warning("reset-checkin needs \"only\": one student's email address")
     else:
         checkins.run_daily(sessions, mailer, now, schedule)
 
@@ -155,7 +160,7 @@ def handle(job: dict[str, Any], message_id: str) -> None:
     log.info("job %s received: %s (message %s)", kind, json.dumps(job, sort_keys=True)[:500], message_id)
     if kind == "llm-ping":
         llm_ping(job, message_id)
-    elif kind in ("checkin-tick", "weekly-checkin", "daily-checkin"):
+    elif kind in ("checkin-tick", "weekly-checkin", "daily-checkin", "reset-checkin"):
         checkin_job(kind, job)
     elif kind == "ingest-history":
         ingest_history_job()
