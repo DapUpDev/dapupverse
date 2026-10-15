@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { ButtonLink } from "@/components/ui/button-link";
 import {
   RequestGroup,
   RequestSheet,
@@ -13,8 +11,8 @@ import {
   studentOf,
   useMentorRequests,
 } from "@/components/connections/mentor-requests-inbox";
+import { ConnectionList } from "@/components/connections/connection-list";
 import { useChatLinks } from "@/components/connections/use-chat-links";
-import { formatDate } from "@/lib/format";
 import { connectionRepository } from "@/lib/repositories";
 
 /** Mentor view of accepted (and ended) connections. */
@@ -63,46 +61,27 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {accepted.map(({ request, student }) => (
-              <RequestSheet
-                key={request.id}
-                compact
-                {...studentOf(student)}
-                chip={<StateChip state="accepted">Connected</StateChip>}
-                request={request}
-                when={`Connected ${formatDate(request.updatedAt)}`}
-                actions={
-                  <>
-                    <ButtonLink size="sm" href={chatLink(request.id)}>
-                      Message
-                    </ButtonLink>
-                    {/* Kept apart from Message: neither asks to be confirmed. */}
-                    <div className="ml-auto flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() =>
-                          handleDisconnect(request.id, studentName(student))
-                        }
-                      >
-                        Disconnect
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() =>
-                          handleBlock(request.id, studentName(student))
-                        }
-                      >
-                        Block
-                      </Button>
-                    </div>
-                  </>
-                }
-              />
-            ))}
-          </ul>
+          <ConnectionList
+            rows={accepted.map(({ request, student }) => {
+              const name = studentName(student);
+              return {
+                ...studentOf(student),
+                id: request.id,
+                since: request.updatedAt,
+                chatHref: chatLink(request.id),
+                menu: [
+                  {
+                    label: "Disconnect",
+                    onSelect: () => handleDisconnect(request.id, name),
+                  },
+                  {
+                    label: "Block",
+                    onSelect: () => handleBlock(request.id, name),
+                  },
+                ],
+              };
+            })}
+          />
         )}
       </RequestGroup>
 

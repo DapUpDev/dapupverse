@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
   RequestGroup,
@@ -14,6 +13,7 @@ import { formatDate } from "@/lib/format";
 import type { ConnectionRequest, Mentor } from "@/lib/domain/types";
 import { connectionRepository, mentorRepository } from "@/lib/repositories";
 import { useRepositoryQuery } from "@/lib/repositories/use-repository-query";
+import { ConnectionList } from "@/components/connections/connection-list";
 import { useChatLinks } from "@/components/connections/use-chat-links";
 
 type RequestWithMentor = { request: ConnectionRequest; mentor: Mentor | null };
@@ -91,38 +91,21 @@ export function StudentConnections({ studentId }: { studentId: string }) {
         {accepted.length === 0 ? (
           <p className={emptySlot}>No accepted connections yet.</p>
         ) : (
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {accepted.map(({ request, mentor }) => (
-              <RequestSheet
-                key={request.id}
-                compact
-                {...mentorOf(mentor)}
-                chip={<StateChip state="accepted">Connected</StateChip>}
-                request={request}
-                when={`Connected ${formatDate(request.updatedAt)}`}
-                actions={
-                  <>
-                    <ButtonLink size="sm" href={chatLink(request.id)}>
-                      Message
-                    </ButtonLink>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="ml-auto"
-                      onClick={() =>
-                        handleDisconnect(
-                          request.id,
-                          mentor?.name ?? "this mentor",
-                        )
-                      }
-                    >
-                      Disconnect
-                    </Button>
-                  </>
-                }
-              />
-            ))}
-          </ul>
+          <ConnectionList
+            rows={accepted.map(({ request, mentor }) => ({
+              ...mentorOf(mentor),
+              id: request.id,
+              since: request.updatedAt,
+              chatHref: chatLink(request.id),
+              menu: [
+                {
+                  label: "Disconnect",
+                  onSelect: () =>
+                    handleDisconnect(request.id, mentor?.name ?? "this mentor"),
+                },
+              ],
+            }))}
+          />
         )}
       </RequestGroup>
 
