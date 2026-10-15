@@ -20,15 +20,16 @@ function MenuTrigger(props: MenuPrimitive.Trigger.Props) {
 
 function MenuContent({
   className,
+  align = "start",
   sideOffset = 4,
   alignOffset,
   ...props
 }: MenuPrimitive.Popup.Props &
-  Pick<MenuPrimitive.Positioner.Props, "sideOffset" | "alignOffset">) {
+  Pick<MenuPrimitive.Positioner.Props, "align" | "sideOffset" | "alignOffset">) {
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
-        align="start"
+        align={align}
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         className="isolate z-50"
