@@ -118,6 +118,7 @@ resource "aws_ecs_task_definition" "worker" {
     secrets = concat(
       local.db_secrets,
       [{ name = "DEEPSEEK_API_KEY", valueFrom = data.aws_secretsmanager_secret.deepseek_api_key.arn }],
+      local.google_secrets, # free/busy when proposing a slot (google.tf)
       [
         for secret in data.aws_secretsmanager_secret.anthropic_api_key :
         { name = "ANTHROPIC_API_KEY", valueFrom = secret.arn }

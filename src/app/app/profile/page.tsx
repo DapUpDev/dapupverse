@@ -1,4 +1,6 @@
 import { requireAuth } from "@/lib/auth/guards";
+import { Suspense } from "react";
+import { CalendarConnection } from "@/components/profile/calendar-connection";
 import { ProfileContent } from "@/components/profile/profile-content";
 
 export default async function ProfilePage() {
@@ -10,6 +12,10 @@ export default async function ProfilePage() {
           accountType={identity.accountType ?? "student"}
           dataUserId={identity.dataUserId!}
         />
+        {/* Suspense: it reads ?calendar= from the URL after Google's redirect. */}
+        <Suspense>
+          <CalendarConnection />
+        </Suspense>
       </div>
     </main>
   );

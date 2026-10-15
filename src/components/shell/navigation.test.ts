@@ -16,6 +16,7 @@ describe("navItemsForIdentity", () => {
       "Find Mentors",
       "Connections",
       "Messages",
+      "Meetings",
       "Profile",
     ]);
   });

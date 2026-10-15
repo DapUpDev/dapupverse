@@ -98,6 +98,7 @@ resource "aws_ecs_task_definition" "api" {
       # Clerk's webhook signing secret (a plain string, no JSON key). See
       # clerk_webhook.tf for where the value comes from.
       [{ name = "CLERK_WEBHOOK_SECRET", valueFrom = aws_secretsmanager_secret.clerk_webhook.arn }],
+      local.google_secrets, # Google Calendar (google.tf)
     )
 
     # ECS-level liveness: a failing container is replaced by the scheduler

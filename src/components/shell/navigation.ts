@@ -25,6 +25,7 @@ export function navItemsForIdentity(identity: NavIdentity): NavItem[] {
       { href: "/mentors", label: "Find Mentors" },
       { href: "/app/connections", label: "Connections" },
       { href: "/app/messages", label: "Messages" },
+      { href: "/app/meetings", label: "Meetings" },
       { href: "/app/profile", label: "Profile" },
     ];
   }
@@ -33,6 +34,7 @@ export function navItemsForIdentity(identity: NavIdentity): NavItem[] {
       { href: "/app/requests", label: "Requests" },
       { href: "/app/connections", label: "Connections" },
       { href: "/app/messages", label: "Messages" },
+      { href: "/app/meetings", label: "Meetings" },
       { href: "/app/profile", label: "Profile" },
     ];
     if (identity.capabilities.isAdmin) {

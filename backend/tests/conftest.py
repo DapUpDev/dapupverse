@@ -202,7 +202,8 @@ def configured_database(database_url, monkeypatch):
     with engine.begin() as connection:
         connection.execute(text("DELETE FROM users"))
         connection.execute(text(
-            "UPDATE program_settings SET checkin_weekday = 3, checkin_time = '08:00', timezone = 'America/Los_Angeles'"
+            "UPDATE program_settings SET checkin_weekday = 3, checkin_time = '08:00', timezone = 'America/Los_Angeles', "
+            "meeting_days = '{5,6}', meeting_start = '09:00', meeting_end = '17:00'"
         ))
     engine.dispose()
     get_engine.cache_clear()

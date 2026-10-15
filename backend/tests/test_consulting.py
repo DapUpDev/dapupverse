@@ -64,14 +64,21 @@ def test_unknown_student_is_404(client, people):
 
 def test_check_in_schedule_defaults_to_thursday_8am_pacific_and_can_change(client, people):
     assert client.get("/admin/settings", headers=people).json() == {
-        "checkinWeekday": 3, "checkinTime": "08:00", "timezone": "America/Los_Angeles"}
-    new = {"checkinWeekday": 5, "checkinTime": "10:30", "timezone": "Pacific/Auckland"}
-    assert client.put("/admin/settings", json=new, headers=people).json() == new
-    assert client.get("/admin/settings", headers=people).json() == new
+        "checkinWeekday": 3, "checkinTime": "08:00", "timezone": "America/Los_Angeles",
+        "meetingDays": [5, 6], "meetingStart": "09:00", "meetingEnd": "17:00"}
+    new = {"checkinWeekday": 5, "checkinTime": "10:30", "timezone": "Pacific/Auckland",
+           "meetingDays": [6, 0, 6], "meetingStart": "13:00", "meetingEnd": "20:30"}
+    saved = {**new, "meetingDays": [0, 6]}
+    assert client.put("/admin/settings", json=new, headers=people).json() == saved
+    assert client.get("/admin/settings", headers=people).json() == saved
+    # Meeting hours are optional on save: left out = unchanged.
+    only_checkin = {"checkinWeekday": 3, "checkinTime": "08:00", "timezone": "America/Los_Angeles"}
+    assert client.put("/admin/settings", json=only_checkin, headers=people).json()["meetingStart"] == "13:00"
 
 
 @pytest.mark.parametrize("change", [{"checkinWeekday": 7}, {"checkinTime": "25:00"}, {"checkinTime": "8am"},
-                                    {"timezone": "Mars/Olympus"}])
+                                    {"timezone": "Mars/Olympus"}, {"meetingDays": []}, {"meetingDays": [7]},
+                                    {"meetingStart": "18:00", "meetingEnd": "09:00"}])
 def test_schedule_is_validated(client, people, change):
     body = {"checkinWeekday": 3, "checkinTime": "08:00", "timezone": "America/Los_Angeles", **change}
     assert client.put("/admin/settings", json=body, headers=people).status_code == 422

@@ -9,7 +9,7 @@ from enum import StrEnum
 
 import uuid
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, SmallInteger, String, Text, Time, func, text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, LargeBinary, Numeric, SmallInteger, String, Text, Time, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -248,3 +248,51 @@ class ProgramSettings(Base):
     checkin_weekday: Mapped[int] = mapped_column(SmallInteger)  # Monday = 0
     checkin_time: Mapped[time] = mapped_column(Time)
     timezone: Mapped[str] = mapped_column(String(64))
+    # Shared meeting hours, in `timezone`: when bookings may be placed.
+    meeting_days: Mapped[list[int]] = mapped_column(ARRAY(SmallInteger))  # Monday = 0
+    meeting_start: Mapped[time] = mapped_column(Time)
+    meeting_end: Mapped[time] = mapped_column(Time)
+
+
+class GoogleConnection(Base):
+    """A person's Google Calendar link (app/calendar.py). refresh_token is
+    Fernet-encrypted; only app/calendar.py decrypts it."""
+
+    __tablename__ = "google_connections"
+
+    user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    google_email: Mapped[str] = mapped_column(String(320))
+    refresh_token: Mapped[bytes] = mapped_column(LargeBinary)
+    connected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Booking(Base):
+    """A proposed or confirmed meeting (app/scheduling.py)."""
+
+    __tablename__ = "bookings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    kind: Mapped[str] = mapped_column(String(10))  # triage | manual
+    check_in_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("check_ins.id", ondelete="CASCADE"), unique=True)
+    requested_by: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    student_id: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
+    status: Mapped[str] = mapped_column(String(20))
+    minutes: Mapped[int | None] = mapped_column(SmallInteger)
+    starts_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    options: Mapped[list[datetime]] = mapped_column(ARRAY(DateTime(timezone=True)), server_default="{}")
+    title: Mapped[str] = mapped_column(Text, server_default="")
+    note: Mapped[str] = mapped_column(Text, server_default="")
+    reason: Mapped[str] = mapped_column(Text, server_default="")
+    agenda: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
+    google_event_id: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class BookingPerson(Base):
+    __tablename__ = "booking_people"
+
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("bookings.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    role: Mapped[str] = mapped_column(String(10))  # student | mentor
+    response: Mapped[str] = mapped_column(String(10), server_default="pending")  # pending | accepted | declined
