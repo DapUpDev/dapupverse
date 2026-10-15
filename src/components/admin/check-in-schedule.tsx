@@ -17,7 +17,7 @@ import { apiBaseUrl, apiFetch } from "@/lib/api/client";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 
 /**
- * Admin: when the weekly check-in email goes out to consulting students.
+ * Admin: when the weekly check-in email goes out to Premier Fellowship students.
  * One shared setting; the worker checks it every hour.
  */
 
@@ -156,7 +156,7 @@ export function CheckInSchedule() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground">
-        Consulting students get their check-in every{" "}
+        Premier Fellowship students get their check-in every{" "}
         {DAYS[String(settings.checkinWeekday)]} at {settings.checkinTime},{" "}
         {zones[settings.timezone]}. It stays open for two days, with one
         reminder after the first.

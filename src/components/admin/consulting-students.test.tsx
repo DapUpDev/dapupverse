@@ -47,7 +47,7 @@ describe("ConsultingStudents", () => {
 
     await user.click(
       await screen.findByRole("checkbox", {
-        name: "On the consulting package",
+        name: "In the Premier Fellowship",
       }),
     );
     await waitFor(() =>

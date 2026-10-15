@@ -97,10 +97,10 @@ export default function AdminPage() {
             id="admin-consulting-heading"
             className="font-display text-2xl font-normal tracking-[-0.02em]"
           >
-            Consulting students
+            Premier Fellowship
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Only students on the consulting package get the weekly check-in.
+            Only students in the Premier Fellowship get the weekly check-in.
             Each can have up to three mentors on their team.
           </p>
           <div className="mt-4">
@@ -115,7 +115,7 @@ export default function AdminPage() {
             Weekly check-in
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            When the check-in email goes out to consulting students.
+            When the check-in email goes out to Premier Fellowship students.
           </p>
           <div className="mt-4">
             <CheckInSchedule />

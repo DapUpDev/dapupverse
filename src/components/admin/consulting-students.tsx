@@ -19,7 +19,7 @@ import type { Mentor } from "@/lib/domain/types";
 import { mentorRepository } from "@/lib/repositories";
 
 /**
- * Admin: which students are on the consulting package (only they get the
+ * Admin: which students are in the Premier Fellowship (the USA applications consulting package, billed monthly) (only they get the
  * weekly check-in) and which mentors are on each one's team. Saves on
  * every change. Live API only: consulting data has no mock.
  */
@@ -62,7 +62,7 @@ export function ConsultingStudents() {
       <p className="sheet p-5 text-muted-foreground">
         {failed
           ? "Couldn't load students. Refresh to try again."
-          : "Consulting students are managed on the live site."}
+          : "Premier Fellowship students are managed on the live site."}
       </p>
     );
   }
@@ -144,7 +144,7 @@ export function ConsultingStudents() {
                   }
                 />
                 <Label htmlFor={id} className="cursor-pointer font-normal">
-                  On the consulting package
+                  In the Premier Fellowship
                 </Label>
               </div>
               {student.consulting ? (
