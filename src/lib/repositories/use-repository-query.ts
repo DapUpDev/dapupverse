@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
 import {
   repositoryChangeVersion,
   subscribeRepositoryChanges,
@@ -21,6 +22,10 @@ import {
  *
  * Returns `ready: false` until the first result resolves on the client, so
  * server rendering and hydration stay consistent.
+ *
+ * Queries wait until Clerk has loaded. Right after sign-in, a request sent
+ * any earlier carries no session token, the API answers 401, and the page
+ * would sit on its loading skeleton until the user navigated away and back.
  */
 export function useRepositoryQuery<T>(
   query: () => Promise<T>,
@@ -37,6 +42,7 @@ export function useRepositoryQuery<T>(
     ready: false,
   });
 
+  const { isLoaded } = useAuthIdentity();
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!refreshMs) return;
@@ -47,6 +53,7 @@ export function useRepositoryQuery<T>(
   }, [refreshMs]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     let cancelled = false;
     query().then((data) => {
       if (!cancelled) setState({ data, ready: true });
@@ -55,7 +62,7 @@ export function useRepositoryQuery<T>(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version, tick, ...deps]);
+  }, [isLoaded, version, tick, ...deps]);
 
   return state;
 }

@@ -13,12 +13,14 @@ import {
   studentOf,
   useMentorRequests,
 } from "@/components/connections/mentor-requests-inbox";
+import { useChatLinks } from "@/components/connections/use-chat-links";
 import { formatDate } from "@/lib/format";
 import { connectionRepository } from "@/lib/repositories";
 
 /** Mentor view of accepted (and ended) connections. */
 export function MentorConnections({ mentorId }: { mentorId: string }) {
   const { data, ready } = useMentorRequests(mentorId);
+  const chatLink = useChatLinks(mentorId);
 
   if (!ready) return <SheetsSkeleton />;
 
@@ -61,20 +63,24 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
             </p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="grid gap-3 lg:grid-cols-2">
             {accepted.map(({ request, student }) => (
               <RequestSheet
                 key={request.id}
+                compact
                 {...studentOf(student)}
                 chip={<StateChip state="accepted">Connected</StateChip>}
                 request={request}
                 when={`Connected ${formatDate(request.updatedAt)}`}
                 actions={
                   <>
-                    <ButtonLink href="/app/messages">Message</ButtonLink>
+                    <ButtonLink size="sm" href={chatLink(request.id)}>
+                      Message
+                    </ButtonLink>
                     {/* Kept apart from Message: neither asks to be confirmed. */}
                     <div className="ml-auto flex gap-2">
                       <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() =>
                           handleDisconnect(request.id, studentName(student))
@@ -83,6 +89,7 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
                         Disconnect
                       </Button>
                       <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() =>
                           handleBlock(request.id, studentName(student))
@@ -101,10 +108,11 @@ export function MentorConnections({ mentorId }: { mentorId: string }) {
 
       {ended.length > 0 ? (
         <RequestGroup id="mentor-ended-heading" title="Past connections">
-          <ul className="flex flex-col gap-3">
+          <ul className="grid gap-3 lg:grid-cols-2">
             {ended.map(({ request, student }) => (
               <RequestSheet
                 key={request.id}
+                compact
                 name={studentName(student)}
                 avatarUrl={student?.avatarUrl}
                 chip={

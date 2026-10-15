@@ -6,10 +6,9 @@ export default async function ConnectionsPage() {
   const identity = await requireAuth("/app/connections");
   return (
     <main className="page">
-      <div className="max-w-3xl">
-        <h1 className="page-title">
-          Connections
-        </h1>
+      {/* Wide enough for two compact cards per row on desktop. */}
+      <div className="max-w-5xl">
+        <h1 className="page-title">Connections</h1>
         <div className="mt-10">
           {identity.accountType === "mentor" ? (
             <MentorConnections mentorId={identity.dataUserId!} />
