@@ -325,6 +325,14 @@ function AnswerForm({
         />
       </div>
 
+      <p className="text-sm text-subtle">
+        An AI assistant (DeepSeek, which processes data in China) reads your
+        answers to suggest whether you need a meeting. Your name and email are
+        not sent, and your mentors make the final call.{" "}
+        <a href="/privacy" className="underline underline-offset-2">
+          Privacy policy
+        </a>
+      </p>
       <FieldError id="checkin-form-error" message={errors.form} />
       <div>
         <Button type="submit" disabled={submitting}>

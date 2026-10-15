@@ -124,7 +124,24 @@ def triage_job(kind: str, job: dict[str, Any]) -> None:
     if engine is None:
         log.warning("triage skipped: database is not configured")
         return
-    triage.triage_check_in(sessionmaker(bind=engine, expire_on_commit=False), str(job.get("check_in_id", "")))
+    sessions = sessionmaker(bind=engine, expire_on_commit=False)
+    check_in_id = str(job.get("check_in_id", ""))
+    triage.triage_check_in(sessions, check_in_id)
+
+    # Then the summary for the mentors and, for a meeting, a proposed slot.
+    # Also runs when triage was already done (a retried message), and books
+    # at most once per check-in.
+    import uuid
+
+    from app import scheduling
+    from app.google_calendar import get_calendar
+    from app.notifications import get_mailer
+
+    try:
+        key = uuid.UUID(check_in_id)
+    except ValueError:
+        return
+    scheduling.after_triage(sessions, key, get_calendar(), get_mailer(), datetime.now(UTC))
 
 
 def handle(job: dict[str, Any], message_id: str) -> None:

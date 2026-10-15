@@ -15,6 +15,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.avatars import router as avatars_router
 from app.checkins import router as checkins_router
 from app.consulting import router as consulting_router
+from app.google_calendar import router as google_router
+from app.scheduling import router as scheduling_router
 from app.mentors import router as mentors_router
 from app.messages import router as messages_router
 from app.connections import router as connections_router
@@ -66,6 +68,8 @@ app.include_router(avatars_router)
 app.include_router(webhooks_router)
 app.include_router(checkins_router)
 app.include_router(consulting_router)
+app.include_router(google_router)
+app.include_router(scheduling_router)
 
 
 @app.get("/health")

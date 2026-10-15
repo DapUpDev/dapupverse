@@ -15,16 +15,21 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiBaseUrl, apiFetch } from "@/lib/api/client";
 import { useAuthIdentity } from "@/lib/auth/use-auth-identity";
+import { cn } from "@/lib/utils";
 
 /**
- * Admin: when the weekly check-in email goes out to Premier Fellowship students.
- * One shared setting; the worker checks it every hour.
+ * Admin: when the weekly check-in email goes out to Premier Fellowship
+ * students (the worker checks every hour), and the meeting hours that
+ * check-in meetings are booked inside. One shared setting, one time zone.
  */
 
 type Settings = {
   checkinWeekday: number; // Monday = 0
   checkinTime: string; // "HH:MM"
   timezone: string;
+  meetingDays: number[];
+  meetingStart: string;
+  meetingEnd: string;
 };
 
 const DAYS: Record<string, string> = {
@@ -161,6 +166,72 @@ export function CheckInSchedule() {
         {zones[settings.timezone]}. It stays open for two days, with one
         reminder after the first.
       </p>
+      <fieldset className="flex flex-col gap-3 border-t pt-5">
+        <legend className="sr-only">Meeting hours</legend>
+        <p className="text-sm font-medium">Meeting hours</p>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(DAYS).map(([value, label]) => {
+            const day = Number(value);
+            const on = settings.meetingDays.includes(day);
+            return (
+              <label
+                key={value}
+                className={cn(
+                  "cursor-pointer rounded-full border border-foreground/15 px-3 py-1.5 text-sm transition-[background-color,border-color] duration-150 ease-out has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                  on
+                    ? "border-transparent bg-mark"
+                    : "hover:border-foreground/40",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={on}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      meetingDays: on
+                        ? settings.meetingDays.filter((d) => d !== day)
+                        : [...settings.meetingDays, day].sort(),
+                    })
+                  }
+                />
+                {label.slice(0, 3)}
+              </label>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="meeting-start">From</Label>
+            <Input
+              id="meeting-start"
+              type="time"
+              required
+              value={settings.meetingStart}
+              onChange={(e) =>
+                setSettings({ ...settings, meetingStart: e.target.value })
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="meeting-end">To</Label>
+            <Input
+              id="meeting-end"
+              type="time"
+              required
+              value={settings.meetingEnd}
+              onChange={(e) =>
+                setSettings({ ...settings, meetingEnd: e.target.value })
+              }
+            />
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Meetings from the weekly check-in are booked inside these hours, in
+          the same time zone, at the first time everyone on the team is free.
+        </p>
+      </fieldset>
       <div>
         <Button type="submit" disabled={!changed || saving}>
           {saving ? "Saving…" : "Save schedule"}

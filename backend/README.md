@@ -98,6 +98,26 @@ names or ids are sent to the model. `{"job":"triage-eval"}` runs five
 made-up check-ins with known answers through the real model and logs
 expected vs actual (nothing touches the database).
 
+### Meetings and Google Calendar
+
+`app/google_calendar.py`: anyone can connect Google Calendar from their
+profile (`POST /google/connect` -> Google consent -> `GET /google/callback`).
+Scopes: `calendar.freebusy` (busy times only) and `calendar.events.owned`
+(create the meeting), plus `openid email`. Refresh tokens are Fernet-encrypted
+with `GOOGLE_TOKEN_KEY` before they reach the database. Secrets:
+`dapup/prod/google-oauth` (JSON `client_id`, `client_secret`) and
+`dapup/prod/google-token-key`, created by hand (see `infra/google.tf`).
+
+`app/scheduling.py`: after the triage agent decides, the worker emails the
+student's Premier Fellowship team a summary (finished, missed, changed since
+last week, blockers, next deadline, decision, reason, agenda). For a meeting
+it proposes the earliest slot in the next 7 days inside the shared meeting
+hours (set on `/admin`) where every connected calendar is free; the first
+mentor to press Confirm on `/app/meetings/<id>` creates the Google event with
+everyone invited. If nothing fits, the student picks from the next options.
+Anyone can also request a meeting on `/app/meetings/new` with people they work
+with; everyone must accept.
+
 ## Routes
 
 | Route | Auth | Purpose |

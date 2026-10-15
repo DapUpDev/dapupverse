@@ -121,7 +121,10 @@ def checkin_email(*, to: str, student_name: str, check_in_id: str, closes: str) 
         f"Hi {student_name or 'there'},",
         ["How did this week go? Your weekly check-in takes about two minutes: "
          "what you got done, anything blocking you, and whether you'd like help from a mentor.",
-         f"It closes {closes}."],
+         f"It closes {closes}.",
+         "An AI assistant (DeepSeek, which processes data in China) reads your answers to suggest "
+         "whether you need a meeting; your name and email are not sent. Your mentors make the final call. "
+         "More at https://www.dapup.space/privacy"],
         "Do this week's check-in", app_url(f"/app/check-ins/{check_in_id}"),
     )
     return Email(to=to, subject="Your DapUp check-in for this week", text=text, html=body)

@@ -67,6 +67,15 @@ export default function PrivacyPage() {
               Requests you send to mentors, and the messages you exchange with
               them
             </li>
+            <li>
+              If you are in the Premier Fellowship: your weekly check-in
+              answers, your tasks and deadlines, and notes from your meetings
+            </li>
+            <li>
+              If you connect Google Calendar: the Google email address you
+              linked, the times you are busy (not what your events are), and the
+              meetings DapUp books for you
+            </li>
           </ul>
 
           <p className="text-muted-foreground">
@@ -105,6 +114,16 @@ export default function PrivacyPage() {
             <li>
               Review and approve mentor profiles before they appear in the
               directory
+            </li>
+            <li>
+              Send Premier Fellowship students a weekly check-in, and use an AI
+              assistant to suggest whether a mentor meeting is needed, how long
+              it should be and what to cover. A mentor always confirms before
+              anything is booked.
+            </li>
+            <li>
+              Find times when everyone in a meeting is free, and put booked
+              meetings on their calendars
             </li>
             <li>Keep the site working, safe and free of spam and abuse</li>
             <li>Answer your questions when you contact us</li>
@@ -156,14 +175,35 @@ export default function PrivacyPage() {
               Amazon Web Services (AWS) runs our servers, database and photo
               storage, and sends our emails
             </li>
+            <li>
+              DeepSeek&rsquo;s AI service reads Premier Fellowship check-in
+              answers, with related tasks and notes, to suggest a meeting
+              length. We do not include your name or email address. DeepSeek
+              processes this in China.
+            </li>
+            <li>
+              Google, if you connect Google Calendar, to check when you are busy
+              and to create meeting invitations
+            </li>
           </ul>
+
+          <p className="text-muted-foreground">
+            DapUp&rsquo;s use of information received from Google APIs adheres
+            to the Google API Services User Data Policy, including the Limited
+            Use requirements. We only use your calendar to find meeting times
+            and book meetings you or your mentors ask for, and you can
+            disconnect it at any time from your profile.
+          </p>
 
           <p className="text-muted-foreground">
             Some of these companies store information outside New Zealand,
             mainly in Australia and the United States. When that happens we make
             sure they must protect it to a standard comparable to New Zealand
-            privacy law. If we ever add a provider that processes your profile
-            or messages for a new purpose, we will update this page first.
+            privacy law. China, where DeepSeek processes check-ins, may not
+            offer comparable protection, so we only send it check-in content and
+            we tell Premier Fellowship students about this before their first
+            check-in. If we ever add a provider that processes your profile or
+            messages for a new purpose, we will update this page first.
           </p>
         </section>
 
