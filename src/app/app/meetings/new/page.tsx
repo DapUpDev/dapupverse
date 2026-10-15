@@ -9,8 +9,8 @@ export default async function NewMeetingPage() {
         <div className="flex flex-col gap-2">
           <h1 className="page-title">Request a meeting</h1>
           <p className="text-muted-foreground">
-            Pick who and how long, then a time when everyone is free. Everyone
-            else gets an email to accept.
+            Pick who and how long. Everyone marks when they&rsquo;re free over
+            the next week, and a mentor books a time that works for all.
           </p>
         </div>
         <RequestMeeting />

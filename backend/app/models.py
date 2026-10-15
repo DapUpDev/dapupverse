@@ -248,10 +248,6 @@ class ProgramSettings(Base):
     checkin_weekday: Mapped[int] = mapped_column(SmallInteger)  # Monday = 0
     checkin_time: Mapped[time] = mapped_column(Time)
     timezone: Mapped[str] = mapped_column(String(64))
-    # Shared meeting hours, in `timezone`: when bookings may be placed.
-    meeting_days: Mapped[list[int]] = mapped_column(ARRAY(SmallInteger))  # Monday = 0
-    meeting_start: Mapped[time] = mapped_column(Time)
-    meeting_end: Mapped[time] = mapped_column(Time)
 
 
 class GoogleConnection(Base):
@@ -276,7 +272,7 @@ class Booking(Base):
     check_in_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("check_ins.id", ondelete="CASCADE"), unique=True)
     requested_by: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
     student_id: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"))
-    status: Mapped[str] = mapped_column(String(20))
+    status: Mapped[str] = mapped_column(String(20))  # collecting | confirmed | no_meeting | needs_mentor | ...
     minutes: Mapped[int | None] = mapped_column(SmallInteger)
     starts_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     options: Mapped[list[datetime]] = mapped_column(ARRAY(DateTime(timezone=True)), server_default="{}")
@@ -285,6 +281,9 @@ class Booking(Base):
     reason: Mapped[str] = mapped_column(Text, server_default="")
     agenda: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
     google_event_id: Mapped[str | None] = mapped_column(Text)
+    # 'collecting': the 7-day window people mark their free 15-minute cells in.
+    window_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    window_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -296,3 +295,7 @@ class BookingPerson(Base):
     user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     role: Mapped[str] = mapped_column(String(10))  # student | mentor
     response: Mapped[str] = mapped_column(String(10), server_default="pending")  # pending | accepted | declined
+    slots: Mapped[list[datetime] | None] = mapped_column(ARRAY(DateTime(timezone=True)))  # free cells; None = not filled in
+    filled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reminded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    timezone: Mapped[str | None] = mapped_column(String(64))  # where they marked their times from

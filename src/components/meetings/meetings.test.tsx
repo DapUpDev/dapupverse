@@ -3,7 +3,10 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MeetingDetail } from "@/components/meetings/meeting-detail";
 import { RequestMeeting } from "@/components/meetings/request-meeting";
-import type { Meeting } from "@/components/meetings/meeting-types";
+import type {
+  Availability,
+  Meeting,
+} from "@/components/meetings/meeting-types";
 import { renderWithProviders } from "@/test/test-utils";
 
 const apiFetch = vi.fn();
@@ -15,84 +18,134 @@ vi.mock("@/lib/api/client", async (actual) => ({
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
-const PROPOSED: Meeting = {
+// A week far in the future so "window has passed" never triggers.
+const START = new Date(2031, 2, 10, 0, 0).toISOString();
+const END = new Date(2031, 2, 17, 0, 0).toISOString();
+const GREEN = new Date(2031, 2, 11, 9, 0).toISOString();
+
+const MEETING: Meeting = {
   id: "b1",
   kind: "triage",
-  status: "proposed",
+  status: "collecting",
   title: "Maya Lin and mentors",
   note: "",
   minutes: 30,
-  startsAt: "2026-10-17T17:00:00Z",
-  options: [],
+  startsAt: null,
+  windowStart: START,
+  windowEnd: END,
   reason: "Essay due soon.",
   agenda: ["Cut the introduction"],
   requestedBy: null,
-  myResponse: "pending",
   myRole: "mentor",
+  myFilledIn: false,
   people: [
     {
       id: "s",
       name: "Maya Lin",
       role: "student",
-      response: "accepted",
+      filledIn: true,
       calendarConnected: false,
     },
     {
       id: "m",
       name: "Jae Park",
       role: "mentor",
-      response: "pending",
+      filledIn: false,
       calendarConnected: true,
     },
   ],
 };
 
-describe("MeetingDetail", () => {
-  beforeEach(() => apiFetch.mockReset());
+const AVAILABILITY: Availability = {
+  mine: [],
+  suggested: false,
+  cells: [{ start: GREEN, free: ["s", "m"] }],
+  bookable: [GREEN],
+  blocked: [],
+};
 
-  it("shows why, the agenda, and books it on Confirm", async () => {
-    const user = userEvent.setup();
-    apiFetch.mockResolvedValueOnce(PROPOSED);
-    renderWithProviders(<MeetingDetail meetingId="b1" />, { role: "mentor" });
+function route(meeting: Meeting, availability: Availability) {
+  apiFetch.mockImplementation(
+    async (path: string, init?: { method?: string }) => {
+      if (path.includes("/availability")) return availability;
+      if (path.endsWith("/book"))
+        return { ...meeting, status: "confirmed", startsAt: GREEN };
+      if (init?.method === undefined) return meeting;
+      return meeting;
+    },
+  );
+}
 
-    expect(await screen.findByText("Essay due soon.")).toBeInTheDocument();
-    expect(screen.getByText("Cut the introduction")).toBeInTheDocument();
-    expect(screen.getByText("Waiting for answers")).toBeInTheDocument();
-
-    apiFetch.mockResolvedValueOnce({
-      ...PROPOSED,
-      status: "confirmed",
-      myResponse: "accepted",
-    });
-    await user.click(screen.getByRole("button", { name: "Confirm" }));
-    expect(apiFetch).toHaveBeenLastCalledWith("/meetings/b1/respond", {
-      method: "POST",
-      body: { accept: true },
-    });
-    expect(await screen.findByText("Booked")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Confirm" }),
-    ).not.toBeInTheDocument();
+describe("MeetingDetail with the availability grid", () => {
+  beforeEach(() => {
+    apiFetch.mockReset();
   });
 
-  it("lets the student pick an offered time when nothing fit", async () => {
+  it("marks a cell and saves my times", async () => {
     const user = userEvent.setup();
-    apiFetch.mockResolvedValueOnce({
-      ...PROPOSED,
-      status: "no_slot",
-      startsAt: null,
-      options: ["2026-10-24T16:00:00Z", "2026-10-24T16:30:00Z"],
-      myRole: "student",
-      myResponse: "accepted",
-    });
+    route(MEETING, AVAILABILITY);
+    renderWithProviders(<MeetingDetail meetingId="b1" />, { role: "mentor" });
+
+    expect(
+      await screen.findByText("Waiting for Jae Park."),
+    ).toBeInTheDocument();
+    const mine = screen.getByRole("group", { name: "Your free times" });
+    const cells = mine.querySelectorAll("button:not([disabled])");
+    expect(cells.length).toBeGreaterThan(100);
+    await user.click(cells[40]);
+    expect(cells[40]).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: "Save my times" }));
+    await waitFor(() =>
+      expect(apiFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/meetings/b1/availability?timezone="),
+        { method: "PUT", body: { slots: [expect.any(String)] } },
+      ),
+    );
+  });
+
+  it("lets a mentor book a time that works for everyone", async () => {
+    const user = userEvent.setup();
+    route(
+      {
+        ...MEETING,
+        myFilledIn: true,
+        people: MEETING.people.map((p) => ({ ...p, filledIn: true })),
+      },
+      AVAILABILITY,
+    );
+    renderWithProviders(<MeetingDetail meetingId="b1" />, { role: "mentor" });
+
+    await user.click(
+      await screen.findByRole("button", { name: /Recommended/ }),
+    );
+    await user.click(screen.getByRole("button", { name: /^Book / }));
+    await waitFor(() =>
+      expect(apiFetch).toHaveBeenCalledWith("/meetings/b1/book", {
+        method: "POST",
+        body: { startsAt: GREEN },
+      }),
+    );
+    expect(await screen.findByText("Booked")).toBeInTheDocument();
+  });
+
+  it("shows the student the green times but no Book button", async () => {
+    route(
+      {
+        ...MEETING,
+        myRole: "student",
+        people: MEETING.people.map((p) => ({ ...p, filledIn: true })),
+      },
+      AVAILABILITY,
+    );
     renderWithProviders(<MeetingDetail meetingId="b1" />, { role: "student" });
-    const choices = await screen.findAllByRole("button", { name: /October/ });
-    apiFetch.mockResolvedValueOnce(PROPOSED);
-    await user.click(choices[1]);
-    expect(apiFetch).toHaveBeenLastCalledWith("/meetings/b1/pick", {
-      method: "POST",
-      body: { startsAt: "2026-10-24T16:30:00Z" },
-    });
+    expect(await screen.findByText(/Recommended/)).toBeInTheDocument();
+    expect(
+      screen.getByText("A mentor will book a green time."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Book / }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -102,64 +155,45 @@ describe("RequestMeeting", () => {
     push.mockReset();
   });
 
-  it("finds times everyone is free and sends the request", async () => {
+  it("sends the request and opens the grid", async () => {
     const user = userEvent.setup();
-    apiFetch.mockImplementation(async (path: string) => {
-      if (path === "/meetings/people")
-        return [
-          {
-            id: "m",
-            name: "Jae Park",
-            role: "mentor",
-            response: null,
-            calendarConnected: true,
-          },
-          {
-            id: "k",
-            name: "Kim Ito",
-            role: "mentor",
-            response: null,
-            calendarConnected: false,
-          },
-        ];
-      if (path === "/meetings/slots")
-        return {
-          slots: ["2026-10-20T01:00:00Z", "2026-10-20T01:45:00Z"],
-          notConnected: ["Kim Ito"],
-        };
-      return { ...PROPOSED, id: "new1" };
-    });
+    apiFetch.mockImplementation(async (path: string) =>
+      path === "/meetings/people"
+        ? [
+            {
+              id: "m",
+              name: "Jae Park",
+              role: "mentor",
+              filledIn: false,
+              calendarConnected: true,
+            },
+            {
+              id: "k",
+              name: "Kim Ito",
+              role: "mentor",
+              filledIn: false,
+              calendarConnected: false,
+            },
+          ]
+        : { ...MEETING, id: "new1" },
+    );
     renderWithProviders(<RequestMeeting />, { role: "student" });
 
-    const find = await screen.findByRole("button", { name: "Find times" });
-    expect(find).toBeDisabled();
-    await user.click(screen.getByRole("checkbox", { name: /Jae Park/ }));
-    await user.click(screen.getByRole("checkbox", { name: /Kim Ito/ }));
-    await user.click(screen.getByRole("radio", { name: "45 min" }));
-    await user.click(find);
-
-    expect(apiFetch).toHaveBeenCalledWith("/meetings/slots", {
-      method: "POST",
-      body: expect.objectContaining({ peopleIds: ["m", "k"], minutes: 45 }),
+    const send = await screen.findByRole("button", {
+      name: "Send and mark my times",
     });
-    expect(
-      await screen.findByText(/calendar not connected: Kim Ito/),
-    ).toBeInTheDocument();
-    await user.click(screen.getAllByRole("radio", { name: /\d:\d\d/ })[1]);
+    expect(send).toBeDisabled();
+    await user.click(screen.getByRole("checkbox", { name: /Jae Park/ }));
+    await user.click(screen.getByRole("radio", { name: "45 min" }));
     await user.type(screen.getByLabelText("Note (optional)"), "Essay plan");
-    await user.click(screen.getByRole("button", { name: "Send request" }));
+    await user.click(send);
 
     await waitFor(() =>
       expect(push).toHaveBeenCalledWith("/app/meetings/new1"),
     );
     expect(apiFetch).toHaveBeenCalledWith("/meetings", {
       method: "POST",
-      body: expect.objectContaining({
-        peopleIds: ["m", "k"],
-        minutes: 45,
-        startsAt: "2026-10-20T01:45:00Z",
-        note: "Essay plan",
-      }),
+      body: { peopleIds: ["m"], minutes: 45, title: "", note: "Essay plan" },
     });
   });
 });

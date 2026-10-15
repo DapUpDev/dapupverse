@@ -39,7 +39,7 @@ export function MeetingsList() {
   const upcoming = meetings.filter(
     (m) =>
       !needsMe(m) &&
-      (m.status === "proposed" ||
+      (m.status === "collecting" ||
         (m.status === "confirmed" &&
           m.startsAt &&
           new Date(m.startsAt).getTime() > now)),
@@ -86,8 +86,8 @@ function Group({ title, meetings }: { title: string; meetings: Meeting[] }) {
                   <p className="text-sm text-muted-foreground">
                     {m.startsAt
                       ? `${formatWhen(m.startsAt)} · ${m.minutes} min`
-                      : m.status === "no_slot"
-                        ? `${m.minutes} min · pick a time`
+                      : m.status === "collecting"
+                        ? `${m.minutes} min · ${needsMe(m) ? "mark your times" : `${m.people.filter((p) => p.filledIn).length} of ${m.people.length} have marked times`}`
                         : "Summary only"}
                     {" · "}
                     {m.people.map((p) => p.name).join(", ")}

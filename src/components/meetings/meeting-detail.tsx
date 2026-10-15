@@ -1,44 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { ButtonLink } from "@/components/ui/button-link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ButtonLink } from "@/components/ui/button-link";
 import { StateChip } from "@/components/connections/mentor-requests-inbox";
+import { AvailabilityGrid } from "@/components/meetings/availability-grid";
 import {
   formatWhen,
   STATUS,
   type Meeting,
 } from "@/components/meetings/meeting-types";
 import { useApiGet } from "@/components/meetings/use-api";
-import { ApiError, apiFetch } from "@/lib/api/client";
-import { cn } from "@/lib/utils";
 
-const RESPONSE = {
-  accepted: "Accepted",
-  pending: "Hasn't answered",
-  declined: "Declined",
-} as const;
-
-/** One meeting: when, who, why, and my Confirm / Decline / pick a time. */
+/**
+ * One meeting. While it's finding a time, the when2meet grid; once booked,
+ * when and who. Either way: why, the agenda and any note.
+ */
 export function MeetingDetail({ meetingId }: { meetingId: string }) {
   const [loaded, setMeeting] = useApiGet<Meeting>(
     `/meetings/${encodeURIComponent(meetingId)}`,
   );
-  const [busy, setBusy] = useState(false);
+  const [now] = useState(() => Date.now()); // render stays pure
 
   if (loaded.state === "loading") {
     return (
       <div className="flex flex-col gap-4" aria-busy="true">
         <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
   if (loaded.state !== "ready") {
     return (
-      <div className="sheet flex flex-col items-start gap-3 p-6 shadow-sheet sm:p-8">
+      <div className="sheet flex max-w-2xl flex-col items-start gap-3 p-6 shadow-sheet sm:p-8">
         <h1 className="font-display text-xl font-semibold">
           {loaded.state === "missing"
             ? "Meeting not found"
@@ -58,30 +52,13 @@ export function MeetingDetail({ meetingId }: { meetingId: string }) {
 
   const meeting = loaded.data;
   const [chip, label] = STATUS[meeting.status];
-
-  const act = async (path: string, body: object, done: string) => {
-    setBusy(true);
-    try {
-      setMeeting(
-        await apiFetch<Meeting>(
-          `/meetings/${encodeURIComponent(meeting.id)}/${path}`,
-          { method: "POST", body },
-        ),
-      );
-      toast.success(done);
-    } catch (error) {
-      toast.error(
-        error instanceof ApiError && error.status !== 500
-          ? error.message
-          : "Something went wrong. Try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
+  const closed =
+    meeting.status === "collecting" &&
+    meeting.windowEnd !== null &&
+    Date.parse(meeting.windowEnd) < now; // a finished week can't be booked
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <p className="label-caps text-subtle">
           {meeting.kind === "triage" ? "From the weekly check-in" : "Requested"}
@@ -90,59 +67,26 @@ export function MeetingDetail({ meetingId }: { meetingId: string }) {
           <h1 className="page-title">{meeting.title}</h1>
           <StateChip state={chip}>{label}</StateChip>
         </div>
-        {meeting.startsAt ? (
-          <p className="text-lg">
-            {formatWhen(meeting.startsAt)} · {meeting.minutes} minutes
-          </p>
-        ) : null}
+        <p className="text-lg">
+          {meeting.startsAt
+            ? `${formatWhen(meeting.startsAt)} · ${meeting.minutes} minutes`
+            : meeting.minutes
+              ? `${meeting.minutes} minutes · ${meeting.people.map((p) => p.name).join(", ")}`
+              : null}
+        </p>
       </header>
 
-      {meeting.status === "proposed" && meeting.myResponse === "pending" ? (
-        <div className="sheet flex flex-wrap items-center justify-between gap-4 p-5 shadow-sheet">
-          <p className="font-medium">Does this time work for you?</p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => act("respond", { accept: false }, "You declined.")}
-            >
-              Decline
-            </Button>
-            <Button
-              disabled={busy}
-              onClick={() =>
-                act("respond", { accept: true }, "Confirmed. Thank you.")
-              }
-            >
-              Confirm
-            </Button>
-          </div>
-        </div>
+      {meeting.status === "collecting" && !closed ? (
+        <AvailabilityGrid meeting={meeting} onChanged={setMeeting} />
+      ) : null}
+      {closed ? (
+        <p className="sheet max-w-2xl p-5 text-muted-foreground">
+          The week for this meeting has passed without a booking. Request a new
+          meeting to pick another time.
+        </p>
       ) : null}
 
-      {meeting.status === "no_slot" && meeting.myRole === "student" ? (
-        <div className="sheet flex flex-col gap-3 p-5 shadow-sheet">
-          <p className="font-medium">
-            Nothing fit this week. Pick a time and your mentors will confirm it.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {meeting.options.map((option) => (
-              <Button
-                key={option}
-                variant="outline"
-                disabled={busy}
-                onClick={() =>
-                  act("pick", { startsAt: option }, "Sent to your mentors.")
-                }
-              >
-                {formatWhen(option)}
-              </Button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="sheet flex flex-col gap-6 p-6 shadow-sheet sm:p-8">
+      <div className="sheet flex max-w-2xl flex-col gap-6 p-6 shadow-sheet sm:p-8">
         <section className="flex flex-col gap-2">
           <h2 className="label-caps text-subtle">Who</h2>
           <ul className="flex flex-col gap-1.5">
@@ -157,16 +101,11 @@ export function MeetingDetail({ meetingId }: { meetingId: string }) {
                     {p.role === "mentor" ? "Mentor" : "Student"}
                   </span>
                 </span>
-                <span
-                  className={cn(
-                    "text-sm",
-                    p.response === "accepted"
-                      ? "text-foreground"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {p.response ? RESPONSE[p.response] : null}
-                </span>
+                {meeting.status === "collecting" ? (
+                  <span className="text-sm text-muted-foreground">
+                    {p.filledIn ? "Marked their times" : "Hasn't marked times"}
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>

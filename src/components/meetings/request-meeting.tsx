@@ -9,63 +9,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  formatDay,
-  formatTime,
-  type Meeting,
-  type MeetingPerson,
+import type {
+  Meeting,
+  MeetingPerson,
 } from "@/components/meetings/meeting-types";
 import { useApiGet } from "@/components/meetings/use-api";
-import { ApiError, apiFetch } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
 /**
  * Ask for a meeting outside the weekly check-in: choose people you work
- * with and a length, see times everyone is free (from their Google
- * Calendars, in your time zone), pick one. Everyone else must accept.
+ * with and a length. Everyone gets a link to mark when they're free over
+ * the next week, and a mentor books a time that works for all.
  */
 
 const LENGTHS = [15, 30, 45, 60];
-const zone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-type Slots = { slots: string[]; notConnected: string[] };
 
 export function RequestMeeting() {
   const router = useRouter();
   const [people] = useApiGet<MeetingPerson[]>("/meetings/people");
   const [chosen, setChosen] = useState<string[]>([]);
   const [minutes, setMinutes] = useState(30);
-  const [slots, setSlots] = useState<Slots | null>(null);
-  const [startsAt, setStartsAt] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const changed = () => {
-    setSlots(null);
-    setStartsAt(null);
-  };
-
-  const findTimes = async () => {
-    setBusy(true);
-    try {
-      setSlots(
-        await apiFetch<Slots>("/meetings/slots", {
-          method: "POST",
-          body: { peopleIds: chosen, minutes, timezone: zone() },
-        }),
-      );
-      setStartsAt(null);
-    } catch {
-      toast.error("Couldn't check calendars. Try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const send = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!startsAt) return;
+    if (chosen.length === 0) return;
     setBusy(true);
     try {
       const meeting = await apiFetch<Meeting>("/meetings", {
@@ -73,20 +44,14 @@ export function RequestMeeting() {
         body: {
           peopleIds: chosen,
           minutes,
-          timezone: zone(),
-          startsAt,
           title: title.trim(),
           note: note.trim(),
         },
       });
-      toast.success("Request sent");
+      toast.success("Request sent. Now mark when you're free.");
       router.push(`/app/meetings/${meeting.id}`);
-    } catch (error) {
-      toast.error(
-        error instanceof ApiError && error.status === 409
-          ? error.message
-          : "Couldn't send the request. Try again.",
-      );
+    } catch {
+      toast.error("Couldn't send the request. Try again.");
       setBusy(false);
     }
   };
@@ -104,12 +69,6 @@ export function RequestMeeting() {
     );
   }
 
-  const byDay = new Map<string, string[]>();
-  for (const slot of slots?.slots ?? []) {
-    const day = formatDay(slot);
-    byDay.set(day, [...(byDay.get(day) ?? []), slot]);
-  }
-
   return (
     <form
       onSubmit={send}
@@ -124,14 +83,13 @@ export function RequestMeeting() {
               <Checkbox
                 id={id}
                 checked={chosen.includes(person.id)}
-                onCheckedChange={(checked) => {
+                onCheckedChange={(checked) =>
                   setChosen((list) =>
                     checked === true
                       ? [...list, person.id]
                       : list.filter((p) => p !== person.id),
-                  );
-                  changed();
-                }}
+                  )
+                }
               />
               <Label
                 htmlFor={id}
@@ -140,7 +98,6 @@ export function RequestMeeting() {
                 {person.name}
                 <span className="text-sm text-muted-foreground">
                   {person.role === "mentor" ? "Mentor" : "Student"}
-                  {person.calendarConnected ? "" : " · calendar not connected"}
                 </span>
               </Label>
             </div>
@@ -166,10 +123,7 @@ export function RequestMeeting() {
                 name="minutes"
                 value={length}
                 checked={minutes === length}
-                onChange={() => {
-                  setMinutes(length);
-                  changed();
-                }}
+                onChange={() => setMinutes(length)}
                 className="sr-only"
               />
               {length} min
@@ -178,96 +132,32 @@ export function RequestMeeting() {
         </div>
       </fieldset>
 
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="meeting-title">Title (optional)</Label>
+        <Input
+          id="meeting-title"
+          maxLength={120}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Essay plan"
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="meeting-note">Note (optional)</Label>
+        <Textarea
+          id="meeting-note"
+          rows={3}
+          maxLength={1000}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="What you'd like to cover."
+        />
+      </div>
       <div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={chosen.length === 0 || busy}
-          onClick={findTimes}
-        >
-          {busy && !slots ? "Checking calendars…" : "Find times"}
+        <Button type="submit" disabled={chosen.length === 0 || busy}>
+          {busy ? "Sending…" : "Send and mark my times"}
         </Button>
       </div>
-
-      {slots ? (
-        <fieldset className="flex flex-col gap-4">
-          <legend className="mb-1 text-sm font-medium">
-            Times everyone is free
-          </legend>
-          {slots.notConnected.length > 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Not checked, calendar not connected:{" "}
-              {slots.notConnected.join(", ")}.
-            </p>
-          ) : null}
-          {byDay.size === 0 ? (
-            <p className="text-muted-foreground">
-              Nothing in the next two weeks. Try a shorter meeting or fewer
-              people.
-            </p>
-          ) : (
-            [...byDay].map(([day, times]) => (
-              <div key={day} className="flex flex-col gap-2">
-                <p className="text-sm text-subtle">{day}</p>
-                <div className="flex flex-wrap gap-2">
-                  {times.map((slot) => (
-                    <label
-                      key={slot}
-                      className={cn(
-                        "cursor-pointer rounded-full border border-foreground/15 px-3.5 py-1.5 text-sm transition-[background-color,border-color] duration-150 ease-out has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                        startsAt === slot
-                          ? "border-transparent bg-mark"
-                          : "hover:border-foreground/40",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="slot"
-                        value={slot}
-                        checked={startsAt === slot}
-                        onChange={() => setStartsAt(slot)}
-                        className="sr-only"
-                      />
-                      {formatTime(slot)}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </fieldset>
-      ) : null}
-
-      {startsAt ? (
-        <>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="meeting-title">Title (optional)</Label>
-            <Input
-              id="meeting-title"
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Essay plan"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="meeting-note">Note (optional)</Label>
-            <Textarea
-              id="meeting-note"
-              rows={3}
-              maxLength={1000}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="What you'd like to cover."
-            />
-          </div>
-          <div>
-            <Button type="submit" disabled={busy}>
-              {busy ? "Sending…" : "Send request"}
-            </Button>
-          </div>
-        </>
-      ) : null}
     </form>
   );
 }

@@ -108,15 +108,19 @@ with `GOOGLE_TOKEN_KEY` before they reach the database. Secrets:
 `dapup/prod/google-oauth` (JSON `client_id`, `client_secret`) and
 `dapup/prod/google-token-key`, created by hand (see `infra/google.tf`).
 
-`app/scheduling.py`: after the triage agent decides, the worker emails the
-student's Premier Fellowship team a summary (finished, missed, changed since
-last week, blockers, next deadline, decision, reason, agenda). For a meeting
-it proposes the earliest slot in the next 7 days inside the shared meeting
-hours (set on `/admin`) where every connected calendar is free; the first
-mentor to press Confirm on `/app/meetings/<id>` creates the Google event with
-everyone invited. If nothing fits, the student picks from the next options.
-Anyone can also request a meeting on `/app/meetings/new` with people they work
-with; everyone must accept.
+`app/scheduling.py`, when2meet-style. A meeting that needs a time is
+`collecting`: a 7-day window of 15-minute cells. Everyone marks the cells
+they are free on `/app/meetings/<id>` (07:00-22:00 in their own time zone,
+pre-filled from Google Calendar when connected). The group view colours each
+cell by how many are free (red none, lighter green some, green all, with
+"2/3" counts). Runs of all-green cells as long as the meeting are bookable,
+ranked best first (sooner, sensible hours for everyone, last week's slot),
+and any mentor in the meeting books one: a Google event with everyone
+invited. Times already booked in DapUp for anyone involved are never green.
+Meetings start from the triage agent (the team gets the summary email:
+finished, missed, changed, blockers, next deadline, decision, reason,
+agenda) or from `/app/meetings/new`. The hourly tick sends one reminder to
+anyone who hasn't marked their times after a day.
 
 ## Routes
 

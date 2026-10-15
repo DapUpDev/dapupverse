@@ -1,26 +1,25 @@
-"""Meetings: find a time that works for everyone, propose it, confirm it.
+"""Meetings, scheduled the when2meet way.
+
+Every meeting that needs a time starts 'collecting': a 7-day window of
+15-minute cells. Each person marks the cells they're free (the page shows
+07:00-22:00 in their own time zone, pre-filled from Google Calendar when
+it's connected: busy times off, the rest on). The group view colours each
+cell by how many are free; a run of all-green cells as long as the meeting
+is bookable, and any mentor in the meeting books one. Booking puts it on
+Google Calendar with everyone invited (Google sends the invites) and emails
+everyone.
 
 Two ways a meeting starts:
+  triage  (worker, after_triage()): the student's Premier Fellowship team
+          gets the summary email (finished, missed, changed, blockers, next
+          deadline, decision, reason, agenda) and, for a meeting, everyone
+          gets a "mark when you're free" link. NO_MEETING and needs_mentor
+          send the summary only.
+  manual  (/app/meetings/new): anyone picks people they work with and a
+          length; everyone gets the link.
 
-triage (the worker, after the triage agent decides; after_triage()):
-    The student's Premier Fellowship team (up to 3 mentors) gets a summary
-    email: what the student finished, missed and changed since last week,
-    blockers, next deadline, the decision, reason and agenda. For a meeting,
-    the earliest slot in the next 7 days inside the shared meeting hours
-    (set on /admin) where every connected calendar is free is proposed;
-    the first mentor to press Confirm books it. If nothing fits this week,
-    the student is offered the next options (weeks 2-3) to pick from, and
-    the mentors are told. NO_MEETING and needs_mentor get the summary only.
-
-manual (/app/meetings/new, any student or mentor):
-    Pick people you work with and a length; DapUp lists times everyone is
-    free (any day, 08:00-21:00 in your time zone); pick one; everyone else
-    gets an email and must accept. Booked when all have accepted.
-
-Booked = a Google Calendar event on the organiser's calendar with everyone
-invited (Google sends the invites), plus a DapUp email to everyone. If
-nobody involved has connected Google, the booking is still confirmed and
-the email carries the time.
+The hourly check-in tick also runs remind_unfilled(): one reminder a day
+after the meeting started, to anyone who hasn't marked their times.
 """
 
 from __future__ import annotations
@@ -28,7 +27,6 @@ from __future__ import annotations
 import logging
 import math
 import uuid
-from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Annotated
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -50,65 +48,129 @@ from app.notifications import Email, Mailer, _render, app_url, deliver, get_mail
 
 log = logging.getLogger("dapup.scheduling")
 
-STEP_SECONDS = 15 * 60
+CELL = timedelta(minutes=15)
+WINDOW = timedelta(days=7)
+DAY_START, DAY_END = time(7), time(22)  # the grid's hours, in each viewer's own time zone
 LENGTHS = (15, 30, 45, 60)
 MAX_PEOPLE = 5
+REMIND_AFTER = timedelta(days=1)
+PACIFIC = ZoneInfo("America/Los_Angeles")
 
 
-# ---- finding a time --------------------------------------------------------
-
-@dataclass(frozen=True)
-class Hours:
-    days: frozenset[int]  # Monday = 0
-    start: time
-    end: time
-    tz: ZoneInfo
-
-
-DEFAULT_HOURS = Hours(frozenset({5, 6}), time(9), time(17), ZoneInfo("America/Los_Angeles"))
-
-
-def load_hours(session: Session) -> Hours:
-    row = session.get(ProgramSettings, 1)
-    if row is None:
-        return DEFAULT_HOURS
-    return Hours(frozenset(row.meeting_days), row.meeting_start, row.meeting_end, ZoneInfo(row.timezone))
-
+# ---- the grid ------------------------------------------------------------------
 
 def _ceil(t: datetime) -> datetime:
-    """Round up to the next quarter hour."""
-    return datetime.fromtimestamp(math.ceil(t.timestamp() / STEP_SECONDS) * STEP_SECONDS, t.tzinfo)
+    """Round up to the next quarter hour (UTC)."""
+    step = CELL.total_seconds()
+    return datetime.fromtimestamp(math.ceil(t.timestamp() / step) * step, UTC)
 
 
-def free_slots(busy: list[tuple[datetime, datetime]], start: datetime, end: datetime, minutes: int,
-               hours: Hours, limit: int = 10) -> list[datetime]:
-    """Earliest-first starts (UTC) of back-to-back free slots of `minutes`,
-    inside `hours`, between start and end, clear of every busy block."""
-    length = timedelta(minutes=minutes)
-    slots: list[datetime] = []
-    day, last = start.astimezone(hours.tz).date(), end.astimezone(hours.tz).date()
-    while day <= last and len(slots) < limit:
-        if day.weekday() in hours.days:
-            t = _ceil(max(datetime.combine(day, hours.start, hours.tz), start))
-            close = min(datetime.combine(day, hours.end, hours.tz), end)
-            while t + length <= close and len(slots) < limit:
-                clash = max((e for s, e in busy if s < t + length and e > t), default=None)
-                if clash:
-                    t = _ceil(clash)
-                else:
-                    slots.append(t.astimezone(UTC))
-                    t += length
-        day += timedelta(days=1)
-    return slots
+def new_window(now: datetime) -> tuple[datetime, datetime]:
+    start = _ceil(now + timedelta(hours=1))
+    return start, start + WINDOW
+
+
+def grid_cells(window_start: datetime, window_end: datetime, tz: ZoneInfo) -> list[datetime]:
+    """Cell starts (UTC) inside the window that fall 07:00-22:00 in `tz`."""
+    cells, t = [], window_start
+    while t < window_end:
+        if DAY_START <= t.astimezone(tz).time() < DAY_END:
+            cells.append(t)
+        t += CELL
+    return cells
+
+
+def free_cells(busy: list[tuple[datetime, datetime]], cells: list[datetime]) -> list[datetime]:
+    """The cells no busy block touches: the pre-filled guess."""
+    return [c for c in cells if not any(s < c + CELL and e > c for s, e in busy)]
+
+
+def bookable(slot_sets: list[set[datetime] | None], window_end: datetime, minutes: int,
+             blocked: set[datetime] = frozenset()) -> list[datetime]:
+    """Starts where everyone is free for the whole meeting (all-green runs).
+    Nothing is bookable until everyone has filled in. `blocked` cells (an
+    existing DapUp meeting for someone here) never count as free."""
+    if not slot_sets or any(s is None for s in slot_sets):
+        return []
+    common = set.intersection(*slot_sets) - blocked
+    need = minutes // 15
+    return sorted(c for c in common
+                  if all(c + i * CELL in common for i in range(need)) and c + timedelta(minutes=minutes) <= window_end)
+
+
+def cells_touching(busy: list[tuple[datetime, datetime]], window_start: datetime,
+                   window_end: datetime) -> set[datetime]:
+    """Every cell in the window that a busy block overlaps."""
+    out, t = set(), window_start
+    while t < window_end:
+        if any(s < t + CELL and e > t for s, e in busy):
+            out.add(t)
+        t += CELL
+    return out
+
+
+def rank(starts: list[datetime], zones: list[ZoneInfo], now: datetime,
+         last: datetime | None = None) -> list[datetime]:
+    """Best first, by soft preferences (lower score wins):
+      +1 per day from now                  sooner is better
+      +2 per person outside 09:00-20:00    sensible hours where each person is
+      -3 near the last meeting's slot      same weekday, within an hour (UTC)
+    Ties keep the earliest."""
+    def score(t: datetime) -> float:
+        value = (t - now).total_seconds() / 86400
+        value += sum(2 for z in zones if not 9 <= t.astimezone(z).hour < 20)
+        if last is not None and t.weekday() == last.weekday():
+            apart = abs((t.hour * 60 + t.minute) - (last.hour * 60 + last.minute))
+            value -= 3 if apart <= 60 else 0
+        return value
+    return sorted(starts, key=lambda t: (score(t), t))
+
+
+def dapup_busy(session: Session, user_ids: list[str], start: datetime, end: datetime,
+               exclude: uuid.UUID | None = None) -> list[tuple[datetime, datetime]]:
+    """Meetings already booked in DapUp for any of these people, so the same
+    time can't be booked twice (Google Calendar connected or not)."""
+    rows = session.execute(
+        select(Booking.starts_at, Booking.minutes).join(BookingPerson, BookingPerson.booking_id == Booking.id)
+        .where(BookingPerson.user_id.in_(user_ids), Booking.status == "confirmed", Booking.id != exclude,
+               Booking.starts_at < end, Booking.starts_at > start - timedelta(hours=2))
+    ).all()
+    return [(s, s + timedelta(minutes=m)) for s, m in rows if s + timedelta(minutes=m) > start]
+
+
+def last_slot(session: Session, booking: Booking) -> datetime | None:
+    """When this student's previous DapUp meeting was, to favour the same slot."""
+    if not booking.student_id:
+        return None
+    return session.scalar(
+        select(Booking.starts_at).where(Booking.student_id == booking.student_id, Booking.status == "confirmed",
+                                        Booking.id != booking.id).order_by(Booking.starts_at.desc()).limit(1)
+    )
+
+
+def _utc(values) -> set[datetime]:
+    return {v.astimezone(UTC) for v in values}
+
+
+def _zone(name: str | None) -> ZoneInfo:
+    try:
+        return ZoneInfo(name or "America/Los_Angeles")
+    except (ZoneInfoNotFoundError, ValueError):
+        return PACIFIC
 
 
 def when(t: datetime, tz: ZoneInfo) -> str:
-    """e.g. "Saturday 18 October, 10:00 AM PDT" (by hand: Windows strftime has no %-d)."""
+    """e.g. "Saturday 17 October, 10:00 AM PDT" (by hand: Windows strftime has no %-d)."""
     t = t.astimezone(tz)
     return f"{t:%A} {t.day} {t:%B}, {t.hour % 12 or 12}:{t:%M} {'AM' if t.hour < 12 else 'PM'} {t:%Z}"
 
 
-# ---- who's who --------------------------------------------------------------
+def program_zone(session: Session) -> ZoneInfo:
+    row = session.get(ProgramSettings, 1)
+    return _zone(row.timezone if row else None)
+
+
+# ---- who's who ------------------------------------------------------------------
 
 def names(session: Session, ids: list[str]) -> dict[str, str]:
     rows = session.execute(
@@ -151,13 +213,20 @@ def people_i_can_invite(session: Session, user: Principal) -> list[str]:
     return sorted(ids)
 
 
-# ---- emails -----------------------------------------------------------------
+def _people(session: Session, booking: Booking) -> list[BookingPerson]:
+    return list(session.scalars(select(BookingPerson).where(BookingPerson.booking_id == booking.id)))
+
+
+# ---- emails -----------------------------------------------------------------------
 
 def _email(to: str | None, greeting_name: str, subject: str, lines: list[str], button: str, booking_id) -> Email | None:
     if not to:
         return None
     text, body = _render(f"Hi {greeting_name},", lines, button, app_url(f"/app/meetings/{booking_id}"))
     return Email(to=to, subject=subject, text=text, html=body)
+
+
+MARK = "Mark when you're free on the grid; DapUp fills in what it can from your Google Calendar."
 
 
 def triage_summary(session: Session, check_in: CheckIn, decision: TriageDecision, today: date) -> list[str]:
@@ -191,12 +260,14 @@ def triage_summary(session: Session, check_in: CheckIn, decision: TriageDecision
                     *(f"Agenda: {item}" for item in decision.agenda)]
 
 
-# ---- after the triage agent decides (worker) --------------------------------
+# ---- after the triage agent decides (worker) ------------------------------------
 
 def after_triage(sessions: sessionmaker[Session], check_in_id, calendar: Calendar | None, mailer: Mailer | None,
                  now: datetime) -> Booking | None:
-    """Summary to the team, and a proposed slot when there's a meeting. Runs
-    once per check-in (bookings.check_in_id is unique)."""
+    """Summary to the team and, for a meeting, a grid for everyone. Runs
+    once per check-in (bookings.check_in_id is unique). `calendar` is
+    unused here (pre-filling happens when each person opens the grid) and
+    kept so the worker's call stays the same."""
     emails: list[Email | None] = []
     with sessions.begin() as s:
         if s.scalar(select(Booking.id).where(Booking.check_in_id == check_in_id)):
@@ -209,49 +280,34 @@ def after_triage(sessions: sessionmaker[Session], check_in_id, calendar: Calenda
         if not team:
             log.warning("booking %s: student %s has no mentors on their team; nothing sent", check_in_id, check_in.student_id)
             return None
-        hours, student = load_hours(s), check_in.student_id
+        student = check_in.student_id
         who, inbox = names(s, team + [student]), invite_emails(s, team + [student])
-        summary = triage_summary(s, check_in, decision, now.astimezone(hours.tz).date())
+        summary = triage_summary(s, check_in, decision, now.astimezone(program_zone(s)).date())
         booking = Booking(kind="triage", check_in_id=check_in_id, student_id=student, title=f"{who[student]} and mentors",
                           reason=decision.reason, agenda=decision.agenda)
-        unread: list[str] = []
         if decision.status != "decided":
             booking.status, headline = "needs_mentor", "needs your decision"
         elif decision.decision == "NO_MEETING":
             booking.status, headline = "no_meeting", "no meeting needed this week"
         else:
-            booking.minutes = minutes = int(decision.decision)
-            busy, unread = calendar.busy(s, team + [student], now, now + timedelta(days=21)) if calendar else ([], team + [student])
-            first = free_slots(busy, now + timedelta(hours=2), now + timedelta(days=7), minutes, hours, limit=1)
-            if first:
-                booking.status, booking.starts_at = "proposed", first[0]
-                headline = f"{minutes}-minute meeting proposed for {when(first[0], hours.tz)}"
-            else:
-                booking.status = "no_slot"
-                booking.options = free_slots(busy, now + timedelta(days=7), now + timedelta(days=21), minutes, hours, limit=3)
-                headline = f"no {minutes}-minute slot fits this week"
+            booking.status, booking.minutes = "collecting", int(decision.decision)
+            booking.window_start, booking.window_end = new_window(now)
+            headline = f"{booking.minutes}-minute meeting: mark when you're free"
         s.add(booking)
         s.flush()
         s.add_all(BookingPerson(booking_id=booking.id, user_id=m, role="mentor") for m in team)
-        s.add(BookingPerson(booking_id=booking.id, user_id=student, role="student", response="accepted"))
+        s.add(BookingPerson(booking_id=booking.id, user_id=student, role="student"))
 
-        extra = []
-        if booking.status == "proposed":
-            extra = [f"Proposed time: {when(booking.starts_at, hours.tz)}, {booking.minutes} minutes.",
-                     "Press Confirm to book it on everyone's calendar."]
-        elif booking.status == "no_slot":
-            extra = ([f"Nothing fits this week. {who[student]} has been asked to pick one of: "
-                      + "; ".join(when(t, hours.tz) for t in booking.options) + "."]
-                     if booking.options else ["Nothing fits in the next three weeks. Please arrange a time directly."])
-            emails.append(_email(inbox[student], who[student], "Pick a time for your DapUp meeting",
-                                 [f"Your mentors want a {booking.minutes}-minute meeting, but nothing fits this week.",
-                                  "Pick one of the next available times and they'll confirm it."],
-                                 "Pick a time", booking.id) if booking.options else None)
-        if unread:
-            extra.append("Not checked (calendar not connected): " + ", ".join(who.get(u, u) for u in unread) + ".")
-        button = "Review and confirm" if booking.status == "proposed" else "Open in DapUp"
-        emails += [_email(inbox[m], who[m], f"{who[student]}: {headline}", summary + extra, button, booking.id)
+        collecting = booking.status == "collecting"
+        emails += [_email(inbox[m], who[m], f"{who[student]}: {headline}",
+                          summary + ([MARK, "Once everyone has, any mentor can book a time that works for all."]
+                                     if collecting else []),
+                          "Mark your times" if collecting else "Open in DapUp", booking.id)
                    for m in team]
+        if collecting:
+            emails.append(_email(inbox[student], who[student], "When are you free to meet your mentors?",
+                                 [f"Your mentors want a {booking.minutes}-minute meeting this week.", MARK],
+                                 "Mark your times", booking.id))
         log.info("booking %s for check-in %s: %s", booking.id, check_in_id, booking.status)
     for email in emails:
         if email and mailer:
@@ -259,26 +315,50 @@ def after_triage(sessions: sessionmaker[Session], check_in_id, calendar: Calenda
     return booking
 
 
-# ---- confirming --------------------------------------------------------------
+def remind_unfilled(sessions: sessionmaker[Session], mailer: Mailer | None, now: datetime) -> int:
+    """One reminder, a day in, to anyone who hasn't marked their times."""
+    emails: list[Email | None] = []
+    with sessions.begin() as s:
+        rows = s.execute(
+            select(BookingPerson, Booking).join(Booking, Booking.id == BookingPerson.booking_id).where(
+                Booking.status == "collecting", Booking.window_end > now, Booking.created_at <= now - REMIND_AFTER,
+                BookingPerson.slots.is_(None), BookingPerson.reminded_at.is_(None))
+        ).all()
+        ids = [p.user_id for p, _ in rows]
+        who, inbox = names(s, ids), invite_emails(s, ids)
+        for person, booking in rows:
+            person.reminded_at = now
+            emails.append(_email(inbox.get(person.user_id), who.get(person.user_id, "there"),
+                                 f"Reminder: mark your times for {booking.title}",
+                                 ["Everyone else is waiting on your times before the meeting can be booked.", MARK],
+                                 "Mark your times", booking.id))
+    for email in emails:
+        if email and mailer:
+            deliver(mailer, email)
+    if rows:
+        log.info("availability reminders: %d sent", len(rows))
+    return len(rows)
 
-def book(session: Session, booking: Booking, organizer_hint: str, calendar: Calendar | None) -> list[Email | None]:
+
+# ---- booking ------------------------------------------------------------------------
+
+def book(session: Session, booking: Booking, start: datetime, organizer_hint: str,
+         calendar: Calendar | None) -> list[Email | None]:
     """Make it real: the Google event (if anyone can host it) and the
-    'booked' emails. Raises CalendarError and leaves the booking proposed
+    'booked' emails. Raises CalendarError, leaving the booking collecting,
     if Google refuses."""
-    people = session.scalars(select(BookingPerson).where(BookingPerson.booking_id == booking.id)).all()
-    ids = [p.user_id for p in people]
-    who, inbox, hours = names(session, ids), invite_emails(session, ids), load_hours(session)
-    end = booking.starts_at + timedelta(minutes=booking.minutes)
+    ids = [p.user_id for p in _people(session, booking)]
+    who, inbox, tz = names(session, ids), invite_emails(session, ids), program_zone(session)
+    end = start + timedelta(minutes=booking.minutes)
     hosts = connected(session, ids)
     organizer = next((u for u in [organizer_hint, booking.requested_by, *ids] if u in hosts), None)
     if calendar and organizer:
         description = "\n".join([booking.reason, *(f"- {a}" for a in booking.agenda), booking.note,
                                  app_url(f"/app/meetings/{booking.id}")]).strip()
-        booking.google_event_id = calendar.create_event(session, organizer, booking.starts_at, end,
-                                                        f"DapUp: {booking.title}", description,
-                                                        [inbox[u] for u in ids if inbox.get(u)])
-    booking.status = "confirmed"
-    line = (f"{booking.title}: {when(booking.starts_at, hours.tz)}, {booking.minutes} minutes, with "
+        booking.google_event_id = calendar.create_event(session, organizer, start, end, f"DapUp: {booking.title}",
+                                                        description, [inbox[u] for u in ids if inbox.get(u)])
+    booking.status, booking.starts_at = "confirmed", start
+    line = (f"{booking.title}: {when(start, tz)}, {booking.minutes} minutes, with "
             + ", ".join(who[u] for u in ids) + ".")
     invite = ("A Google Calendar invite is on its way." if booking.google_event_id
               else "Add it to your calendar: nobody in this meeting has connected Google Calendar to DapUp.")
@@ -286,7 +366,7 @@ def book(session: Session, booking: Booking, organizer_hint: str, calendar: Cale
             for u in ids]
 
 
-# ---- routes ----------------------------------------------------------------
+# ---- routes ---------------------------------------------------------------------------
 router = APIRouter()
 Db = Annotated[Session, Depends(get_session)]
 Me = Annotated[Principal, Depends(current_user)]
@@ -298,7 +378,7 @@ class PersonOut(_Camel):
     id: str
     name: str
     role: str
-    response: str | None = None
+    filled_in: bool = False
     calendar_connected: bool
 
 
@@ -310,60 +390,57 @@ class MeetingOut(_Camel):
     note: str
     minutes: int | None
     starts_at: datetime | None
-    options: list[datetime]
+    window_start: datetime | None
+    window_end: datetime | None
     reason: str
     agenda: list[str]
     requested_by: str | None
-    my_response: str | None
     my_role: str | None
+    my_filled_in: bool | None
     people: list[PersonOut]
 
 
-class SlotsIn(_Camel):
+class CellOut(_Camel):
+    start: datetime
+    free: list[str]  # ids of who's free in this cell
+
+
+class AvailabilityOut(_Camel):
+    mine: list[datetime]
+    suggested: bool  # True = pre-filled from Google Calendar, not saved yet
+    cells: list[CellOut]
+    bookable: list[datetime]  # best first (rank())
+    blocked: list[datetime]  # cells someone here already has a DapUp meeting in
+
+
+class AvailabilityIn(_Camel):
+    slots: list[datetime] = Field(max_length=7 * 24 * 4)
+
+
+class MeetingIn(_Camel):
     people_ids: list[str] = Field(min_length=1, max_length=MAX_PEOPLE)
     minutes: int
-    timezone: str = "America/Los_Angeles"
-
-
-class SlotsOut(_Camel):
-    slots: list[datetime]
-    not_connected: list[str]  # names whose calendar couldn't be checked
-
-
-class MeetingIn(SlotsIn):
-    starts_at: datetime
     title: str = Field(default="", max_length=120)
     note: str = Field(default="", max_length=1000)
 
 
-class RespondIn(_Camel):
-    accept: bool
-
-
-class PickIn(_Camel):
+class BookIn(_Camel):
     starts_at: datetime
 
 
-def _manual_hours(timezone: str) -> Hours:
-    try:
-        tz = ZoneInfo(timezone)
-    except (ZoneInfoNotFoundError, ValueError):
-        tz = ZoneInfo("America/Los_Angeles")
-    return Hours(frozenset(range(7)), time(8), time(21), tz)
-
-
 def _out(session: Session, booking: Booking, user: Principal) -> MeetingOut:
-    people = session.scalars(select(BookingPerson).where(BookingPerson.booking_id == booking.id)).all()
+    people = _people(session, booking)
     ids = [p.user_id for p in people]
     who, linked = names(session, ids), connected(session, ids)
     mine = next((p for p in people if p.user_id == user.user_id), None)
     return MeetingOut(
         id=str(booking.id), kind=booking.kind, status=booking.status, title=booking.title, note=booking.note,
-        minutes=booking.minutes, starts_at=booking.starts_at, options=booking.options, reason=booking.reason,
-        agenda=booking.agenda, requested_by=booking.requested_by,
-        my_response=mine.response if mine else None, my_role=mine.role if mine else None,
-        people=[PersonOut(id=p.user_id, name=who.get(p.user_id, "Someone"), role=p.role, response=p.response,
-                          calendar_connected=p.user_id in linked) for p in people],
+        minutes=booking.minutes, starts_at=booking.starts_at, window_start=booking.window_start,
+        window_end=booking.window_end, reason=booking.reason, agenda=booking.agenda,
+        requested_by=booking.requested_by, my_role=mine.role if mine else None,
+        my_filled_in=(mine.slots is not None) if mine else None,
+        people=[PersonOut(id=p.user_id, name=who.get(p.user_id, "Someone"), role=p.role,
+                          filled_in=p.slots is not None, calendar_connected=p.user_id in linked) for p in people],
     )
 
 
@@ -374,8 +451,7 @@ def _load(session: Session, booking_id: str, user: Principal) -> Booking:
         booking = None
     if booking is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Meeting not found.")
-    member = session.get(BookingPerson, (booking.id, user.user_id))
-    if member is None and not user.is_admin:
+    if session.get(BookingPerson, (booking.id, user.user_id)) is None and not user.is_admin:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Meeting not found.")
     return booking
 
@@ -390,12 +466,48 @@ def _send_all(background: BackgroundTasks, mailer: Mailer | None, emails: list[E
             background.add_task(deliver, mailer, email)
 
 
+def _green(session: Session, booking: Booking, people: list[BookingPerson]) -> tuple[list[datetime], set[datetime]]:
+    """(bookable starts, best first; cells blocked by other DapUp meetings)."""
+    ids = [p.user_id for p in people]
+    blocked = cells_touching(dapup_busy(session, ids, booking.window_start, booking.window_end, booking.id),
+                             booking.window_start, booking.window_end)
+    sets = [_utc(p.slots) if p.slots is not None else None for p in people]
+    starts = bookable(sets, booking.window_end, booking.minutes, blocked)
+    fallback = program_zone(session)
+    zones = [_zone(p.timezone) if p.timezone else fallback for p in people]
+    return rank(starts, zones, datetime.now(UTC), last_slot(session, booking)), blocked
+
+
+def _availability(session: Session, booking: Booking, user: Principal, tz: ZoneInfo,
+                  calendar: Calendar | None) -> AvailabilityOut:
+    people = _people(session, booking)
+    sets = [_utc(p.slots) if p.slots is not None else None for p in people]
+    free: dict[datetime, list[str]] = {}
+    for person, slots in zip(people, sets):
+        for cell in slots or ():
+            free.setdefault(cell, []).append(person.user_id)
+    me = next((p for p in people if p.user_id == user.user_id), None)
+    mine, suggested = sorted(_utc(me.slots)) if me and me.slots is not None else [], False
+    collecting = booking.status == "collecting"
+    starts, blocked = _green(session, booking, people) if collecting else ([], set())
+    if me and me.slots is None and calendar and collecting:
+        cells = grid_cells(booking.window_start, booking.window_end, tz)
+        busy, unread = calendar.busy(session, [user.user_id], booking.window_start, booking.window_end)
+        if user.user_id not in unread:
+            mine = [c for c in free_cells(busy, cells) if c not in blocked]
+            suggested = True
+    return AvailabilityOut(
+        mine=mine, suggested=suggested,
+        cells=[CellOut(start=c, free=ids) for c, ids in sorted(free.items())],
+        bookable=starts, blocked=sorted(blocked),
+    )
+
+
 @router.get("/meetings", response_model=list[MeetingOut], response_model_by_alias=True)
 def my_meetings(user: Me, session: Db) -> list[MeetingOut]:
-    ids = session.scalars(select(BookingPerson.booking_id).where(BookingPerson.user_id == user.user_id))
+    ids = list(session.scalars(select(BookingPerson.booking_id).where(BookingPerson.user_id == user.user_id)))
     bookings = session.scalars(
-        select(Booking).where(Booking.id.in_(list(ids))).order_by(Booking.starts_at.desc().nulls_first(),
-                                                                  Booking.created_at.desc()).limit(50)
+        select(Booking).where(Booking.id.in_(ids)).order_by(Booking.created_at.desc()).limit(50)
     ).all()
     return [_out(session, b, user) for b in bookings]
 
@@ -409,58 +521,32 @@ def invitable(user: Me, session: Db) -> list[PersonOut]:
                              calendar_connected=i in linked) for i in ids), key=lambda p: (p.role, p.name))
 
 
-def _check_people(session: Session, user: Principal, people_ids: list[str], minutes: int) -> list[str]:
-    if minutes not in LENGTHS:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Length must be 15, 30, 45 or 60 minutes.")
-    allowed = set(people_i_can_invite(session, user))
-    chosen = list(dict.fromkeys(p for p in people_ids if p != user.user_id))
-    if not chosen or not set(chosen) <= allowed:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "You can only invite people you work with.")
-    return chosen
-
-
-@router.post("/meetings/slots", response_model=SlotsOut, response_model_by_alias=True)
-def find_slots(body: SlotsIn, user: Me, session: Db, calendar: Cal) -> SlotsOut:
-    chosen = _check_people(session, user, body.people_ids, body.minutes)
-    everyone = [user.user_id, *chosen]
-    now = datetime.now(UTC)
-    busy, unread = calendar.busy(session, everyone, now, now + timedelta(days=14)) if calendar else ([], everyone)
-    slots = free_slots(busy, now + timedelta(hours=1), now + timedelta(days=14), body.minutes,
-                       _manual_hours(body.timezone), limit=12)
-    who = names(session, unread)
-    return SlotsOut(slots=slots, not_connected=[who.get(u, "Someone") for u in unread])
-
-
 @router.post("/meetings", response_model=MeetingOut, response_model_by_alias=True, status_code=201)
-def request_meeting(body: MeetingIn, user: Me, session: Db, calendar: Cal, mailer: Mail,
-                    background: BackgroundTasks) -> MeetingOut:
+def request_meeting(body: MeetingIn, user: Me, session: Db, mailer: Mail, background: BackgroundTasks) -> MeetingOut:
     upsert_user(session, user)
-    chosen = _check_people(session, user, body.people_ids, body.minutes)
-    start = body.starts_at.astimezone(UTC)
-    if start < datetime.now(UTC):
-        raise _conflict("in_the_past", "That time has already passed.")
+    if body.minutes not in LENGTHS:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Length must be 15, 30, 45 or 60 minutes.")
+    chosen = list(dict.fromkeys(p for p in body.people_ids if p != user.user_id))
+    if not chosen or not set(chosen) <= set(people_i_can_invite(session, user)):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "You can only invite people you work with.")
     everyone = [user.user_id, *chosen]
-    if calendar:
-        busy, _ = calendar.busy(session, everyone, start, start + timedelta(minutes=body.minutes))
-        if busy:
-            raise _conflict("taken", "Someone just became busy at that time. Pick another.")
-    who = names(session, everyone)
+    who, inbox = names(session, everyone), invite_emails(session, chosen)
     roles = dict(session.execute(select(User.id, User.account_type).where(User.id.in_(everyone))).all())
-    student = next((u for u in everyone if roles.get(u) == AccountType.student), None)
-    booking = Booking(kind="manual", requested_by=user.user_id, student_id=student, status="proposed",
-                      minutes=body.minutes, starts_at=start, title=body.title or f"Meeting with {who[user.user_id]}",
-                      note=body.note)
+    start, end = new_window(datetime.now(UTC))
+    booking = Booking(kind="manual", requested_by=user.user_id, status="collecting", minutes=body.minutes,
+                      student_id=next((u for u in everyone if roles.get(u) == AccountType.student), None),
+                      title=body.title or f"Meeting with {who[user.user_id]}", note=body.note,
+                      window_start=start, window_end=end)
     session.add(booking)
     session.flush()
-    session.add_all(BookingPerson(booking_id=booking.id, user_id=u, role=str(roles.get(u, "student")),
-                                  response="accepted" if u == user.user_id else "pending") for u in everyone)
+    session.add_all(BookingPerson(booking_id=booking.id, user_id=u, role=str(roles.get(u, "student")))
+                    for u in everyone)
     session.flush()
-    hours, inbox = _manual_hours(body.timezone), invite_emails(session, chosen)
     _send_all(background, mailer, [
-        _email(inbox[u], who[u], f"{who[user.user_id]} asked for a meeting",
-               [f"{who[user.user_id]} would like to meet: {when(start, hours.tz)}, {body.minutes} minutes.",
-                *([f"Note: {body.note}"] if body.note else []), "Accept or decline in DapUp."],
-               "Accept or decline", booking.id)
+        _email(inbox[u], who[u], f"{who[user.user_id]} wants to meet",
+               [f"{who[user.user_id]} would like a {body.minutes}-minute meeting in the next week.",
+                *([f"Note: {body.note}"] if body.note else []), MARK],
+               "Mark your times", booking.id)
         for u in chosen])
     return _out(session, booking, user)
 
@@ -470,59 +556,61 @@ def get_meeting(booking_id: str, user: Me, session: Db) -> MeetingOut:
     return _out(session, _load(session, booking_id, user), user)
 
 
-@router.post("/meetings/{booking_id}/respond", response_model=MeetingOut, response_model_by_alias=True)
-def respond(booking_id: str, body: RespondIn, user: Me, session: Db, calendar: Cal, mailer: Mail,
-            background: BackgroundTasks) -> MeetingOut:
+@router.get("/meetings/{booking_id}/availability", response_model=AvailabilityOut, response_model_by_alias=True)
+def get_availability(booking_id: str, user: Me, session: Db, calendar: Cal,
+                     timezone: str = "America/Los_Angeles") -> AvailabilityOut:
+    return _availability(session, _load(session, booking_id, user), user, _zone(timezone), calendar)
+
+
+@router.put("/meetings/{booking_id}/availability", response_model=AvailabilityOut, response_model_by_alias=True)
+def save_availability(booking_id: str, body: AvailabilityIn, user: Me, session: Db, mailer: Mail,
+                      background: BackgroundTasks, timezone: str = "America/Los_Angeles") -> AvailabilityOut:
     booking = _load(session, booking_id, user)
     me = session.get(BookingPerson, (booking.id, user.user_id))
     if me is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Meeting not found.")
-    if booking.status != "proposed":
-        raise _conflict("not_open", "This meeting is no longer waiting for answers.")
-    me.response = "accepted" if body.accept else "declined"
+    if booking.status != "collecting":
+        raise _conflict("not_open", "This meeting isn't collecting times any more.")
+    slots = sorted(_utc(body.slots))
+    if any(s < booking.window_start or s >= booking.window_end or s.second or s.microsecond or s.minute % 15
+           for s in slots):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Times must be 15-minute cells inside the week shown.")
+    people = _people(session, booking)
+    was_complete = all(p.slots is not None for p in people)
+    me.slots, me.filled_at, me.timezone = slots, datetime.now(UTC), _zone(timezone).key
     session.flush()
-    people = session.scalars(select(BookingPerson).where(BookingPerson.booking_id == booking.id)).all()
-    ids = [p.user_id for p in people]
-    if not body.accept:
-        booking.status = "declined"
-        who, inbox = names(session, ids), invite_emails(session, ids)
-        _send_all(background, mailer, [
-            _email(inbox[u], who[u], f"Declined: {booking.title}",
-                   [f"{who[user.user_id]} can't make it, so this meeting is off. Request a new time in DapUp."],
-                   "Find another time", booking.id)
-            for u in ids if u != user.user_id])
-    elif (booking.kind == "triage" and me.role == "mentor") or all(p.response == "accepted" for p in people):
-        try:
-            emails = book(session, booking, user.user_id, calendar)
-        except CalendarError as exc:
-            log.warning("booking %s: calendar event failed: %s", booking.id, exc)
-            raise HTTPException(status.HTTP_502_BAD_GATEWAY,
-                                "Google Calendar didn't accept the event. Try again in a minute.") from None
-        _send_all(background, mailer, emails)
-    session.flush()
-    return _out(session, booking, user)
+    if not was_complete and all(p.slots is not None for p in people):
+        found, _ = _green(session, booking, people)
+        mentors = [p.user_id for p in people if p.role == "mentor"]
+        who, inbox, tz = names(session, mentors), invite_emails(session, mentors), program_zone(session)
+        lines = ([f"Everyone has marked their times. The best time that works for all is {when(found[0], tz)}.",
+                  "Pick a green time to book it on everyone's calendar."] if found else
+                 ["Everyone has marked their times, but no time works for everyone yet.",
+                  "Ask people to add a few more times, or choose a shorter meeting."])
+        _send_all(background, mailer, [_email(inbox[m], who[m], f"Ready to book: {booking.title}", lines,
+                                              "Pick a time", booking.id) for m in mentors])
+    return _availability(session, booking, user, _zone(timezone), None)
 
 
-@router.post("/meetings/{booking_id}/pick", response_model=MeetingOut, response_model_by_alias=True)
-def pick_option(booking_id: str, body: PickIn, user: Me, session: Db, mailer: Mail,
-                background: BackgroundTasks) -> MeetingOut:
-    """The student chooses one of the offered times when nothing fit."""
+@router.post("/meetings/{booking_id}/book", response_model=MeetingOut, response_model_by_alias=True)
+def book_time(booking_id: str, body: BookIn, user: Me, session: Db, calendar: Cal, mailer: Mail,
+              background: BackgroundTasks) -> MeetingOut:
     booking = _load(session, booking_id, user)
-    if booking.status != "no_slot" or booking.student_id != user.user_id:
-        raise _conflict("not_open", "There's no time to pick for this meeting.")
-    choice = body.starts_at.astimezone(UTC)
-    if choice not in [o.astimezone(UTC) for o in booking.options]:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Pick one of the offered times.")
-    booking.status, booking.starts_at = "proposed", choice
-    mentors = session.scalars(select(BookingPerson).where(BookingPerson.booking_id == booking.id,
-                                                          BookingPerson.role == "mentor")).all()
-    ids = [m.user_id for m in mentors]
-    who, inbox, hours = names(session, ids + [user.user_id]), invite_emails(session, ids), load_hours(session)
-    _send_all(background, mailer, [
-        _email(inbox[u], who[u], f"{who[user.user_id]} picked a time",
-               [f"{who[user.user_id]} picked {when(choice, hours.tz)} for a {booking.minutes}-minute meeting.",
-                "Press Confirm to book it on everyone's calendar."], "Review and confirm", booking.id)
-        for u in ids])
+    me = session.get(BookingPerson, (booking.id, user.user_id))
+    if me is None or me.role != "mentor":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only a mentor in this meeting can book it.")
+    if booking.status != "collecting":
+        raise _conflict("not_open", "This meeting is already booked or closed.")
+    start = body.starts_at.astimezone(UTC)
+    green, _ = _green(session, booking, _people(session, booking))
+    if start not in green or start < datetime.now(UTC):
+        raise _conflict("not_green", "Not everyone is free for the whole meeting at that time.")
+    try:
+        emails = book(session, booking, start, user.user_id, calendar)
+    except CalendarError as exc:
+        log.warning("booking %s: calendar event failed: %s", booking.id, exc)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY,
+                            "Google Calendar didn't accept the event. Try again in a minute.") from None
     session.flush()
+    _send_all(background, mailer, emails)
     return _out(session, booking, user)
-

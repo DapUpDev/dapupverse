@@ -79,7 +79,10 @@ def checkin_job(kind: str, job: dict[str, Any]) -> None:
     sessions = sessionmaker(bind=engine, expire_on_commit=False)
     now = datetime.now(UTC)
     if kind == "checkin-tick":
+        from app import scheduling
+
         checkins.checkin_tick(sessions, mailer, now)
+        scheduling.remind_unfilled(sessions, mailer, now)  # meetings waiting on someone's times
         return
     with sessions() as session:
         schedule = checkins.load_schedule(session)
