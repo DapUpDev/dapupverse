@@ -127,3 +127,12 @@ def test_a_failed_email_is_retried_on_the_next_run(sessions):
     mailer.failing.clear()
     assert checkins.run_daily(sessions, mailer, THURSDAY + 25 * HOUR) == (0, 2)
     assert checkins.run_daily(sessions, mailer, THURSDAY + 26 * HOUR) == (0, 0)
+
+
+def test_reset_week_lets_one_student_get_a_fresh_check_in(sessions):
+    mailer = FakeMailer()
+    checkins.send_weekly(sessions, mailer, THURSDAY)
+    assert checkins.reset_week(sessions, THURSDAY, checkins.DEFAULT_SCHEDULE, "MAYA@example.com") == 1
+    assert checkins.send_weekly(sessions, mailer, THURSDAY + HOUR) == 1  # only Maya, again
+    assert [e.to for e in mailer.sent].count("maya@example.com") == 2
+    assert checkins.reset_week(sessions, THURSDAY, checkins.DEFAULT_SCHEDULE, "nobody@example.com") == 0

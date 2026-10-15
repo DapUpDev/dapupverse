@@ -229,6 +229,9 @@ def db_deps(sessions) -> Deps:
         reply = llm.complete(system, user, max_tokens=800)
         if reply is None:
             raise llm.LLMError("LLM_PROVIDER is not set")
+        # Token counts, for working out the cost per check-in from the log.
+        log.info("triage model usage: %s input / %s output tokens (%s/%s)",
+                 reply.input_tokens, reply.output_tokens, reply.provider, reply.model)
         return reply.text, f"{reply.provider}/{reply.model}"
 
     def save(state: State) -> None:
