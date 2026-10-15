@@ -1,5 +1,7 @@
 "use client";
 
+import { CheckInSchedule } from "@/components/admin/check-in-schedule";
+import { ConsultingStudents } from "@/components/admin/consulting-students";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mentorRepository } from "@/lib/repositories";
@@ -79,8 +81,8 @@ function AdminMentorTable() {
 }
 
 /**
- * Admin tools placeholder. Access is enforced server-side in the /admin
- * layout via the explicit isAdmin capability.
+ * Admin tools. Access is enforced server-side in the /admin layout via the
+ * explicit isAdmin capability (and again by the API on every admin route).
  */
 export default function AdminPage() {
   return (
@@ -90,10 +92,35 @@ export default function AdminPage() {
           <h1 className="page-title">Admin</h1>
           <Badge variant="secondary">Admin capability</Badge>
         </div>
-        <p className="mt-4 max-w-xl text-lg text-pretty text-muted-foreground">
-          Placeholder for future admin tooling — mentor approval, reports, and
-          moderation will live here.
-        </p>
+        <section aria-labelledby="admin-consulting-heading" className="mt-10">
+          <h2
+            id="admin-consulting-heading"
+            className="font-display text-2xl font-normal tracking-[-0.02em]"
+          >
+            Consulting students
+          </h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Only students on the consulting package get the weekly check-in.
+            Each can have up to three mentors on their team.
+          </p>
+          <div className="mt-4">
+            <ConsultingStudents />
+          </div>
+        </section>
+        <section aria-labelledby="admin-schedule-heading" className="mt-14">
+          <h2
+            id="admin-schedule-heading"
+            className="font-display text-2xl font-normal tracking-[-0.02em]"
+          >
+            Weekly check-in
+          </h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            When the check-in email goes out to consulting students.
+          </p>
+          <div className="mt-4">
+            <CheckInSchedule />
+          </div>
+        </section>
         <section aria-labelledby="admin-mentors-heading" className="mt-14">
           <h2
             id="admin-mentors-heading"
